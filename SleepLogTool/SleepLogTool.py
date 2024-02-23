@@ -53,8 +53,6 @@ def saveFile(fileListVar):
 
         for msg in log:
             msg = str(msg)
-            #print(msg)
-            #print(log_output)
             msg = msg.strip()
             columns = msg.split()
             time = columns[1]
@@ -62,15 +60,7 @@ def saveFile(fileListVar):
             name1 = columns[8]
             name2 = columns[9]
             name3 = columns[10]
-            #print(negVar)
-            #if negVar == 127:  #DOES NOT WORK!!!!
-            #    name1=0xFF-name1
-            #    name2=0xFF-name2
-            #    name3=0xFF-name3
-            #    name2 = name1 + name2
-            #print(name1, name2, name3)
             name4 = name2 + name3
-            #print(name4)
             name5 = str(int(name4, 16))
             g.write('\n' + time + ',')
             g.write(name5)
