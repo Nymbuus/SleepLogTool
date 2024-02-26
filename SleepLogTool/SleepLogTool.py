@@ -12,10 +12,8 @@ from os.path import dirname
 from pathlib import Path
 from matplotlib.widgets import Slider
 import tkinter as tk
-import tkinter.filedialog as fd
-import vaex as vx
+import tkinter.filedialog as fd         # Opens BLF file. Saves as csv.
 from os import environ
-
 
 
 headers = ['Time', 'Current']
@@ -25,18 +23,16 @@ global removeStart
 global removeEnd
 
 
-
+# Lets the user chose what files he wants to analyze
 def fileExplorer():
-    #Lets the user chose what files he wants to analyze
     filez = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
     fileList = list(filez)
     print("User choosed", len(fileList), "files to load")
     return fileList
 
 
-
+# Chose where to save the file and then save the valuabe data from the loaded files into this new CSV file
 def saveFile(fileListVar):
-    #Chose where to save the file and then save the valuabe data from the loaded files into this new CSV file
     myFile = fd.asksaveasfile(mode='w',defaultextension=".csv")
     out = ['Time']
     out.append('Current')
@@ -56,8 +52,6 @@ def saveFile(fileListVar):
             msg = msg.strip()
             columns = msg.split()
             time = columns[1]
-            negVar = str(int(columns[7], 16))
-            name1 = columns[8]
             name2 = columns[9]
             name3 = columns[10]
             name4 = name2 + name3
@@ -68,8 +62,8 @@ def saveFile(fileListVar):
     return fileName
 
 
+# Removes some environment warnings
 def suppress_qt_warnings():
-    #Removes some environment warnings
     environ["QT_DEVICE_PIXEL_RATIO"] = "0"
     environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     environ["QT_SCREEN_SCALE_FACTORS"] = "1"
@@ -77,28 +71,43 @@ def suppress_qt_warnings():
 
 
 def main(savedFileName, removeStart, removeEnd):
-    removeStart = removeStart*6000
-    removeEnd = removeEnd*6000
+    removeStart = int(removeStart * 6000)
+    removeEnd = int(removeEnd * 6000)
 
-    #This part creates a hdf5 file for faster usage and plots a graph using matplotlib
-    vaex_df = vx.from_csv(savedFileName, convert = True, chunk_size =5_00_000)
-    type(vaex_df)
-    df = vx.open(savedFileName+'.hdf5')
-    firstTime = df["Time"].min()                                                                    #Should the plot start from 0?
-    df = df[:-removeEnd]
-    df = df[removeStart:]
-    avarage = df['Current'].mean()                                                                  #calculates the mean value from the csv file
-    max = df['Current'].max()                                                                       #calculates the max value from the csv file
-    min = df['Current'].min()                                                                       #calculates the min value from the csv file
-    totalTime = float(df['Time'].max() - df['Time'].min())
-    print('\nAvarage Current:', "{:.3f}".format(avarage), "mA")                                     #prints the avarage
-    print('Max Current:', max, "mA")                                                                #prints the max
-    print('Min Current:', min, "mA")                                                                #prints the min
-    print("Total measurement time:", "{:.3f}".format(totalTime/3600), "hours")                      #prints the Total measurent time
-    print("Ampere hours:", "{:.4f}".format((totalTime/3600)*(avarage*0.001)), "Ah")                 #prints the Ampere Hours
-    y=df.Current.to_numpy()
-    x=df.Time.to_numpy()
-    plt.scatter((x-firstTime)/3600, (y), s=2)                                                       #
+    # Read CSV file into a pandas DataFrame
+    chunk_size = 500    # Was 500000 before.
+    chunks = []
+    for chunk in pd.read_csv(savedFileName, chunksize=chunk_size):
+        chunks.append(chunk)
+    pandas_df = pd.concat(chunks, ignore_index=True)
+
+    # Loads pandas dataframe to a local variable.
+    # With this we remove the start and end elements provided in minutes in the beginning of the program.
+    # If the if cases are'nt used the program will crash.
+    df = pandas_df
+    if removeStart != 0:
+        df = df[removeStart:]
+    if removeEnd != 0:
+        df = df[:-removeEnd]
+
+    # Calculate statistics
+    average = df['Current'].mean()
+    maximum = df['Current'].max()
+    minimum = df['Current'].min()
+    total_time = float(df['Time'].max() - df['Time'].min())
+    ampere_hours = (total_time / 3600) * (average * 0.001)
+
+    print('\nAverage Current:', "{:.3f}".format(average), "mA")
+    print('Max Current:', maximum, "mA")
+    print('Min Current:', minimum, "mA")
+    print("Total measurement time:", "{:.3f}".format(total_time / 3600), "hours or", "{:.3f}".format(total_time/60), "minutes")
+    print("Ampere hours:", "{:.4f}".format(ampere_hours), "Ah")
+
+    # Plotting
+    firstTime = pandas_df["Time"].min()
+    y = df.Current.to_numpy()
+    x = df.Time.to_numpy()
+    plt.scatter((x - firstTime) / 3600, y, s=2)
     plt.xlabel("Time(h)", fontsize=15)
     plt.ylabel("Current(mA)", fontsize=15)
     plt.title("Sleeplog analysis", fontsize=24)
@@ -107,16 +116,14 @@ def main(savedFileName, removeStart, removeEnd):
     manager = plt.get_current_fig_manager()
     manager.window.state('zoomed')
     plt.show()
-    
-    
 
+# Start of programm    
 if __name__ == '__main__':   
     suppress_qt_warnings()
-    removeStart = int(input("Minutes to remove from the start: (Insert value and press enter)\n"))          #90000 is 15 min, 15 min is avarage sleep time
+    removeStart = float(input("Minutes to remove from the start: (Insert value and press enter)\n"))          # 90000 is 15 min, 15 min is avarage sleep time
     print(removeStart, "Minutes will be removed from the start of the log")
-    removeEnd = int(input("Minutes to remove from the end: (Insert value and press enter\n"))               #30000
+    removeEnd = float(input("Minutes to remove from the end: (Insert value and press enter\n"))               # 30000
     print(removeEnd, "Minutes will be removed from the end of the log")
-    theList = fileExplorer()                                                                                #Open the file explorer to select files and save those files data into a csv file
+    theList = fileExplorer()                                                                                  # Open the file explorer to select files and save those files data into a csv file
     savedFileName = saveFile(theList)
-    main(savedFileName, removeStart, removeEnd)                                                             #Start plotfunction
-        
+    main(savedFileName, removeStart, removeEnd)                                                               # Start plotfunction
