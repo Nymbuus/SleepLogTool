@@ -40,28 +40,29 @@ def saveFile(fileListVar):
         writer = csv.DictWriter(csv_file, fieldnames=out)
         writer.writeheader()
 
-    fileName = myFile.name
+    return write_to_csv(myFile.name, fileListVar)
+
+
+def write_to_csv(fileName, fileListVar):
     g = open(fileName, 'a')
-    for i in range(0,len(fileListVar)):
-        print ("Reading values from:  ", fileListVar[i])
+    for i in range(0, len(fileListVar)):
         log = can.BLFReader(fileListVar[i])
         log = list(log)
 
-        print("\n\n")
-        for msg in log:
-            print(msg)
-            msg = str(msg)
-            msg = msg.strip()
-            columns = msg.split()
-            time = columns[1]
-            upper_current_hexa = columns[9]
-            lower_current_hexa = columns[10]
-            current_hexa = upper_current_hexa + lower_current_hexa
-            current_value = str(int(current_hexa, 16))
-            g.write('\n' + time + ',')
-            g.write(current_value)
-        print("\n\n")
+    for msg in log:
+        print(msg)
+        msg = str(msg)
+        msg = msg.strip()
+        columns = msg.split()
+        time = columns[1]
+        upper_current_hexa = columns[9]
+        lower_current_hexa = columns[10]
+        current_hexa = upper_current_hexa + lower_current_hexa
+        current_value = str(int(current_hexa, 16))
+        g.write('\n' + time + ',')
+        g.write(current_value)
     g.close()
+
     return fileName
 
 
@@ -110,7 +111,7 @@ def main(savedFileName, removeStart, removeEnd):
     firstTime = pandas_df["Time"].min()
     y = df.Current.to_numpy()
     x = df.Time.to_numpy()
-    plt.scatter((x - firstTime) / 3600, y, s=2)
+    plt.plot((x - firstTime) / 3600, y)
     plt.xlabel("Time(h)", fontsize=15)
     plt.ylabel("Current(mA)", fontsize=15)
     plt.title("Sleeplog analysis", fontsize=24)
