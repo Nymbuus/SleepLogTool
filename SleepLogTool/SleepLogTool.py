@@ -23,7 +23,7 @@ global removeStart
 global removeEnd
 
 
-# Lets the user chose what files he wants to analyze
+# Lets the user chose what files he wants to analyze.
 def fileExplorer():
     filez = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
     fileList = list(filez)
@@ -31,7 +31,7 @@ def fileExplorer():
     return fileList
 
 
-# Chose where to save the file and then save the valuabe data from the loaded files into this new CSV file
+# Chose where to save the file and then save the valuable data from the loaded files into this new CSV file.
 def saveFile(fileListVar):
     myFile = fd.asksaveasfile(mode='w',defaultextension=".csv")
     out = ['Time']
@@ -47,17 +47,20 @@ def saveFile(fileListVar):
         log = can.BLFReader(fileListVar[i])
         log = list(log)
 
+        print("\n\n")
         for msg in log:
+            print(msg)
             msg = str(msg)
             msg = msg.strip()
             columns = msg.split()
             time = columns[1]
-            name2 = columns[9]
-            name3 = columns[10]
-            name4 = name2 + name3
-            name5 = str(int(name4, 16))
+            upper_current_hexa = columns[9]
+            lower_current_hexa = columns[10]
+            current_hexa = upper_current_hexa + lower_current_hexa
+            current_value = str(int(current_hexa, 16))
             g.write('\n' + time + ',')
-            g.write(name5)
+            g.write(current_value)
+        print("\n\n")
     g.close()
     return fileName
 
