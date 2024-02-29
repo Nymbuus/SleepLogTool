@@ -23,7 +23,7 @@ global removeStart
 global removeEnd
 
 
-# Lets the user chose what files he wants to analyze.
+# Lets the user chose what files he wants to analyze..
 def fileExplorer():
     filez = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
     fileList = list(filez)
