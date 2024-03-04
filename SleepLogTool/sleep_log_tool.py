@@ -1,20 +1,12 @@
-import can
-import csv
-import os
-from re import M
-import sys
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import pandas as pd
-from statistics import mean
-from os.path import dirname
-from pathlib import Path
-from matplotlib.widgets import Slider
-import tkinter as tk
-import tkinter.filedialog as fd         # Opens BLF file. Saves as csv.
+""" Imports. Numpy will be used. """
 from os import environ
-
+import csv
+import tkinter as tk
+import tkinter.filedialog as fd
+import can
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 headers = ['Time', 'Current']
 root = tk.Tk()
@@ -23,8 +15,8 @@ global removeStart
 global removeEnd
 
 
-# Lets the user chose what files he wants to analyze.
 def fileExplorer():
+    """ Lets the user chose what files he wants to analyze. """
     filez = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
     fileList = list(filez)
     print("User choosed", len(fileList), "files to load")
