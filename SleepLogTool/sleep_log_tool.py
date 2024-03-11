@@ -11,34 +11,33 @@ import pandas as pd
 headers = ['Time', 'Current']
 root = tk.Tk()
 log_output = []
-global removeStart
-global removeEnd
 
 
-def fileExplorer():
+def file_explorer():
     """ Lets the user chose what files he wants to analyze. """
     filez = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
-    fileList = list(filez)
-    print("User choosed", len(fileList), "files to load")
-    return fileList
+    file_list = list(filez)
+    print("User choosed", len(file_list), "files to load")
+    return file_list
 
 
-# Chose where to save the file and then save the valuable data from the loaded files into this new CSV file.
-def saveFile(fileListVar):
-    myFile = fd.asksaveasfile(mode='w',defaultextension=".csv")
+def save_file(file_list_var):
+    """ Chose where to save file and then save valuable data from the loaded files to CSV file. """
+    my_file = fd.asksaveasfile(mode='w',defaultextension=".csv")
     out = ['Time']
     out.append('Current')
-    with open(myFile.name,'w', encoding='UTF8', newline='') as csv_file:
+    with open(my_file.name,'w', encoding='UTF8', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=out)
         writer.writeheader()
 
-    return write_to_csv(myFile.name, fileListVar)
+    return write_to_csv(my_file.name, file_list_var)
 
 
-def write_to_csv(fileName, fileListVar):
-    g = open(fileName, 'a')
-    for i in range(0, len(fileListVar)):
-        log = can.BLFReader(fileListVar[i])
+def write_to_csv(file_name, file_list_var):
+    """ Write to csv from blf. """
+    g = open(file_name, mode='a', encoding="utf-8")
+    for i in range(0, len(file_list_var)):
+        log = can.BLFReader(file_list_var[i])
         log = list(log)
 
     for msg in log:
@@ -55,7 +54,7 @@ def write_to_csv(fileName, fileListVar):
         g.write(current_value)
     g.close()
 
-    return fileName
+    return file_name
 
 
 # Removes some environment warnings
@@ -120,6 +119,6 @@ if __name__ == '__main__':
     print(removeStart, "Minutes will be removed from the start of the log")
     removeEnd = float(input("Minutes to remove from the end: (Insert value and press enter\n"))               # 30000
     print(removeEnd, "Minutes will be removed from the end of the log")
-    theList = fileExplorer()                                                                                  # Open the file explorer to select files and save those files data into a csv file
-    savedFileName = saveFile(theList)
+    the_list = file_explorer()                                                                                  # Open the file explorer to select files and save those files data into a csv file
+    savedFileName = save_file(the_list)
     main(savedFileName, removeStart, removeEnd)                                                               # Start plotfunction
