@@ -7,13 +7,10 @@ import can
 import matplotlib.pyplot as plt
 import pandas as pd
 
-headers = ['Time', 'Current']
-root = tk.Tk()
-log_output = []
-
 
 def file_explorer():
     """ Lets the user chose files to analyze. """
+    root = tk.Tk()
     filez = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
     file_list = list(filez)
     print("User choosed", len(file_list), "files to load")
@@ -99,7 +96,7 @@ def calculating_statistics(df):
     print(f"\nAverage Current: {average:.3f}mA")
     print(f"Max Current: {maximum} mA")
     print(f"Min Current: {minimum} mA")
-    print(f"Total time: {(total_time / 3600):.3f} hours or {(total_time/60):.3f} minutes.")
+    print(f"Total time: {(total_time / 3600):.3f} hours or {(total_time/60):.1f} minutes.")
     print(f"Ampere hours: {ampere_hours:.4f} Ah")
 
 
