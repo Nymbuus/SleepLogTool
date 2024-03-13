@@ -36,8 +36,8 @@ def save_file(file_list_var):
 def write_to_csv(file_name, file_list_var):
     """ Write to csv from blf. """
     g = open(file_name, mode='a', encoding="utf-8")
-    for i in range(0, len(file_list_var)):
-        log = can.BLFReader(file_list_var[i])
+    for _, file_var in enumerate(file_list_var):
+        log = can.BLFReader(file_var)
         log = list(log)
 
     for msg in log:
@@ -59,20 +59,19 @@ def write_to_csv(file_name, file_list_var):
 
 # Removes some environment warnings
 def suppress_qt_warnings():
+    """ Suppresses warnings apering when starting .exe file. """
     environ["QT_DEVICE_PIXEL_RATIO"] = "0"
     environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     environ["QT_SCREEN_SCALE_FACTORS"] = "1"
     environ["QT_SCALE_FACTOR"] = "1"
 
 
-def main(savedFileName, removeStart, removeEnd):
-    removeStart = int(removeStart * 6000)
-    removeEnd = int(removeEnd * 6000)
-
+def main(saved_file, remove_start, remove_end):
+    """ Plots the data. """
     # Read CSV file into a pandas DataFrame
     chunk_size = 500    # Was 500000 before.
     chunks = []
-    for chunk in pd.read_csv(savedFileName, chunksize=chunk_size):
+    for chunk in pd.read_csv(saved_file, chunksize=chunk_size):
         chunks.append(chunk)
     pandas_df = pd.concat(chunks, ignore_index=True)
 
@@ -80,10 +79,10 @@ def main(savedFileName, removeStart, removeEnd):
     # With this we remove the start and end elements provided in minutes in the beginning of the program.
     # If the if cases are'nt used the program will crash.
     df = pandas_df
-    if removeStart != 0:
-        df = df[removeStart:]
-    if removeEnd != 0:
-        df = df[:-removeEnd]
+    if remove_start != 0:
+        df = df[remove_start:]
+    if remove_end != 0:
+        df = df[:-remove_end]
 
     # Calculate statistics
     average = df['Current'].mean()
@@ -92,17 +91,17 @@ def main(savedFileName, removeStart, removeEnd):
     total_time = float(df['Time'].max() - df['Time'].min())
     ampere_hours = (total_time / 3600) * (average * 0.001)
 
-    print('\nAverage Current:', "{:.3f}".format(average), "mA")
-    print('Max Current:', maximum, "mA")
-    print('Min Current:', minimum, "mA")
-    print("Total measurement time:", "{:.3f}".format(total_time / 3600), "hours or", "{:.3f}".format(total_time/60), "minutes")
-    print("Ampere hours:", "{:.4f}".format(ampere_hours), "Ah")
+    print(f"\nAverage Current: {average:.3f}mA")
+    print(f"Max Current: {maximum} mA")
+    print(f"Min Current: {minimum} mA")
+    print(f"Total time: {(total_time / 3600):.3f} hours or {(total_time/60):.3f} minutes.")
+    print(f"Ampere hours: {ampere_hours:.4f} Ah")
 
     # Plotting
-    firstTime = pandas_df["Time"].min()
+    first_time = pandas_df["Time"].min()
     y = df.Current.to_numpy()
     x = df.Time.to_numpy()
-    plt.plot((x - firstTime) / 3600, y)
+    plt.plot((x - first_time) / 3600, y)
     plt.xlabel("Time(h)", fontsize=15)
     plt.ylabel("Current(mA)", fontsize=15)
     plt.title("Sleeplog analysis", fontsize=24)
@@ -112,13 +111,15 @@ def main(savedFileName, removeStart, removeEnd):
     manager.window.state('zoomed')
     plt.show()
 
-# Start of programm    
-if __name__ == '__main__':   
+
+if __name__ == '__main__':
     suppress_qt_warnings()
-    removeStart = float(input("Minutes to remove from the start: (Insert value and press enter)\n"))          # 90000 is 15 min, 15 min is avarage sleep time
-    print(removeStart, "Minutes will be removed from the start of the log")
-    removeEnd = float(input("Minutes to remove from the end: (Insert value and press enter\n"))               # 30000
-    print(removeEnd, "Minutes will be removed from the end of the log")
-    the_list = file_explorer()                                                                                  # Open the file explorer to select files and save those files data into a csv file
-    savedFileName = save_file(the_list)
-    main(savedFileName, removeStart, removeEnd)                                                               # Start plotfunction
+    # 90000 is 15 min, 15 min is avarage sleep time
+    remove_start_min = float(input("Insert minutes to remove from start and press enter:\n") * 6000)
+    print(remove_start_min, "Minutes will be removed from the start of the log")
+    remove_end_min = float(input("Insert minutes to remove from the end and press enter:\n") * 6000)
+    print(remove_end_min, "Minutes will be removed from the end of the log")
+    # Open the file explorer to select files and save those files data into a csv file
+    the_list = file_explorer()
+    saved_file_name = save_file(the_list)
+    main(saved_file_name, remove_start_min, remove_end_min)
