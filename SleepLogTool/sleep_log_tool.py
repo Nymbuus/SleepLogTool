@@ -5,7 +5,6 @@ import tkinter as tk
 import tkinter.filedialog as fd
 import can
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
 headers = ['Time', 'Current']
@@ -66,25 +65,33 @@ def suppress_qt_warnings():
     environ["QT_SCALE_FACTOR"] = "1"
 
 
-def main(saved_file, remove_start, remove_end):
-    """ Plots the data. """
-    # Read CSV file into a pandas DataFrame
-    chunk_size = 500    # Was 500000 before.
+def csv_to_panda(saved_file):
+    """ Read CSV file into a pandas DataFrame """
     chunks = []
-    for chunk in pd.read_csv(saved_file, chunksize=chunk_size):
+    for chunk in pd.read_csv(saved_file, chunksize=500000):
         chunks.append(chunk)
-    pandas_df = pd.concat(chunks, ignore_index=True)
+    return pd.concat(chunks, ignore_index=True)
 
-    # Loads pandas dataframe to a local variable.
-    # With this we remove the start and end elements provided in minutes in the beginning of the program.
-    # If the if cases are'nt used the program will crash.
-    df = pandas_df
+
+def remove_start_and_end(df):
+    """ Loads pandas dataframe to a local variable.
+        With this we remove the start and end elements provided in minutes 
+        in the beginning of the program. If the if cases are'nt used the program will crash. """
+    # 90000 is 15 min, 15 min is avarage sleep time
+    remove_start = float(input("Insert minutes to remove from start and press enter:\n") * 6000)
+    print(remove_start, "Minutes will be removed from the start of the log")
+    remove_end = float(input("Insert minutes to remove from the end and press enter:\n") * 6000)
+    print(remove_end, "Minutes will be removed from the end of the log")
+
     if remove_start != 0:
         df = df[remove_start:]
     if remove_end != 0:
         df = df[:-remove_end]
+    return df
 
-    # Calculate statistics
+
+def calculating_statistics(df):
+    """ Calculate statistics """
     average = df['Current'].mean()
     maximum = df['Current'].max()
     minimum = df['Current'].min()
@@ -97,8 +104,10 @@ def main(saved_file, remove_start, remove_end):
     print(f"Total time: {(total_time / 3600):.3f} hours or {(total_time/60):.3f} minutes.")
     print(f"Ampere hours: {ampere_hours:.4f} Ah")
 
-    # Plotting
-    first_time = pandas_df["Time"].min()
+
+def plotting_graph(df):
+    """ Plotting. """
+    first_time = df["Time"].min()
     y = df.Current.to_numpy()
     x = df.Time.to_numpy()
     plt.plot((x - first_time) / 3600, y)
@@ -112,14 +121,19 @@ def main(saved_file, remove_start, remove_end):
     plt.show()
 
 
-if __name__ == '__main__':
+def main():
+    """ Main. """
     suppress_qt_warnings()
-    # 90000 is 15 min, 15 min is avarage sleep time
-    remove_start_min = float(input("Insert minutes to remove from start and press enter:\n") * 6000)
-    print(remove_start_min, "Minutes will be removed from the start of the log")
-    remove_end_min = float(input("Insert minutes to remove from the end and press enter:\n") * 6000)
-    print(remove_end_min, "Minutes will be removed from the end of the log")
+
     # Open the file explorer to select files and save those files data into a csv file
     the_list = file_explorer()
-    saved_file_name = save_file(the_list)
-    main(saved_file_name, remove_start_min, remove_end_min)
+    saved_file = save_file(the_list)
+
+    df = csv_to_panda(saved_file)
+    df = remove_start_and_end(df)
+    calculating_statistics(df)
+    plotting_graph(df)
+
+
+if __name__ == '__main__':
+    main()
