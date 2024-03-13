@@ -13,7 +13,7 @@ log_output = []
 
 
 def file_explorer():
-    """ Lets the user chose what files he wants to analyze. """
+    """ Lets the user chose files to analyze. """
     filez = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
     file_list = list(filez)
     print("User choosed", len(file_list), "files to load")
@@ -23,8 +23,7 @@ def file_explorer():
 def save_file(file_list_var):
     """ Chose where to save file and then save valuable data from the loaded files to CSV file. """
     my_file = fd.asksaveasfile(mode='w',defaultextension=".csv")
-    out = ['Time']
-    out.append('Current')
+    out = ["Time", "Current"]
     with open(my_file.name,'w', encoding='UTF8', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=out)
         writer.writeheader()
@@ -34,24 +33,23 @@ def save_file(file_list_var):
 
 def write_to_csv(file_name, file_list_var):
     """ Write to csv from blf. """
-    g = open(file_name, mode='a', encoding="utf-8")
+    logs = []
     for _, file_var in enumerate(file_list_var):
-        log = can.BLFReader(file_var)
-        log = list(log)
+        logs.extend(list(can.BLFReader(file_var)))
 
-    for msg in log:
-        print(msg)
-        msg = str(msg)
-        msg = msg.strip()
-        columns = msg.split()
-        time = columns[1]
-        upper_current_hexa = columns[9]
-        lower_current_hexa = columns[10]
-        current_hexa = upper_current_hexa + lower_current_hexa
-        current_value = str(int(current_hexa, 16))
-        g.write('\n' + time + ',')
-        g.write(current_value)
-    g.close()
+    with open(file_name, mode='a', encoding="utf-8") as file:
+        for msg in logs:
+            msg = str(msg)
+            msg = msg.strip()
+            columns = msg.split()
+            time = columns[1]
+            upper_current_hexa = columns[9]
+            lower_current_hexa = columns[10]
+            current_hexa = upper_current_hexa + lower_current_hexa
+            current_value = str(int(current_hexa, 16))
+            file.write('\n' + time + ',')
+            file.write(current_value)
+        file.close()
 
     return file_name
 
@@ -78,10 +76,10 @@ def remove_start_and_end(df):
         With this we remove the start and end elements provided in minutes 
         in the beginning of the program. If the if cases are'nt used the program will crash. """
     # 90000 is 15 min, 15 min is avarage sleep time
-    remove_start = float(input("Insert minutes to remove from start and press enter:\n") * 6000)
-    print(remove_start, "Minutes will be removed from the start of the log")
-    remove_end = float(input("Insert minutes to remove from the end and press enter:\n") * 6000)
-    print(remove_end, "Minutes will be removed from the end of the log")
+    remove_start = int(float(input("Insert minutes to remove from start and press enter:\n")) * 6000)
+    print(f"{remove_start/6000} minutes will be removed from the start of the log")
+    remove_end = int(float(input("Insert minutes to remove from the end and press enter:\n")) * 6000)
+    print(f"{remove_end/6000} minutes will be removed from the end of the log")
 
     if remove_start != 0:
         df = df[remove_start:]
