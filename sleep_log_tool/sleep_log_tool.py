@@ -62,6 +62,8 @@ class SleepLogTool:
         environ["QT_SCREEN_SCALE_FACTORS"] = "1"
         environ["QT_SCALE_FACTOR"] = "1"
 
+        return True
+
 
     def csv_to_panda(self, saved_file):
         """ Read CSV file into a pandas DataFrame """

@@ -5,7 +5,8 @@ def main():
     """ Main. """
     a = SleepLogTool()
 
-    a.suppress_qt_warnings()
+    if a.suppress_qt_warnings():
+        print("qt_warnings suppressed.")
 
     # Open the file explorer to select files and save those files data into a csv file
     the_list = a.file_explorer()
