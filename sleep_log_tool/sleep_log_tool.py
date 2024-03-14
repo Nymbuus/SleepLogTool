@@ -7,8 +7,10 @@ import can
 import matplotlib.pyplot as plt
 import pandas as pd
 
+
 class SleepLogTool:
     """ SleepLogTool """
+
     def __init__(self):
         """ Initializes the class. """
 
@@ -20,17 +22,15 @@ class SleepLogTool:
         print("User choosed", len(file_list), "files to load")
         return file_list
 
-
     def save_file(self, file_list_var):
         """ Chose where to save file and then save valuable data from the loaded files to CSV file. """
-        my_file = fd.asksaveasfile(mode='w',defaultextension=".csv")
+        my_file = fd.asksaveasfile(mode='w', defaultextension=".csv")
         out = ["Time", "Current"]
-        with open(my_file.name,'w', encoding='UTF8', newline='') as csv_file:
+        with open(my_file.name, 'w', encoding='UTF8', newline='') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=out)
             writer.writeheader()
 
         return SleepLogTool.write_to_csv(self, my_file.name, file_list_var)
-
 
     def write_to_csv(self, file_name, file_list_var):
         """ Write to csv from blf. """
@@ -54,7 +54,6 @@ class SleepLogTool:
 
         return file_name
 
-
     def suppress_qt_warnings(self):
         """ Suppresses warnings apering when starting .exe file. """
         environ["QT_DEVICE_PIXEL_RATIO"] = "0"
@@ -64,7 +63,6 @@ class SleepLogTool:
 
         return True
 
-
     def csv_to_panda(self, saved_file):
         """ Read CSV file into a pandas DataFrame """
         chunks = []
@@ -72,23 +70,21 @@ class SleepLogTool:
             chunks.append(chunk)
         return pd.concat(chunks, ignore_index=True)
 
-
     def remove_start_and_end(self, df):
         """ Loads pandas dataframe to a local variable.
             With this we remove the start and end elements provided in minutes 
             in the beginning of the program. If the if cases are'nt used the program will crash. """
         # 90000 is 15 min, 15 min is avarage sleep time
         remove_start = int(float(input("Insert minutes to remove from start and press enter:\n")) * 6000)
-        print(f"{remove_start/6000} minutes will be removed from the start of the log")
+        print(f"{remove_start / 6000} minutes will be removed from the start of the log")
         remove_end = int(float(input("Insert minutes to remove from the end and press enter:\n")) * 6000)
-        print(f"{remove_end/6000} minutes will be removed from the end of the log")
+        print(f"{remove_end / 6000} minutes will be removed from the end of the log")
 
         if remove_start != 0:
             df = df[remove_start:]
         if remove_end != 0:
             df = df[:-remove_end]
         return df
-
 
     def calculating_statistics(self, df):
         """ Calculate statistics """
@@ -101,9 +97,8 @@ class SleepLogTool:
         print(f"\nAverage Current: {average:.3f}mA")
         print(f"Max Current: {maximum} mA")
         print(f"Min Current: {minimum} mA")
-        print(f"Total time: {(total_time / 3600):.3f} hours or {(total_time/60):.1f} minutes.")
+        print(f"Total time: {(total_time / 3600):.3f} hours or {(total_time / 60):.1f} minutes.")
         print(f"Ampere hours: {ampere_hours:.4f} Ah")
-
 
     def plotting_graph(self, df):
         """ Plotting. """
