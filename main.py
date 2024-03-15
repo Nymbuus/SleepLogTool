@@ -1,5 +1,5 @@
 """ Imports. """
-from sleep_log_tool import SleepLogTool
+from sleep_log_tool_repo.sleep_log_tool import SleepLogTool
 
 def main():
     """ Main. """

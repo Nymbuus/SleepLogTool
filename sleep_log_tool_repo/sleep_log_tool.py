@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-class SleepLogTool:
+class SleepLogTool():
     """ SleepLogTool """
 
     def __init__(self):
