@@ -1,10 +1,10 @@
 """ Imports. """
-import unittest
+from unittest import TestCase
 from sleep_log_tool.sleep_log_tool import SleepLogTool
 
 
-class TestSleeplogtool(unittest.TestCase):
-    """ Tests sleep_log_tool.py """
+class TestBasics(TestCase):
+    """ Tests for success and fail. """
 
     def setUp(self):
         self._sleeplogtool = SleepLogTool()
@@ -17,7 +17,17 @@ class TestSleeplogtool(unittest.TestCase):
         """ Test success. """
         self.assertEqual(1, 1)
 
-    def test_suppress_qt_warnings(self):
+    def tearDown(self):
+        self._sleeplogtool = None
+
+
+class TestSleepLogTool(self):
+    """ suppress_qt_warnings in sleep_log_tool.py """
+
+    def setUp(self):
+        self._sleeplogtool = SleepLogTool()
+
+    def test_suppress_qt_warnings_success(self):
         """ Test if function returns True. """
         self.assertEqual(self._sleeplogtool.suppress_qt_warnings(), True)
 
@@ -25,5 +35,6 @@ class TestSleeplogtool(unittest.TestCase):
         self._sleeplogtool = None
 
 
+
 if __name__ == '__main__':
-    unittest.main()
+    TestCase.main()
