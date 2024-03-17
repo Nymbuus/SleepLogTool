@@ -69,13 +69,22 @@ class SleepLogTool():
         for chunk in pd.read_csv(saved_file, chunksize=500000):
             chunks.append(chunk)
         return pd.concat(chunks, ignore_index=True)
+    
+    def remove_start_get_input(self, input_text):
+        """ Returns the value from user input. """
+        try:
+            remove_start_value = float(input(input_text))
+        except ValueError:
+            raise ValueError("You didn't input a whole or decimal number.")
+        else:
+            return remove_start_value
 
     def remove_start_and_end(self, df):
         """ Loads pandas dataframe to a local variable.
             With this we remove the start and end elements provided in minutes 
             in the beginning of the program. If the if cases are'nt used the program will crash. """
         # 90000 is 15 min, 15 min is avarage sleep time
-        remove_start = int(float(input("Insert minutes to remove from start and press enter:\n")) * 6000)
+        remove_start = int(self.remove_start_get_input("Insert minutes to remove from start and press enter:\n") * 6000)
         print(f"{remove_start / 6000} minutes will be removed from the start of the log")
         remove_end = int(float(input("Insert minutes to remove from the end and press enter:\n")) * 6000)
         print(f"{remove_end / 6000} minutes will be removed from the end of the log")
