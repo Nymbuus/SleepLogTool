@@ -72,12 +72,14 @@ class SleepLogTool():
     
     def remove_time_get_input(self, input_text):
         """ Returns the value from user input. """
-        try:
-            remove_start_value = float(input(input_text))
-        except ValueError:
-            raise ValueError("You didn't input a whole or decimal number.")
-        else:
-            return remove_start_value
+        while True:
+            try:
+                remove_start_value = float(input(input_text))
+            except ValueError as err:
+                print(f"ValueError: {err}")
+            else:
+                print(f"Accepted input.")
+                return remove_start_value
 
     def remove_time(self, df):
         """ Loads pandas dataframe to a local variable.

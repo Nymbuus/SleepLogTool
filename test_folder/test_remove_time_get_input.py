@@ -8,22 +8,30 @@ class TestRemoveStartAndEnd(unittest.TestCase):
     def setUp(self):
         self._sleeplogtool = SleepLogTool()
 
-    @patch("sleep_log_tool_repo.sleep_log_tool.SleepLogTool.remove_time_get_input", return_value=1)
+    @patch("builtins.input", side_effect=["1"])
     def test_time_get_input_int(self, mock_input):
         """ Checks if the function handles a integer input correctly. """
-        self.assertEqual(type(self._sleeplogtool.remove_time_get_input("_")), int)
+        self.assertEqual(type(self._sleeplogtool.remove_time_get_input("_")), float)
 
-    @patch("builtins.input", return_value="aa")
+    @patch("builtins.input", side_effect=["0.1"])
+    def test_time_get_input_float(self, mock_input):
+        """ Checks if the function handles a integer input correctly. """
+        self.assertEqual(type(self._sleeplogtool.remove_time_get_input("_")), float)
+        
+    @patch("builtins.input", side_effect=["1"])
+    def test_time_get_input_1(self, mock_input):
+        """ Checks if the function handles a integer input correctly. """
+        self.assertEqual(self._sleeplogtool.remove_time_get_input("_"), 1)
+
+    @patch("builtins.input", side_effect=["aa", "1"])
     def test_time_get_input_string(self, mock_input):
         """ Checks if the function can handle string input. """
-        with self.assertRaises(ValueError):
-            self._sleeplogtool.remove_time_get_input("_")
+        self.assertEqual(type(self._sleeplogtool.remove_time_get_input("_")), float)
 
-    @patch("builtins.input", return_value="True")
+    @patch("builtins.input", side_effect=["True", "1"])
     def test_time_get_input_True(self, mock_input):
         """ Checks if the function can handle a string input containing "True". """
-        with self.assertRaises(ValueError):
-            self._sleeplogtool.remove_time_get_input("_")
+        self.assertEqual(type(self._sleeplogtool.remove_time_get_input("_")), float)
 
     def tearDown(self):
         self._sleeplogtool = None
