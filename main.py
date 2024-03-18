@@ -13,7 +13,7 @@ def main():
     saved_file = a.save_file(the_list)
 
     df = a.csv_to_panda(saved_file)
-    df = a.remove_start_and_end(df)
+    df = a.remove_time(df)
     a.calculating_statistics(df)
     a.plotting_graph(df)
 

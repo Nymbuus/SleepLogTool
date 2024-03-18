@@ -4,7 +4,7 @@ from sleep_log_tool_repo.sleep_log_tool import SleepLogTool
 
 
 class TestSleepLogTool(unittest.TestCase):
-    """ suppress_qt_warnings in sleep_log_tool.py """
+    """ Test for suppress_qt_warnings in sleep_log_tool.py """
 
     def setUp(self):
         self._sleeplogtool = SleepLogTool()
