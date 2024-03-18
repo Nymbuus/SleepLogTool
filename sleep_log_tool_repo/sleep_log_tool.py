@@ -72,7 +72,6 @@ class SleepLogTool():
     
     def remove_time_get_input(self, input_text, len_left_df):
         """ Returns the value from user input. """
-        print(f"\n\nlenleftdf: {len_left_df}\n\n")
         while True:
             try:
                 remove_start_value = float(input(input_text))
@@ -90,7 +89,6 @@ class SleepLogTool():
             With this we remove the start and end elements provided in minutes 
             in the beginning of the program. If the if cases are'nt used the program will crash. """
         # 90000 is 15 min, 15 min is avarage sleep time
-        print(f"\n\nlen df: {len(df)}\n\n")
         remove_start = int(self.remove_time_get_input("Insert minutes to remove from start and press enter:\n", len(df)) * MINUTE_TO_10MS)
         print(f"{remove_start / MINUTE_TO_10MS} minutes will be removed from the start of the log")
         remove_end = int(self.remove_time_get_input("Insert minutes to remove from end and press enter:\n", len(df) - remove_start) * MINUTE_TO_10MS)
