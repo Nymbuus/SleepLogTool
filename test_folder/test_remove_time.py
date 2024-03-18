@@ -14,15 +14,15 @@ class TestRemoveTime(unittest.TestCase):
     def test_remove_time_return(self, mock_input):
         """ Tests if remove_time function works as intended by entering '0' in both remove_start and remove_end.
             This test needs the files 'expected_test_file.csv' and 'actual_original_test_file.csv' to work. """
-        expected_file_path = r"C:\SleepLogTool_Examensarbete\expected_test_file.csv"
+        expected_file_path = r"SleepLogTool\test_folder\csv_test_files\expected_test_file.csv"
         with open(expected_file_path, newline='') as csvfile:
             expected = [row for row in csv.DictReader(csvfile)]
 
 
-        actual_original_file_path = r"C:\SleepLogTool_Examensarbete\actual_original_test_file.csv"
+        actual_original_file_path = r"SleepLogTool\test_folder\csv_test_files\actual_original_test_file.csv"
         df = self._sleeplogtool.csv_to_panda(actual_original_file_path)
         pd_df = pd.DataFrame(self._sleeplogtool.remove_time(df))
-        actual_modified_file_path = r"C:\SleepLogTool_Examensarbete\actual_modified_test_file.csv"
+        actual_modified_file_path = r"SleepLogTool\test_folder\csv_test_files\actual_modified_test_file.csv"
         pd_df.to_csv(actual_modified_file_path, index=False, float_format="%.6f")
 
         with open(actual_modified_file_path, newline='') as csvfile:
