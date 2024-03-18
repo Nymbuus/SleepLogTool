@@ -23,6 +23,16 @@ class TestRemoveStartAndEnd(unittest.TestCase):
         """ Checks if the function actually returns 1. """
         self.assertEqual(self._sleeplogtool.remove_time_get_input("_", 12000), 1)
 
+    @patch("builtins.input", side_effect=["", "1"])
+    def test_time_get_input_nothing(self, mock_input):
+        """ Checks if the function can handle string input. """
+        self.assertEqual(type(self._sleeplogtool.remove_time_get_input("_", 12000)), float)
+
+    @patch("builtins.input", side_effect=[" ", "1"])
+    def test_time_get_input_space(self, mock_input):
+        """ Checks if the function can handle string input. """
+        self.assertEqual(type(self._sleeplogtool.remove_time_get_input("_", 12000)), float)
+
     @patch("builtins.input", side_effect=["aa", "1"])
     def test_time_get_input_string(self, mock_input):
         """ Checks if the function can handle string input. """
