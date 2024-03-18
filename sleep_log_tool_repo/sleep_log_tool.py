@@ -17,8 +17,7 @@ class SleepLogTool():
     def file_explorer(self):
         """ Lets the user chose files to analyze. """
         root = tk.Tk()
-        filez = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
-        file_list = list(filez)
+        file_list = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
         print("User choosed", len(file_list), "files to load")
         return file_list
 
@@ -75,11 +74,10 @@ class SleepLogTool():
         while True:
             try:
                 remove_start_value = float(input(input_text))
-            except ValueError as err:
-                print(f"ValueError: {err}")
-            else:
                 print(f"Accepted input.")
                 return remove_start_value
+            except ValueError as err:
+                print(f"ValueError: {err}")
 
     def remove_time(self, df):
         """ Loads pandas dataframe to a local variable.
@@ -95,6 +93,7 @@ class SleepLogTool():
             df = df[remove_start:]
         if remove_end != 0:
             df = df[:-remove_end]
+            
         return df
 
     def calculating_statistics(self, df):

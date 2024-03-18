@@ -15,12 +15,12 @@ class TestRemoveStartAndEnd(unittest.TestCase):
 
     @patch("builtins.input", side_effect=["0.1"])
     def test_time_get_input_float(self, mock_input):
-        """ Checks if the function handles a integer input correctly. """
+        """ Checks if the function handles a float input correctly. """
         self.assertEqual(type(self._sleeplogtool.remove_time_get_input("_")), float)
         
     @patch("builtins.input", side_effect=["1"])
     def test_time_get_input_1(self, mock_input):
-        """ Checks if the function handles a integer input correctly. """
+        """ Checks if the function actually returns 1. """
         self.assertEqual(self._sleeplogtool.remove_time_get_input("_"), 1)
 
     @patch("builtins.input", side_effect=["aa", "1"])
