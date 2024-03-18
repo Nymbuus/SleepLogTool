@@ -7,6 +7,7 @@ import can
 import matplotlib.pyplot as plt
 import pandas as pd
 
+MINUTE_TO_10MS = 6000
 
 class SleepLogTool():
     """ SleepLogTool """
@@ -69,31 +70,37 @@ class SleepLogTool():
             chunks.append(chunk)
         return pd.concat(chunks, ignore_index=True)
     
-    def remove_time_get_input(self, input_text):
+    def remove_time_get_input(self, input_text, len_left_df):
         """ Returns the value from user input. """
+        print(f"\n\nlenleftdf: {len_left_df}\n\n")
         while True:
             try:
                 remove_start_value = float(input(input_text))
-                print(f"Accepted input.")
-                return remove_start_value
+                if 0 < ((remove_start_value * MINUTE_TO_10MS) + 12) < len_left_df:
+                    return remove_start_value
+                elif ((remove_start_value * MINUTE_TO_10MS) + 12) >= len_left_df:
+                    print("Too high value. Try again.")
+                elif ((remove_start_value * MINUTE_TO_10MS) + 12) < 0:
+                    print("Too small value. Try again.")
             except ValueError as err:
-                print(f"ValueError: {err}")
+                print(f"ValueError: {err}. Try again.")
 
     def remove_time(self, df):
         """ Loads pandas dataframe to a local variable.
             With this we remove the start and end elements provided in minutes 
             in the beginning of the program. If the if cases are'nt used the program will crash. """
         # 90000 is 15 min, 15 min is avarage sleep time
-        remove_start = int(self.remove_time_get_input("Insert minutes to remove from start and press enter:\n") * 6000)
-        print(f"{remove_start / 6000} minutes will be removed from the start of the log")
-        remove_end = int(self.remove_time_get_input("Insert minutes to remove from end and press enter:\n") * 6000)
-        print(f"{remove_end / 6000} minutes will be removed from the end of the log")
+        print(f"\n\nlen df: {len(df)}\n\n")
+        remove_start = int(self.remove_time_get_input("Insert minutes to remove from start and press enter:\n", len(df)) * MINUTE_TO_10MS)
+        print(f"{remove_start / MINUTE_TO_10MS} minutes will be removed from the start of the log")
+        remove_end = int(self.remove_time_get_input("Insert minutes to remove from end and press enter:\n", len(df) - remove_start) * MINUTE_TO_10MS)
+        print(f"{remove_end / MINUTE_TO_10MS} minutes will be removed from the end of the log")
 
         if remove_start != 0:
             df = df[remove_start:]
         if remove_end != 0:
             df = df[:-remove_end]
-            
+
         return df
 
     def calculating_statistics(self, df):

@@ -10,8 +10,6 @@ class TestRemoveTime(unittest.TestCase):
     def setUp(self):
         self._sleeplogtool = SleepLogTool()
 
-        
-
     @patch("builtins.input", side_effect=["0", "0"])
     def test_remove_time_return(self, mock_input):
         """ Tests if remove_time function works as intended by entering '0' in both remove_start and remove_end.
@@ -31,6 +29,8 @@ class TestRemoveTime(unittest.TestCase):
             actual = [row for row in csv.DictReader(csvfile)]
 
         self.assertEqual(expected, actual)
+
+    
 
     def tearDown(self):
         self._sleeplogtool = None
