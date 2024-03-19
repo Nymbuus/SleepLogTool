@@ -54,7 +54,5 @@ class TestRemoveTime(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
-    
-
     def tearDown(self):
         self._sleeplogtool = None
