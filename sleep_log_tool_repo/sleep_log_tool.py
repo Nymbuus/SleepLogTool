@@ -22,9 +22,8 @@ class SleepLogTool():
             file_list = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
             print(f"file_list len: {len(file_list)}")
             if file_list == "":
-            #Säger att file_list har längd på 93. FEL!!!!
                 exit()
-            if all(file.lower().endswith('.blf') for file in file_list):
+            elif all(file.lower().endswith('.blf') for file in file_list):
                 print("User choosed", len(file_list), "files to load")
                 return file_list
             else:
