@@ -20,24 +20,25 @@ class SleepLogTool():
         root = tk.Tk()
         while True:
             file_list = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
-            print(f"file_list len: {len(file_list)}")
             if file_list == "":
-                exit()
+                exit("Program canceled.")
             elif all(file.lower().endswith('.blf') for file in file_list):
                 print("User choosed", len(file_list), "files to load")
                 return file_list
             else:
                 print("Wrong file type, try again.")
 
-    def save_file(self, file_list_var):
+    def save_file(self):
         """ Chose where to save file and then save valuable data from the loaded files to CSV file. """
         my_file = fd.asksaveasfile(mode='w', defaultextension=".csv")
+        if my_file == None:
+            exit("Program canceled.")
         out = ["Time", "Current"]
         with open(my_file.name, 'w', encoding='UTF8', newline='') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=out)
             writer.writeheader()
 
-        return SleepLogTool.write_to_csv(self, my_file.name, file_list_var)
+        return my_file.name
 
     def write_to_csv(self, file_name, file_list_var):
         """ Write to csv from blf. """

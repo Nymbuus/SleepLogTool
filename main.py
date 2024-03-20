@@ -9,8 +9,9 @@ def main():
         print("qt_warnings suppressed.")
 
     # Open the file explorer to select files and save those files data into a csv file
-    the_list = a.file_explorer()
-    saved_file = a.save_file(the_list)
+    file_list = a.file_explorer()
+    file_name = a.save_file()
+    saved_file = a.write_to_csv(file_name, file_list)
 
     df = a.csv_to_panda(saved_file)
     df = a.remove_time(df)

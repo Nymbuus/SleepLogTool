@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import patch
 from sleep_log_tool_repo.sleep_log_tool import SleepLogTool
 
 class TestFileExplorer(unittest.TestCase):
