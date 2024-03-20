@@ -40,11 +40,15 @@ class SleepLogTool():
 
         return my_file.name
 
-    def write_to_csv(self, file_name, file_list_var):
+    def write_to_csv(self, file_name, file_list):
         """ Write to csv from blf. """
+        if not file_name.endswith(".csv"):
+            raise TypeError("Only .csv files are supported to save to.")
+        if not all(file.lower().endswith('.blf') for file in file_list):
+            raise TypeError("Only .blf files are supported to read from.")
         logs = []
-        for _, file_var in enumerate(file_list_var):
-            logs.extend(list(can.BLFReader(file_var)))
+        for _, file in enumerate(file_list):
+            logs.extend(list(can.BLFReader(file)))
 
         with open(file_name, mode='a', encoding="utf-8") as file:
             for msg in logs:
