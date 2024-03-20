@@ -77,6 +77,8 @@ class SleepLogTool():
 
     def csv_to_panda(self, saved_file):
         """ Read CSV file into a pandas DataFrame """
+        if not saved_file.endswith(".csv"):
+            raise TypeError("Only .csv files are supported.")
         chunks = []
         for chunk in pd.read_csv(saved_file, chunksize=500000):
             chunks.append(chunk)
@@ -119,6 +121,7 @@ class SleepLogTool():
         maximum = df['Current'].max()
         minimum = df['Current'].min()
         total_time = float(df['Time'].max() - df['Time'].min())
+        print(f"\n\navarage: {average}\n\n")
         ampere_hours = (total_time / 3600) * (average * 0.001)
 
         print(f"\nAverage Current: {average:.3f}mA")
