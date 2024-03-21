@@ -1,7 +1,7 @@
 """ Imports. Numpy will be used. """
 from os import environ
 import csv
-import tkinter as tk
+from tkinter import *
 import tkinter.filedialog as fd
 import can
 import matplotlib.pyplot as plt
@@ -10,6 +10,7 @@ import numpy
 
 
 MINUTE_TO_10MS = 6000
+root = Tk()
 
 class SleepLogTool():
     """ SleepLogTool """
@@ -17,9 +18,26 @@ class SleepLogTool():
     def __init__(self):
         """ Initializes the class. """
 
+    def menu(self):
+        """ Menu for selecting files and adjust settings. """
+        my_label = Label(root, text="Choose .blf file(s)")
+        my_label.grid(row=0, column=0)
+
+        e = Entry(root, width=50, borderwidth=5)
+        e.grid(row=1, column=0)
+
+        browse_button = Button(root, text="Browse", command=self.file_explorer)
+        browse_button.grid(row=1, column=1)
+        analyze_button = Button(root, text="Analyze")
+        analyze_button.grid(row=2, column=0)
+        cancel_button = Button(root, text="cancel", command=root.quit)
+        cancel_button.grid(row=3, column=1)
+
+        root.mainloop()
+        exit()
+
     def file_explorer(self):
         """ Lets the user chose files to analyze. """
-        root = tk.Tk()
         while True:
             file_list = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
             if file_list == "":
@@ -148,3 +166,4 @@ class SleepLogTool():
         manager = plt.get_current_fig_manager()
         manager.window.state('zoomed')
         plt.show()
+        root.mainloop()
