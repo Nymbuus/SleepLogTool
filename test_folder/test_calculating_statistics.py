@@ -11,29 +11,24 @@ class TestCalculatingStatistics(unittest.TestCase):
         self._slt = SleepLogTool()
 
     def test_calculating_statistics(self):
-        # Create a DataFrame with test data
+        # Create a DataFrame with test data.
         data = {
             'Current': [10, 20, 30, 40, 50],
             'Time': [0, 1000, 2000, 3000, 4000]
         }
         df = pd.DataFrame(data)
 
-        self._slt.calculating_statistics(df)
-
-        # Redirect stdout to capture print statements
+        # Redirect stdout to capture print statements.
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        # Call the method being tested
         self._slt.calculating_statistics(df)
 
-        # Reset redirect
+        # Reset redirect and get output.
         sys.stdout = sys.__stdout__
-
-        # Get the printed output
         captured_output = captured_output.getvalue()
 
-        # Check if the output contains the expected strings
+        # Check if the output contains the expected strings.
         self.assertIn("Average Current: 30.000mA", captured_output)
         self.assertIn("Max Current: 50 mA", captured_output)
         self.assertIn("Min Current: 10 mA", captured_output)

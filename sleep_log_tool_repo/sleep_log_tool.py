@@ -6,6 +6,8 @@ import tkinter.filedialog as fd
 import can
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy
+
 
 MINUTE_TO_10MS = 6000
 
@@ -135,6 +137,8 @@ class SleepLogTool():
         first_time = df["Time"].min()
         y = df.Current.to_numpy()
         x = df.Time.to_numpy()
+        # print(f"\n\nfirst_time: {first_time}\n\n")
+        # print(f"\n\nfirst_time x: {x - first_time}\n\n")
         plt.plot((x - first_time) / 3600, y)
         plt.xlabel("Time(h)", fontsize=15)
         plt.ylabel("Current(mA)", fontsize=15)
