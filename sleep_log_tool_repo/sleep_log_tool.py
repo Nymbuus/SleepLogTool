@@ -10,7 +10,6 @@ import numpy
 
 
 MINUTE_TO_10MS = 6000
-root = Tk()
 
 class SleepLogTool():
     """ SleepLogTool """
@@ -21,10 +20,8 @@ class SleepLogTool():
     def file_explorer(self):
         """ Lets the user chose files to analyze. """
         while True:
-            file_list = fd.askopenfilenames(parent=root, title='Choose one or multiple BLF files')
-            if file_list == "":
-                exit("Program canceled.")
-            elif all(file.lower().endswith('.blf') for file in file_list):
+            file_list = fd.askopenfilenames(title='Choose one or multiple BLF files')
+            if all(file.lower().endswith('.blf') for file in file_list):
                 print("User choosed", len(file_list), "files to load")
                 return file_list
             else:
