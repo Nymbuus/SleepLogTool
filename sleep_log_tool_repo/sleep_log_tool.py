@@ -18,24 +18,6 @@ class SleepLogTool():
     def __init__(self):
         """ Initializes the class. """
 
-    def menu(self):
-        """ Menu for selecting files and adjust settings. """
-        my_label = Label(root, text="Choose .blf file(s)")
-        my_label.grid(row=0, column=0)
-
-        e = Entry(root, width=50, borderwidth=5)
-        e.grid(row=1, column=0)
-
-        browse_button = Button(root, text="Browse", command=self.file_explorer)
-        browse_button.grid(row=1, column=1)
-        analyze_button = Button(root, text="Analyze")
-        analyze_button.grid(row=2, column=0)
-        cancel_button = Button(root, text="cancel", command=root.quit)
-        cancel_button.grid(row=3, column=1)
-
-        root.mainloop()
-        exit()
-
     def file_explorer(self):
         """ Lets the user chose files to analyze. """
         while True:
@@ -85,15 +67,6 @@ class SleepLogTool():
             file.close()
 
         return file_name
-
-    def suppress_qt_warnings(self):
-        """ Suppresses warnings apering when starting .exe file. """
-        environ["QT_DEVICE_PIXEL_RATIO"] = "0"
-        environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
-        environ["QT_SCREEN_SCALE_FACTORS"] = "1"
-        environ["QT_SCALE_FACTOR"] = "1"
-
-        return True
 
     def csv_to_panda(self, saved_file):
         """ Read CSV file into a pandas DataFrame """

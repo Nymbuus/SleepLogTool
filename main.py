@@ -1,14 +1,13 @@
 """ Imports. """
 from sleep_log_tool_repo.sleep_log_tool import SleepLogTool
+from sleep_log_tool_repo.menu import Menu
 
 def main():
     """ Main. """
     _slt = SleepLogTool()
+    _menu = Menu()
 
-    # if a.suppress_qt_warnings():
-    #     print("qt_warnings suppressed.")
-
-    _slt.menu()
+    _menu.selection_window()
 
     # Open the file explorer to select files and save those files data into a csv file
     file_list = _slt.file_explorer()
