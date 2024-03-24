@@ -40,7 +40,9 @@ class SleepLogTool():
         return my_file.name
 
     def write_to_csv(self, file_name, file_list):
-        """ Write to csv from blf. """
+        """ Write to csv from blf.\n
+            file_name - The csv file being written to.\n
+            file_list - The blf file(s) being read from. """
         if not file_name.endswith(".csv"):
             raise TypeError("Only .csv files are supported to save to.")
         if not all(file.lower().endswith('.blf') for file in file_list):
