@@ -3,13 +3,13 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sleep_log_tool_repo.sleep_log_tool import SleepLogTool
+from SleepLogTool.modules.plot_and_graph import PlotAndGraph
 
 class TestPlottingGraph(unittest.TestCase):
     """ Tests plotting_graph function in sleep_log_tool """
 
     def setUp(self):
-        self._slt = SleepLogTool()
+        self._pag = PlotAndGraph()
 
     @patch('matplotlib.pyplot.plot')
     @patch('matplotlib.pyplot.xlabel')
@@ -23,7 +23,7 @@ class TestPlottingGraph(unittest.TestCase):
                             mock_title, mock_ylabel, mock_xlabel, mock_plot):
         # Mock DataFrame.
         df = pd.DataFrame({'Time': [0, 1, 2, 3, 4], 'Current': [10, 20, 30, 40, 50]})
-        self._slt.plotting_graph(df)
+        self._pag.plotting_graph(df)
 
         # Assert calls to pyplot functions with correct arguments.
         y = df["Current"].to_numpy()

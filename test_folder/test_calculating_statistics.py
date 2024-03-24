@@ -2,13 +2,13 @@ import unittest
 import pandas as pd
 from io import StringIO
 import sys
-from sleep_log_tool_repo.sleep_log_tool import SleepLogTool
+from SleepLogTool.modules.plot_and_graph import PlotAndGraph
 
 class TestCalculatingStatistics(unittest.TestCase):
     """ Tests calculating_statistics in sleep_log_tool """
 
     def setUp(self):
-        self._slt = SleepLogTool()
+        self._pag = PlotAndGraph()
 
     def test_calculating_statistics(self):
         # Create a DataFrame with test data.
@@ -22,7 +22,7 @@ class TestCalculatingStatistics(unittest.TestCase):
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        self._slt.calculating_statistics(df)
+        self._pag.calculating_statistics(df)
 
         # Reset redirect and get output.
         sys.stdout = sys.__stdout__

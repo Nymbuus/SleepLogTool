@@ -1,6 +1,7 @@
 """ Handles the design of the first pop-up menu. """
 from tkinter import *
-from sleep_log_tool_repo.sleep_log_tool import SleepLogTool
+from SleepLogTool.modules.plot_and_graph import PlotAndGraph
+from modules.files_preperation import FilesPreperation
 
 class Menu:
     """ Handles the design of the first pop-up menu. """
@@ -8,7 +9,8 @@ class Menu:
     def __init__(self):
         """ Initializes the class. """
         self.root = Tk()
-        self._slt = SleepLogTool()
+        self._pag = PlotAndGraph()
+        self._fp = FilesPreperation()
         self.browse_field = Entry(self.root, width=150, borderwidth=5)
         self.file_path_rows = []
         self.file_path_del_buttons = []
@@ -32,7 +34,7 @@ class Menu:
 
     def get_file_explorer(self):
         """ Gets the list of file paths. """
-        return self._slt.file_explorer()
+        return self._fp.file_explorer()
 
     def file_path_setup(self):
         """ displayes the file paths in the main window. """
@@ -69,7 +71,7 @@ class Menu:
 
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
-        csv_file = self._slt.save_file()
+        csv_file = self._fp.save_file()
         blf_files = []
         for file in self.file_path_rows:
             blf_files.append(file.get())
@@ -83,17 +85,17 @@ class Menu:
         self.calculate_plot(df)
         
     def calculate_plot(self, df):
-        self._slt.calculating_statistics(df)
-        self._slt.plotting_graph(df)
+        self._pag.calculating_statistics(df)
+        self._pag.plotting_graph(df)
 
     def get_save_file(self):
-        return self._slt.save_file()
+        return self._fp.save_file()
     
     def get_write_to_csv(self, csv_file, blf_files):
-        return self._slt.write_to_csv(csv_file, blf_files)
+        return self._fp.write_to_csv(csv_file, blf_files)
     
     def get_csv_to_panda(self, saved_file):
-        return self._slt.csv_to_panda(saved_file)
+        return self._fp.csv_to_panda(saved_file)
     
     def get_remove_time(self, df):
-        return self._slt.remove_time(df)
+        return self._fp.remove_time(df)

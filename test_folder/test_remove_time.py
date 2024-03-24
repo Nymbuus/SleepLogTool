@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import patch
-from sleep_log_tool_repo.sleep_log_tool import SleepLogTool
 import pandas as pd
 import csv
+from SleepLogTool.modules.files_preperation import FilesPreperation
 
 class TestRemoveTime(unittest.TestCase):
     """ Tests the function remove_time """
 
     def setUp(self):
-        self._sleeplogtool = SleepLogTool()
+        self._fp = FilesPreperation()
 
     @patch("builtins.input", side_effect=["0", "0"])
     def test_remove_time_0min_removed(self, mock_input):
@@ -21,8 +21,8 @@ class TestRemoveTime(unittest.TestCase):
 
         # csv file containing the file to be modified by remove_time function.
         actual_original_file_path = r"SleepLogTool\test_folder\csv_test_files\actual_original_test_file.csv"
-        df = self._sleeplogtool.csv_to_panda(actual_original_file_path)
-        pd_df = pd.DataFrame(self._sleeplogtool.remove_time(df))
+        df = self._fp.csv_to_panda(actual_original_file_path)
+        pd_df = pd.DataFrame(self._fp.remove_time(df))
         # csv file being saved after modified.
         actual_modified_file_path = r"SleepLogTool\test_folder\csv_test_files\actual_modified_test_file.csv"
         pd_df.to_csv(actual_modified_file_path, index=False, float_format="%.6f")
@@ -43,8 +43,8 @@ class TestRemoveTime(unittest.TestCase):
 
         # csv file containing the file to be modified by remove_time function.
         actual_original_file_path = r"SleepLogTool\test_folder\csv_test_files\actual_original_test_file.csv"
-        df = self._sleeplogtool.csv_to_panda(actual_original_file_path)
-        pd_df = pd.DataFrame(self._sleeplogtool.remove_time(df))
+        df = self._fp.csv_to_panda(actual_original_file_path)
+        pd_df = pd.DataFrame(self._fp.remove_time(df))
         # csv file being saved after modified.
         actual_modified_file_path = r"SleepLogTool\test_folder\csv_test_files\actual_modified_test_file.csv"
         pd_df.to_csv(actual_modified_file_path, index=False, float_format="%.6f")
@@ -55,4 +55,4 @@ class TestRemoveTime(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def tearDown(self):
-        self._sleeplogtool = None
+        self._fp = None

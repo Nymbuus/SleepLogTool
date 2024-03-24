@@ -1,14 +1,14 @@
 import os
 import unittest
-from sleep_log_tool_repo.sleep_log_tool import SleepLogTool
 import pandas as pd
+from SleepLogTool.modules.files_preperation import FilesPreperation
 
 class TestCsvToPanda(unittest.TestCase):
     """ Tests the csv_to_panda function in sleep_log_tool. """
 
     def setUp(self):
-        self._slt = SleepLogTool()
-        self.df = self._slt.csv_to_panda("SleepLogTool\\test_folder\\csv_test_files\\actual_original_test_file.csv")
+        self._fp = FilesPreperation()
+        self.df = self._fp.csv_to_panda("SleepLogTool\\test_folder\\csv_test_files\\actual_original_test_file.csv")
 
     def test_csv_to_panda_correct_columns(self):
         """ Tests if the amount of columns is correct. """
@@ -30,8 +30,8 @@ class TestCsvToPanda(unittest.TestCase):
         f = open("csv_to_panda_txt_file_test.txt", "x")
         f.close()
         with self.assertRaises(TypeError):
-            temp = self._slt.csv_to_panda("csv_to_panda_txt_file_test.txt")
+            temp = self._fp.csv_to_panda("csv_to_panda_txt_file_test.txt")
         os.remove("csv_to_panda_txt_file_test.txt")
 
     def tearDown(self):
-        self._slt = None
+        self._fp = None

@@ -1,5 +1,5 @@
 """ Imports. """
-from sleep_log_tool_repo.main_menu import Menu
+from modules.main_menu import Menu
 
 def main():
     """ Main. """
