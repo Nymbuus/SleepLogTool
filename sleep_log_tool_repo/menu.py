@@ -11,6 +11,7 @@ class Menu:
         self.browse_field = Entry(self.root, width=150, borderwidth=5)
         self.file_path_rows = []
         self.file_path_del_buttons = []
+        self.x = 0
 
     def selection_window(self):
         """ Menu for selecting files and adjust settings. """
@@ -39,7 +40,8 @@ class Menu:
             e.grid(row=current_row, column=0)
             e.insert(0, file)
             self.file_path_rows.append(e)
-            b = Button(self.root, text="X", padx=5, command=lambda x=i: self.del_path(self.file_path_rows[x], self.file_path_del_buttons[x]))
+            b = Button(self.root, text="X", padx=5,
+                       command=lambda x=len(self.file_path_rows)-1: self.del_path(self.file_path_rows[x], self.file_path_del_buttons[x], x))
             b.grid(row=current_row, column=1)
             self.file_path_del_buttons.append(b)
         if self.file_path_rows:
@@ -47,8 +49,11 @@ class Menu:
         else:
             self.analyze_button["state"] = DISABLED
 
-    def del_path(self, entry, button):
-        # Perform actions to delete the specified row
-        # For example, you can remove the button associated with this row
+    def del_path(self, entry, button, index):
+        """ Deletes the specified row and then updates the command for delete buttons. """
         entry.destroy()
         button.destroy()
+        del self.file_path_rows[index]
+        del self.file_path_del_buttons[index]
+        for i in range(len(self.file_path_rows)):
+            self.file_path_del_buttons[i].config(command=lambda x=i: self.del_path(self.file_path_rows[x], self.file_path_del_buttons[x], x))
