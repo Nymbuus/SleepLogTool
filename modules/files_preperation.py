@@ -69,34 +69,35 @@ class FilesPreperation:
         for chunk in pd.read_csv(saved_file, chunksize=500000):
             chunks.append(chunk)
         return pd.concat(chunks, ignore_index=True)
-    
-    def remove_time_get_input(self, input_text, len_left_df):
-        """ Returns the value from user input. """
-        while True:
+
+    def remove_time(self, df, remove_start_time, remove_end_time):
+        """ Loads pandas dataframe to a local variable.
+            With this we remove the start and end elements provided in minutes.
+            If the if cases is'nt used the program will crash. """
+        start_time_bool = True
+        end_time_bool = True
+        while start_time_bool and end_time_bool:
             try:
-                remove_start_value = float(input(input_text))
-                if 0 < ((remove_start_value * MINUTE_TO_10MS) + 12) < len_left_df:
-                    return remove_start_value
-                elif ((remove_start_value * MINUTE_TO_10MS) + 12) >= len_left_df:
-                    print("Too high value. Try again.")
-                elif ((remove_start_value * MINUTE_TO_10MS) + 12) < 0:
-                    print("Too small value. Try again.")
+                remove_start_time = float(remove_start_time) * MINUTE_TO_10MS
+                remove_end_time = float(remove_end_time) * MINUTE_TO_10MS
+                if 0 <= remove_start_time < len(df)+12:
+                    start_time_bool = False
+                    if 0 <= remove_end_time < len(df)+12-remove_start_time:
+                        start_time_bool = False
+                    elif remove_end_time < 0:
+                        self._rtm.warning("End time too low value. Try again.")
+                    elif remove_start_time >= len(df)+12-remove_start_time:
+                        self._rtm.warning("End time too high value. Try again.")
+                elif remove_start_time < 0:
+                    self._rtm.warning("Start time too low value. Try again.")
+                elif remove_start_time >= len(df)+12:
+                    self._rtm.warning("Start time too high value. Try again.")
             except ValueError as err:
                 print(f"ValueError: {err}. Try again.")
-
-    def remove_time(self, df):
-        """ Loads pandas dataframe to a local variable.
-            With this we remove the start and end elements provided in minutes 
-            in the beginning of the program. If the if cases are'nt used the program will crash. """
-        # 90000 is 15 min, 15 min is avarage sleep time
-        remove_start = int(self.remove_time_get_input("Insert minutes to remove from start and press enter:\n", len(df)) * MINUTE_TO_10MS)
-        print(f"{remove_start / MINUTE_TO_10MS} minutes will be removed from the start of the log")
-        remove_end = int(self.remove_time_get_input("Insert minutes to remove from end and press enter:\n", len(df) - remove_start) * MINUTE_TO_10MS)
-        print(f"{remove_end / MINUTE_TO_10MS} minutes will be removed from the end of the log")
-
-        if remove_start != 0:
-            df = df[remove_start:]
-        if remove_end != 0:
-            df = df[:-remove_end]
+        
+        if remove_start_time != 0:
+            df = df[int(remove_start_time):]
+        if remove_end_time != 0:
+            df = df[:-int(remove_end_time)]
 
         return df

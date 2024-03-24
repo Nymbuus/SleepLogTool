@@ -1,7 +1,8 @@
 """ Handles the design of the first pop-up menu. """
 from tkinter import *
-from SleepLogTool.modules.plot_and_graph import PlotAndGraph
+from modules.plot_and_graph import PlotAndGraph
 from modules.files_preperation import FilesPreperation
+from modules.remove_time_menu import RemoveTimeMenu
 
 class Menu:
     """ Handles the design of the first pop-up menu. """
@@ -11,6 +12,7 @@ class Menu:
         self.root = Tk()
         self._pag = PlotAndGraph()
         self._fp = FilesPreperation()
+        self._rtm = RemoveTimeMenu()
         self.browse_field = Entry(self.root, width=150, borderwidth=5)
         self.file_path_rows = []
         self.file_path_del_buttons = []
@@ -81,8 +83,11 @@ class Menu:
 
         saved_file = self.get_write_to_csv(csv_file, blf_files)
         df = self.get_csv_to_panda(saved_file)
-        df = self.get_remove_time(df)
-        self.calculate_plot(df)
+
+        def continuation(df):
+            self.calculate_plot(df)
+
+        self._rtm.time_menu(df, continuation)
         
     def calculate_plot(self, df):
         self._pag.calculating_statistics(df)
