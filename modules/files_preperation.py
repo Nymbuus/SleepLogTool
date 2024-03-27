@@ -42,7 +42,7 @@ class FilesPreperation:
         if not all(file.lower().endswith('.blf') for file in file_list):
             raise TypeError("Only .blf files are supported to read from.")
         logs = []
-        for _, file in enumerate(file_list):
+        for file in file_list:
             logs.extend(list(can.BLFReader(file)))
 
         with open(file_name, mode='a', encoding="utf-8") as file:

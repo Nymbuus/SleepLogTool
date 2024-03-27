@@ -6,11 +6,11 @@ class RemoveTimeMenu:
 
     def __init__(self):
         """ Initializes the class. """
-        self.root = Tk()
         self._fp = FilesPreperation()
 
     def time_menu(self, df, callback):
         """ Design and functionality for time removal. """
+        self.root = Tk()
         self.df = df
         start_time_label = Label(self.root, text="Time to remove from start:")
         start_time_label.grid(row=0, column=0)
