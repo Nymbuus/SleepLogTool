@@ -30,9 +30,16 @@ class Menu:
 
         analyze_cancel_frame = Frame(self.root)
         analyze_cancel_frame.grid(row=2, column=0, padx=5, sticky=E)
-        self.analyze_button = Button(analyze_cancel_frame, text="Analyze", state=DISABLED, command=self.analyze_data, padx=15)
+        self.analyze_button = Button(analyze_cancel_frame,
+                                     text="Analyze",
+                                     state=DISABLED,
+                                     command=self.analyze_data,
+                                     padx=15)
         self.analyze_button.grid(row=0, column=0, pady=10)
-        self.cancel_button = Button(analyze_cancel_frame, text="Cancel", command=self.root.quit, padx=15)
+        self.cancel_button = Button(analyze_cancel_frame,
+                                    text="Cancel",
+                                    command=self.root.quit,
+                                    padx=15)
         self.cancel_button.grid(row=0,column=1, padx=15, pady=10)
 
         self.root.mainloop()
@@ -44,7 +51,7 @@ class Menu:
     def file_path_setup(self):
         """ displayes the file paths in the main window. """
         self.files = self.get_file_explorer()
-        # Creates new frame for path files if it's the beginning of the program or if it was just deleted.
+        # Frame for path files if beginning of the program or if just deleted.
         if len(self.file_path_rows) == 0:
             self.path_frame = Frame(self.root, padx=20, pady=5)
             self.path_frame.grid(row=1, column=0, sticky=W)
@@ -55,7 +62,10 @@ class Menu:
             e.insert(0, file)
             self.file_path_rows.append(e)
             b = Button(self.path_frame, text="X", padx=5,
-                       command=lambda x=len(self.file_path_rows)-1: self.del_path(self.file_path_rows[x], self.file_path_del_buttons[x], x))
+                       command=lambda x=len(self.file_path_rows)-1:
+                       self.del_path(self.file_path_rows[x],
+                                     self.file_path_del_buttons[x],
+                                     x))
             b.grid(row=current_row, column=1)
             self.file_path_del_buttons.append(b)
         self.update_analyze_button()
@@ -67,7 +77,10 @@ class Menu:
         del self.file_path_rows[index]
         del self.file_path_del_buttons[index]
         for i in range(len(self.file_path_rows)):
-            self.file_path_del_buttons[i].config(command=lambda x=i: self.del_path(self.file_path_rows[x], self.file_path_del_buttons[x], x))
+            self.file_path_del_buttons[i].config(command=lambda x=i:
+                                                 self.del_path(self.file_path_rows[x],
+                                                               self.file_path_del_buttons[x],
+                                                               x))
         self.update_analyze_button()
         # Deletes the path_frame if there isn't any path files left.
         if not self.file_path_rows:

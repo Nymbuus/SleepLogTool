@@ -22,8 +22,7 @@ class RemoveTimeMenu:
         self.end_time_entry = Entry(self.root, width=40, borderwidth=5)
         self.end_time_entry.grid(row=3, column=0, columnspan=2)
 
-        analyze_button = Button(self.root, text="Analyze",
-                                command=lambda: self.set_df(callback))
+        analyze_button = Button(self.root, text="Analyze", command=lambda: self.set_df(callback))
         analyze_button.grid(row=4, column=0)
 
         self.cancel_button = Button(self.root, text="Cancel", command=self.root.destroy)
@@ -37,7 +36,9 @@ class RemoveTimeMenu:
         self.cancel_button.grid(row=6, column=1)
     
     def set_df(self, callback):
-        self.df = self._fp.remove_time(self.df, self.start_time_entry.get(), self.end_time_entry.get())
+        self.df = self._fp.remove_time(self.df,
+                                       self.start_time_entry.get(),
+                                       self.end_time_entry.get())
         self.root.destroy()
         callback(self.df)
     
