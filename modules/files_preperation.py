@@ -21,7 +21,7 @@ class FilesPreperation:
             else:
                 print("Wrong file type, try again.")
 
-    def write_to_df(self, file_list):
+    def blf_to_df(self, file_list):
         """ Write to df from blf.\n\n
             file_list - The blf file(s) being read from. """
         if not all(file.lower().endswith('.blf') for file in file_list):
@@ -51,26 +51,10 @@ class FilesPreperation:
         """ Loads pandas dataframe to a local variable.
             With this we remove the start and end elements provided in minutes.
             If the if cases is'nt used the program will crash. """
-        start_time_bool = True
-        end_time_bool = True
-        while start_time_bool and end_time_bool:
-            try:
-                remove_start_time = float(remove_start_time) * MINUTE_TO_10MS
-                remove_end_time = float(remove_end_time) * MINUTE_TO_10MS
-                if 0 <= remove_start_time < len(df)+12:
-                    start_time_bool = False
-                    if 0 <= remove_end_time < len(df)+12-remove_start_time:
-                        start_time_bool = False
-                    elif remove_end_time < 0:
-                        self._rtm.warning("End time too low value. Try again.")
-                    elif remove_start_time >= len(df)+12-remove_start_time:
-                        self._rtm.warning("End time too high value. Try again.")
-                elif remove_start_time < 0:
-                    self._rtm.warning("Start time too low value. Try again.")
-                elif remove_start_time >= len(df)+12:
-                    self._rtm.warning("Start time too high value. Try again.")
-            except ValueError as err:
-                print(f"ValueError: {err}. Try again.")
+        if not (isinstance(remove_start_time, int) or isinstance(remove_start_time, float)):
+            raise TypeError("remove_start_time variable was not a integer or float!")
+        if not (isinstance(remove_end_time, int) or isinstance(remove_end_time, float)):
+            raise TypeError("remove_end_time variable was not a integer or float!")
         
         if remove_start_time != 0:
             df = df[int(remove_start_time):]

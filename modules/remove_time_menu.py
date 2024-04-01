@@ -1,6 +1,8 @@
 from tkinter import *
 from modules.files_preperation import FilesPreperation
 
+MINUTE_TO_10MS = 6000
+
 class RemoveTimeMenu:
     """ Menu for selecting how much time to remove from start and end of the blf file. """
 
@@ -31,16 +33,32 @@ class RemoveTimeMenu:
         self.root.mainloop()
     
     def warning(self, warning_text):
-        warning_label = Label(self.root, textvariable=warning_text)
-        warning_label.grid(row=5, column=0)
+        warning_label = Label(self.root, text=warning_text)
         self.cancel_button.grid(row=6, column=1)
+        warning_label.grid(row=5, column=0)
     
     def set_df(self, callback):
-        self.df = self._fp.remove_time(self.df,
-                                       self.start_time_entry.get(),
-                                       self.end_time_entry.get())
-        self.root.destroy()
-        callback(self.df)
+        remove_start_time = float(self.start_time_entry.get())
+        remove_end_time = float(self.end_time_entry.get())
+
+        try:
+            remove_start_time = remove_start_time * MINUTE_TO_10MS
+            remove_end_time = remove_end_time * MINUTE_TO_10MS
+            if 0 <= remove_start_time < len(self.df)+12:
+                if 0 <= remove_end_time < len(self.df)+12-remove_start_time:
+                    self.df = self._fp.remove_time(self.df, remove_start_time, remove_end_time)
+                    self.root.destroy()
+                    callback(self.df)
+                elif remove_end_time < 0:
+                    self.warning("End time too low value. Try again.")
+                elif remove_start_time >= len(self.df)+12-remove_start_time:
+                    self.warning("End time too high value. Try again.")
+            elif remove_start_time < 0:
+                self.warning("Start time too low value. Try again.")
+            elif remove_start_time >= len(self.df)+12:
+                self.warning("Start time too high value. Try again.")
+        except ValueError as err:
+            print(f"ValueError: {err}. Try again.")
     
     def get_df(self):
         return self.df
