@@ -15,7 +15,6 @@ class PlotAndGraph():
         maximum = df['Current'].max()
         minimum = df['Current'].min()
         total_time = float(df['Time'].max() - df['Time'].min())
-        print(f"\n\navarage: {average}\n\n")
         ampere_hours = (total_time / 3600) * (average * 0.001)
 
         print(f"\nAverage Current: {average:.3f}mA")

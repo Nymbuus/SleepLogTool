@@ -1,4 +1,4 @@
-import csv
+import os
 import tkinter.filedialog as fd
 import can
 import pandas as pd
@@ -11,15 +11,29 @@ class FilesPreperation:
     def __init__(self):
         """ Initialises the class. """
 
-    def file_explorer(self):
+    def file_explorer(self, choice):
         """ Lets the user chose files to analyze. """
-        while True:
-            file_list = fd.askopenfilenames(title='Choose one or multiple BLF files')
-            if all(file.lower().endswith('.blf') for file in file_list):
-                print("User choosed", len(file_list), "files to load")
-                return file_list
-            else:
-                print("Wrong file type, try again.")
+        if choice == "file":
+            while True:
+                file_list = fd.askopenfilenames(title='Choose one or multiple BLF files')
+                if all(file.lower().endswith('.blf') for file in file_list):
+                    print("User choosed", len(file_list), "files to load")
+                    return file_list
+                else:
+                    print("One or more files is not a blf type file, try again.")
+        elif choice == "folder":
+            while True:
+                folder_list = fd.askdirectory(title="Choose one or more folders containing BLF files")
+                file_list = []
+                for root, dirs, files in os.walk(folder_list):
+                    for file in files:
+                        file_list.append(os.path.join(root,file))
+
+                if all(file.lower().endswith('.blf') for file in file_list):
+                    print("User choosed", len(file_list), "files to load")
+                    return file_list
+                else:
+                    print("One or more files in directory is not blf file type, try again.")
 
     def blf_to_df(self, file_list):
         """ Write to df from blf.\n\n

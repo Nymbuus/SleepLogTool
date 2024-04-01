@@ -24,9 +24,12 @@ class Menu:
         browse_frame = LabelFrame(self.root, text="Choose blf file(s)", padx=10, pady=5)
         browse_frame.grid(row=0, column=0, padx=10, pady=10, sticky=W)
         self.browse_field = Entry(browse_frame, width=150, borderwidth=5)
-        self.browse_field.grid(row=0, column=0)
-        browse_button = Button(browse_frame, text="Browse", command=self.file_path_setup)
-        browse_button.grid(row=0, column=1)
+        self.browse_field.grid(row=0, column=0, columnspan=3)
+        choose_file_button = Button(browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
+        choose_file_button.grid(row=1, column=0, sticky=E, pady=10)
+        choose_folder_button = Button(browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
+        choose_folder_button.grid(row=1, column=1, sticky=W, padx=(10, 723), pady=10)
+        
 
         analyze_cancel_frame = Frame(self.root)
         analyze_cancel_frame.grid(row=2, column=0, padx=5, sticky=E)
@@ -44,9 +47,9 @@ class Menu:
 
         self.root.mainloop()
 
-    def file_path_setup(self):
+    def file_path_setup(self, choice):
         """ displayes the file paths in the main window. """
-        self.files = self.get_file_explorer()
+        self.files = self.get_file_explorer(choice)
         # Frame for path files if beginning of the program or if just deleted.
         if len(self.file_path_rows) == 0:
             self.path_frame = Frame(self.root, padx=20, pady=5)
@@ -109,9 +112,9 @@ class Menu:
         self._pag.calculating_statistics(df)
         self._pag.plotting_graph(df)
     
-    def get_file_explorer(self):
+    def get_file_explorer(self, choice):
         """ Gets the list of file paths. """
-        return self._fp.file_explorer()
+        return self._fp.file_explorer(choice)
     
     def get_write_to_df(self, blf_files):
         """ returns the blf_to_df function. """
