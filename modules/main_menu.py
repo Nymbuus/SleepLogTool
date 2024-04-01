@@ -95,7 +95,7 @@ class Menu:
 
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
-        csv_file = self._fp.save_file()
+        #csv_file = self._fp.save_file()
         blf_files = []
         for file in self.file_path_rows:
             blf_files.append(file.get())
@@ -103,8 +103,8 @@ class Menu:
         # Deletes the main window because it's not needed anymore.
         self.root.destroy()
 
-        saved_file = self.get_write_to_csv(csv_file, blf_files)
-        df = self.get_csv_to_panda(saved_file)
+        df = self.get_write_to_df(blf_files)
+        #df = self.get_csv_to_panda(saved_file)
 
         def continuation(df):
             self.calculate_plot(df)
@@ -114,15 +114,9 @@ class Menu:
     def calculate_plot(self, df):
         self._pag.calculating_statistics(df)
         self._pag.plotting_graph(df)
-
-    def get_save_file(self):
-        return self._fp.save_file()
     
-    def get_write_to_csv(self, csv_file, blf_files):
-        return self._fp.write_to_csv(csv_file, blf_files)
-    
-    def get_csv_to_panda(self, saved_file):
-        return self._fp.csv_to_panda(saved_file)
+    def get_write_to_df(self, blf_files):
+        return self._fp.write_to_df( blf_files)
     
     def get_remove_time(self, df):
         return self._fp.remove_time(df)
