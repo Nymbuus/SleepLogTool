@@ -1,6 +1,7 @@
 """ Imports. Numpy will be used. """
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.widgets import Slider
 
 
 class PlotAndGraph():
@@ -29,24 +30,35 @@ class PlotAndGraph():
         y = df.Current.to_numpy()
         x = df.Time.to_numpy()
         fig, ax = plt.subplots()
-        ax.plot((x - first_time), y)
-        #plt.axis([-0.000001, 0.01, -1000, 71000])
-        plt.xlabel("Time(0,01s)", fontsize=15)
+        ax.plot((x - first_time), y, label="LEM")
+        #plt.axis([-10, 30, -1000, 71000])
+        plt.xlabel("Time(s)", fontsize=15)
         plt.ylabel("Current(mA)", fontsize=15)
         plt.title("Sleeplog analysis", fontsize=24)
-        plt.subplots_adjust(left=0.05, bottom=0.06, right=0.97, top=0.955, wspace=None, hspace=None)
+        plt.subplots_adjust(left=0.05, bottom=0.25, right=0.97, top=0.955, wspace=None, hspace=None)
         plt.grid()
+        axpos = plt.axes([0.2, 0.1, 0.65, 0.03], facecolor='lightgoldenrodyellow')
+
+        spos = Slider(axpos, 'Pos', 0.1, 90.0)
+
+        def update(val):
+            pos = spos.val
+            print(f"\npos: {pos}\n")
+            ax.axis([pos,pos+10,-5.5,120.5])
+            fig.canvas.draw_idle()
+
+        spos.on_changed(update)
+
         manager = plt.get_current_fig_manager()
         manager.window.state('zoomed')
+
+        fig.legend(loc="upper left")
 
         # Create a draggable point
         point, = ax.plot(0, np.sin(0), 'ro')  # Starting point at x=0, y=0
 
         # Create a text annotation for displaying coordinates
-        text = ax.text(0, 0, 'hej', va='bottom')
-
-        len_x = len(x)
-        print(len_x)
+        text = ax.text(0, 0, '', va='bottom')
 
         def update_point(event):
             if event.inaxes == ax:
@@ -58,9 +70,6 @@ class PlotAndGraph():
                 # This index is then used to get the the value from the x and y arrays.
                 x_time_min = min(x)
                 plus_x_mouse = x_time_min + x_mouse
-                x_first = x - plus_x_mouse
-                x_second = np.abs(x - plus_x_mouse)
-                x_3 = np.argmin(np.abs(x - plus_x_mouse))
                 idx = np.argmin(np.abs(x - plus_x_mouse))
                 #x_closest gets the time from x index and minus time before x-cordinate 0.
                 x_closest = x[idx] - x_time_min
@@ -78,5 +87,3 @@ class PlotAndGraph():
                 fig.canvas.draw_idle()
 
         fig.canvas.mpl_connect('motion_notify_event', update_point)
-
-        plt.show()
