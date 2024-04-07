@@ -60,6 +60,8 @@ class PlotAndGraph():
         # Create a text annotation for displaying coordinates
         text = ax.text(0, 0, '', va='bottom')
 
+        x_time_min = min(x)
+
         def update_point(event):
             if event.inaxes == ax:
                 x_mouse = event.xdata
@@ -68,7 +70,6 @@ class PlotAndGraph():
                 # Then np.abs() makes converts all results to absolutes.
                 # Then np.argmin() takes the smallest value and returns the index.
                 # This index is then used to get the the value from the x and y arrays.
-                x_time_min = min(x)
                 plus_x_mouse = x_time_min + x_mouse
                 idx = np.argmin(np.abs(x - plus_x_mouse))
                 #x_closest gets the time from x index and minus time before x-cordinate 0.
