@@ -54,36 +54,25 @@ class PlotAndGraph():
 
         fig.legend(loc="upper left")
 
-        # Create a draggable point
-        point, = ax.plot(0, np.sin(0), 'ro')  # Starting point at x=0, y=0
-
-        # Create a text annotation for displaying coordinates
+        point, = ax.plot(0, 0, 'ro')
         text = ax.text(0, 0, '', va='bottom')
-
         x_time_min = min(x)
 
         def update_point(event):
             if event.inaxes == ax:
                 x_mouse = event.xdata
 
-                # First x_mouse value is subtracted from all x elements.
-                # Then np.abs() makes converts all results to absolutes.
-                # Then np.argmin() takes the smallest value and returns the index.
-                # This index is then used to get the the value from the x and y arrays.
+                # np.argmin() takes the smallest value and returns the index.
                 plus_x_mouse = x_time_min + x_mouse
                 idx = np.argmin(np.abs(x - plus_x_mouse))
-                #x_closest gets the time from x index and minus time before x-cordinate 0.
-                x_closest = x[idx] - x_time_min
-                y_closest = y[idx]
 
                 # Update the position of the draggable point
-                point.set_xdata(x_closest)
-                point.set_ydata(y_closest)
+                point.set_xdata(x[idx] - x_time_min)
+                point.set_ydata(y[idx])
 
                 # Update the text annotation with coordinates
-                text.set_text(f'({x_closest:.7f}, {y_closest:.2f})')
-                text.set_position((x_closest, y_closest))
-                text.set_va('bottom')
+                text.set_text(f'({x[idx] - x_time_min:.2f}, {y[idx]:.2f})')
+                text.set_position((x[idx] - x_time_min, y[idx]))
 
                 fig.canvas.draw_idle()
 
