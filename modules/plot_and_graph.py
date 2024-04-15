@@ -12,25 +12,28 @@ class PlotAndGraph():
 
     def calculating_statistics(self, df):
         """ Calculate statistics """
-        average = df['Current'].mean()
-        maximum = df['Current'].max()
-        minimum = df['Current'].min()
-        total_time = float(df['Time'].max() - df['Time'].min())
-        ampere_hours = (total_time / 3600) * (average * 0.001)
+        self.average = df['Current'].mean()
+        self.maximum = df['Current'].max()
+        self.minimum = df['Current'].min()
+        self.total_time = float(df['Time'].max() - df['Time'].min())
+        self.ampere_hours = (self.total_time / 3600) * (self.average * 0.001)
 
-        print(f"\nAverage Current: {average:.3f}mA")
-        print(f"Max Current: {maximum} mA")
-        print(f"Min Current: {minimum} mA")
-        print(f"Total time: {(total_time / 3600):.3f} hours or {(total_time / 60):.1f} minutes.")
-        print(f"Ampere hours: {ampere_hours:.4f} Ah")
+        print(f"\nAverage Current: {self.average:.3f}mA")
+        print(f"Max Current: {self.maximum} mA")
+        print(f"Min Current: {self.minimum} mA")
+        print(f"Total time: {(self.total_time / 3600):.3f} hours or {(self.total_time / 60):.1f} minutes.")
+        print(f"Ampere hours: {self.ampere_hours:.4f} Ah")
 
-    def plotting_graph(self, df):
+    def plotting_graph(self, df, filename):
         """ Plotting. """
         first_time = df["Time"].min()
         y = df.Current.to_numpy()
         x = df.Time.to_numpy()
+        print(filename)
         fig, ax = plt.subplots()
-        ax.plot((x - first_time), y, label="LEM")
+        CAN_channel = filename[-7:-4]
+        ax.plot((x - first_time), y,
+                 label=f"{CAN_channel}   Avg: {self.average:.2f} mA, Max: {self.maximum:.2f} mA, Min: {self.minimum:.2f} mA")
         #plt.axis([-10, 30, -1000, 71000])
         plt.xlabel("Time(s)", fontsize=15)
         plt.ylabel("Current(mA)", fontsize=15)
@@ -80,7 +83,7 @@ class PlotAndGraph():
                 point.set_ydata(y_closest)
 
                 # Update the text annotation with coordinates
-                text.set_text(f'({x_closest:.7f}, {y_closest:.2f})')
+                text.set_text(f'({x_closest:.2f}s, {y_closest:.2f}mA)')
                 text.set_position((x_closest, y_closest))
                 text.set_va('bottom')
 

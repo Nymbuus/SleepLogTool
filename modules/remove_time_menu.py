@@ -14,6 +14,7 @@ class RemoveTimeMenu:
         """ Design and functionality for time removal. """
         self.root = Tk()
         self.df = df
+
         start_time_label = Label(self.root, text="Time to remove from start:")
         start_time_label.grid(row=0, column=0)
         self.start_time_entry = Entry(self.root, width=40, borderwidth=5)
@@ -33,11 +34,13 @@ class RemoveTimeMenu:
         self.root.mainloop()
     
     def warning(self, warning_text):
+        """ Displays the warning text when you put in a wrong type of value. """
         warning_label = Label(self.root, text=warning_text)
         self.cancel_button.grid(row=6, column=1)
         warning_label.grid(row=5, column=0)
     
     def set_df(self, callback):
+        """ Removes time from start and end of graph. """
         remove_start_time = float(self.start_time_entry.get())
         remove_end_time = float(self.end_time_entry.get())
 

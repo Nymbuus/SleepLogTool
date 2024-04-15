@@ -59,7 +59,7 @@ class FilesPreperation:
         blf_data = {}
         blf_data["Time"] = blf_time
         blf_data["Current"] = blf_current
-        return pd.DataFrame(blf_data)
+        return pd.DataFrame(blf_data), file_list[0]
 
     def remove_time(self, df, remove_start_time, remove_end_time):
         """ Loads pandas dataframe to a local variable.
