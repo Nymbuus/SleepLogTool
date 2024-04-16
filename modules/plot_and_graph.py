@@ -75,9 +75,8 @@ class PlotAndGraph():
                 point.set_ydata(y[idx])
 
                 # Update the text annotation with coordinates
-                text.set_text(f'({x_closest:.2f}s, {y_closest:.2f}mA)')
-                text.set_position((x_closest, y_closest))
-                text.set_va('bottom')
+                text.set_text(f'({x[idx] - x_time_min:.2f}, {y[idx]:.2f})')
+                text.set_position((x[idx] - x_time_min, y[idx]))
 
                 fig.canvas.draw_idle()
 
