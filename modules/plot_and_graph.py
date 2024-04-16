@@ -1,5 +1,6 @@
 """ Imports. Numpy will be used. """
 import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
 from matplotlib.widgets import Slider
 
@@ -10,47 +11,47 @@ class PlotAndGraph():
     def __init__(self):
         """ Initializes the class. """
 
-    def calculating_statistics(self, df):
+    def calculating_statistics(self, dfs):
         """ Calculate statistics """
-        self.average = df['Current'].mean()
-        self.maximum = df['Current'].max()
-        self.minimum = df['Current'].min()
-        self.total_time = float(df['Time'].max() - df['Time'].min())
-        self.ampere_hours = (self.total_time / 3600) * (self.average * 0.001)
+        self.df_statitics = []
+        for df in dfs:
+            results = {}
+            results["average"] = df['Current'].mean()
+            results["maximum"] = df['Current'].max()
+            results["minimum"] = df['Current'].min()
+            results["total_time"] = float(df['Time'].max() - df['Time'].min())
+            results["ampere_hours"] = (results["total_time"] / 3600) * (results["average"] * 0.001)
+            self.df_statitics.append(results)
 
-        print(f"\nAverage Current: {self.average:.3f}mA")
-        print(f"Max Current: {self.maximum} mA")
-        print(f"Min Current: {self.minimum} mA")
-        print(f"Total time: {(self.total_time / 3600):.3f} hours or {(self.total_time / 60):.1f} minutes.")
-        print(f"Ampere hours: {self.ampere_hours:.4f} Ah")
 
-    def plotting_graph(self, df, filename):
+    def plotting_graph(self, dfs, filename):
         """ Plotting. """
-        first_time = df["Time"].min()
-        y = df.Current.to_numpy()
-        x = df.Time.to_numpy()
-        print(filename)
         fig, ax = plt.subplots()
-        CAN_channel = filename[-7:-4]
+        #df = pd.concat([dfs[0], dfs[1]], axis=0)  # Horizontal concatenation (side by side)
+        first_time = dfs[0]["Time"].min()
+        y = dfs[0].Current.to_numpy()
+        x = dfs[0].Time.to_numpy()
+        CAN_channel = filename[0][-7:-4]
         ax.plot((x - first_time), y,
-                 label=f"{CAN_channel}   Avg: {self.average:.2f} mA, Max: {self.maximum:.2f} mA, Min: {self.minimum:.2f} mA")
-        #plt.axis([-10, 30, -1000, 71000])
+                label=f"{CAN_channel}  "+
+                      f" Avg: {self.df_statitics[0]['average']:.2f} mA,"+
+                      f" Max: {self.df_statitics[0]['maximum']:.2f} mA,"+
+                      f" Min: {self.df_statitics[0]['minimum']:.2f} mA")
+          
         plt.xlabel("Time(s)", fontsize=15)
         plt.ylabel("Current(mA)", fontsize=15)
         plt.title("Sleeplog analysis", fontsize=24)
         plt.subplots_adjust(left=0.05, bottom=0.25, right=0.97, top=0.955, wspace=None, hspace=None)
         plt.grid()
-        axpos = plt.axes([0.2, 0.1, 0.65, 0.03], facecolor='lightgoldenrodyellow')
-
-        spos = Slider(axpos, 'Pos', 0.1, 90.0)
-
-        def update(val):
-            pos = spos.val
-            print(f"\npos: {pos}\n")
-            ax.axis([pos,pos+10,-5.5,120.5])
-            fig.canvas.draw_idle()
-
-        spos.on_changed(update)
+        
+        # axpos = plt.axes([0.2, 0.1, 0.65, 0.03], facecolor='lightgoldenrodyellow')
+        # spos = Slider(axpos, 'Pos', 0.1, 90.0)
+        # def update(val):
+        #     pos = spos.val
+        #     print(f"\npos: {pos}\n")
+        #     ax.axis([pos,pos+10,-5.5,120.5])
+        #     fig.canvas.draw_idle()
+        # spos.on_changed(update)
 
         manager = plt.get_current_fig_manager()
         manager.window.state('zoomed')

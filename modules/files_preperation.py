@@ -40,26 +40,34 @@ class FilesPreperation:
             file_list - The blf file(s) being read from. """
         if not all(file.lower().endswith('.blf') for file in file_list):
             raise TypeError("Only .blf files are supported to read from.")
-        logs = []
+        
+        list_dfs = []
         for file in file_list:
-            logs.extend(list(can.BLFReader(file)))
+            blf_return = can.BLFReader(file)
+            logs = list(blf_return)
+            blf_time = []
+            blf_current = []
+            for msg in logs:
+                msg = str(msg)
+                msg = msg.strip()
+                columns = msg.split()
+                blf_time.append(float(columns[1]))
+                upper_current_hexa = columns[10]
+                lower_current_hexa = columns[11]
+                current_hexa = upper_current_hexa + lower_current_hexa
+                current_dec = int(current_hexa, 16)
+                if current_dec > 32767:
+                    current_dec -= 65536
+                blf_current.append(current_dec)
 
-        blf_time = []
-        blf_current = []
-        for msg in logs:
-            msg = str(msg)
-            msg = msg.strip()
-            columns = msg.split()
-            blf_time.append(float(columns[1]))
-            upper_current_hexa = columns[9]
-            lower_current_hexa = columns[10]
-            current_hexa = upper_current_hexa + lower_current_hexa
-            blf_current.append(int(current_hexa, 16))
+            blf_data = {}
+            blf_data["Time"] = blf_time
+            blf_data["Current"] = blf_current
+            df = pd.DataFrame(blf_data)
+            list_dfs.append(df)
 
-        blf_data = {}
-        blf_data["Time"] = blf_time
-        blf_data["Current"] = blf_current
-        return pd.DataFrame(blf_data), file_list[0]
+
+        return list_dfs, file_list
 
     def remove_time(self, df, remove_start_time, remove_end_time):
         """ Loads pandas dataframe to a local variable.

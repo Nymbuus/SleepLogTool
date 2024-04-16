@@ -101,16 +101,16 @@ class Menu:
         # Deletes the main window because it's not needed anymore.
         self.root.destroy()
 
-        df, self.filename = self.get_write_to_df(blf_files)
+        dfs, self.filename = self.get_write_to_df(blf_files)
 
-        def continuation(df):
-            self.calculate_plot(df)
+        def continuation(dfs):
+            self.calculate_plot(dfs)
 
-        self._rtm.time_menu(df, continuation)
+        self._rtm.time_menu(dfs, continuation)
         
-    def calculate_plot(self, df):
-        self._pag.calculating_statistics(df)
-        self._pag.plotting_graph(df, self.filename)
+    def calculate_plot(self, dfs):
+        self._pag.calculating_statistics(dfs)
+        self._pag.plotting_graph(dfs, self.filename)
     
     def get_file_explorer(self, choice):
         """ Gets the list of file paths. """
