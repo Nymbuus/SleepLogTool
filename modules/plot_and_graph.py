@@ -27,16 +27,18 @@ class PlotAndGraph():
     def plotting_graph(self, dfs, filename):
         """ Plotting. """
         fig, ax = plt.subplots()
-        #df = pd.concat([dfs[0], dfs[1]], axis=0)  # Horizontal concatenation (side by side)
-        first_time = dfs[0]["Time"].min()
-        y = dfs[0].Current.to_numpy()
-        x = dfs[0].Time.to_numpy()
+        df = None
+        for i in range(1, len(dfs)):
+            df = pd.concat([dfs[i-1], dfs[i]], axis=0)  # Horizontal concatenation (side by side)
+        first_time = df["Time"].min()
+        y = df.Current.to_numpy()
+        x = df.Time.to_numpy()
         CAN_channel = filename[0][-7:-4]
         ax.plot((x - first_time), y,
                 label=f"{CAN_channel}  "+
-                      f" Avg: {self.df_statitics[0]['average']:.2f} mA,"+
-                      f" Max: {self.df_statitics[0]['maximum']:.2f} mA,"+
-                      f" Min: {self.df_statitics[0]['minimum']:.2f} mA")
+                    f" Avg: {self.df_statitics[0]['average']:.2f} mA,"+
+                    f" Max: {self.df_statitics[0]['maximum']:.2f} mA,"+
+                    f" Min: {self.df_statitics[0]['minimum']:.2f} mA")
           
         plt.xlabel("Time(s)", fontsize=15)
         plt.ylabel("Current(mA)", fontsize=15)
