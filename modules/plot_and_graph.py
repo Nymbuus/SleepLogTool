@@ -16,11 +16,8 @@ class PlotAndGraph():
         self.df_statitics = []
         for df in dfs:
             results = {}
-            results["average"] = df['Current'].mean()
-            results["maximum"] = df['Current'].max()
-            results["minimum"] = df['Current'].min()
             results["total_time"] = float(df['Time'].max() - df['Time'].min())
-            results["ampere_hours"] = (results["total_time"] / 3600) * (results["average"] * 0.001)
+            results["ampere_hours"] = (results["total_time"] / 3600) * (df['Current'].mean() * 0.001)
             self.df_statitics.append(results)
 
 
@@ -28,17 +25,20 @@ class PlotAndGraph():
         """ Plotting. """
         fig, ax = plt.subplots()
         df = None
-        for i in range(1, len(dfs)):
-            df = pd.concat([dfs[i-1], dfs[i]], axis=0)  # Horizontal concatenation (side by side)
+        if len(dfs) == 1:
+            df = dfs[0]
+        else:
+            for i in range(1, len(dfs)):
+                df = pd.concat([dfs[i-1], dfs[i]], axis=0)  # Horizontal concatenation (side by side)
         first_time = df["Time"].min()
         y = df.Current.to_numpy()
         x = df.Time.to_numpy()
         CAN_channel = filename[0][-7:-4]
         ax.plot((x - first_time), y,
                 label=f"{CAN_channel}  "+
-                    f" Avg: {self.df_statitics[0]['average']:.2f} mA,"+
-                    f" Max: {self.df_statitics[0]['maximum']:.2f} mA,"+
-                    f" Min: {self.df_statitics[0]['minimum']:.2f} mA")
+                    f" Avg: {df['Current'].mean():.2f} mA,"+
+                    f" Max: {df['Current'].max():.2f} mA,"+
+                    f" Min: {df['Current'].min():.2f} mA")
           
         plt.xlabel("Time(s)", fontsize=15)
         plt.ylabel("Current(mA)", fontsize=15)
@@ -77,7 +77,7 @@ class PlotAndGraph():
                 point.set_ydata(y[idx])
 
                 # Update the text annotation with coordinates
-                text.set_text(f'({x[idx] - x_time_min:.2f}, {y[idx]:.2f})')
+                text.set_text(f'({x[idx] - x_time_min:.2f}s, {y[idx]:.2f}mA)')
                 text.set_position((x[idx] - x_time_min, y[idx]))
 
                 fig.canvas.draw_idle()

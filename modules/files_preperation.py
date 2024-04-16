@@ -45,27 +45,17 @@ class FilesPreperation:
         for file in file_list:
             blf_return = can.BLFReader(file)
             logs = list(blf_return)
-            blf_time = []
-            blf_current = []
+            blf_data = {"Time": [], "Current": []}
             for msg in logs:
-                msg = str(msg)
-                msg = msg.strip()
-                columns = msg.split()
-                blf_time.append(float(columns[1]))
-                upper_current_hexa = columns[10]
-                lower_current_hexa = columns[11]
-                current_hexa = upper_current_hexa + lower_current_hexa
-                current_dec = int(current_hexa, 16)
-                if current_dec > 32767:
-                    current_dec -= 65536
-                blf_current.append(current_dec)
+                columns = str(msg).strip().split()
+                blf_data["Time"].append(float(columns[1]))
+                current_dec = int(columns[10] + columns[11], 16)
+                if current_dec > 40000:
+                    current_dec -= 72769
+                blf_data["Current"].append(current_dec)
 
-            blf_data = {}
-            blf_data["Time"] = blf_time
-            blf_data["Current"] = blf_current
             df = pd.DataFrame(blf_data)
             list_dfs.append(df)
-
 
         return list_dfs, file_list
 
