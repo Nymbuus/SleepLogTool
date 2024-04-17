@@ -46,13 +46,20 @@ class FilesPreperation:
             blf_return = can.BLFReader(file)
             logs = list(blf_return)
             blf_data = {"Time": [], "Current": []}
-            for msg in logs:
+            percent = 100 / len(logs)
+            status = 0
+            last_print = 0
+            for i, msg in enumerate(logs):
                 columns = str(msg).strip().split()
                 blf_data["Time"].append(float(columns[1]))
                 current_dec = int(columns[10] + columns[11], 16)
                 if current_dec > 40000:
                     current_dec -= 72769
                 blf_data["Current"].append(current_dec)
+                status += percent
+                if int(status) != last_print:
+                    print(f"{status:.0f}%")
+                    last_print = int(status)
 
             df = pd.DataFrame(blf_data)
             list_dfs.append(df)
