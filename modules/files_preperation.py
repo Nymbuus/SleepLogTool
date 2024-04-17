@@ -43,28 +43,30 @@ class FilesPreperation:
         
         list_dfs = []
         for file in file_list:
-            blf_return = can.BLFReader(file)
-            logs = list(blf_return)
             blf_data = {"Time": [], "Current": []}
-            percent = 100 / len(logs)
-            status = 0
-            last_print = 0
-            for i, msg in enumerate(logs):
-                columns = str(msg).strip().split()
-                blf_data["Time"].append(float(columns[1]))
-                current_dec = int(columns[10] + columns[11], 16)
-                if current_dec > 40000:
-                    current_dec -= 72769
-                blf_data["Current"].append(current_dec)
-                status += percent
-                if int(status) != last_print:
-                    print(f"{status:.0f}%")
-                    last_print = int(status)
+            with open(file, 'rb') as f:
+                blf_return = can.BLFReader(f)
+                percent = 100 / blf_return.object_count
+                status = 0
+                last_print = 0
+                for i, msg in enumerate(blf_return):
+                    status += percent
+                    if i % 10 == 0:
+                        columns = str(msg).strip().split()
+                        blf_data["Time"].append(float(columns[1]))
+                        current_dec = int(columns[10] + columns[11], 16)
+                        if current_dec > 40000:
+                            current_dec -= 72769
+                        blf_data["Current"].append(current_dec)
+                        if int(status) != last_print:
+                            print(f"{status:.0f}%")
+                            last_print = int(status)
 
             df = pd.DataFrame(blf_data)
             list_dfs.append(df)
 
         return list_dfs, file_list
+
 
     def remove_time(self, df, remove_start_time, remove_end_time):
         """ Loads pandas dataframe to a local variable.
