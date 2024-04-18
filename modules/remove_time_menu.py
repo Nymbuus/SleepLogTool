@@ -20,7 +20,8 @@ class RemoveTimeMenu:
         self.root = root
 
         self.time_removal_frame = LabelFrame(self.root, text="Time Removal")
-        self.time_removal_frame.grid(row=0, column=1, padx=(0, 30), pady=10)
+        self.time_removal_frame.grid(row=0, rowspan=2, column=1, padx=(0, 30), pady=10, sticky=N)
+
         start_time_label = Label(self.time_removal_frame, text="Minutes to remove from start:")
         start_time_label.grid(row=0, column=0)
         self.start_time_entry = Entry(self.time_removal_frame, width=40, borderwidth=5)
@@ -29,8 +30,13 @@ class RemoveTimeMenu:
         end_time_label = Label(self.time_removal_frame, text="Minutes to remove from end:")
         end_time_label.grid(row=2, column=0)
         self.end_time_entry = Entry(self.time_removal_frame, width=40, borderwidth=5)
-        self.end_time_entry.grid(row=3, column=0, columnspan=2, pady=(0, 10))
-    
+        self.end_time_entry.grid(row=3, column=0, columnspan=2)
+
+        sample_label = Label(self.time_removal_frame, text="Sample Rate:")
+        sample_label.grid(row=4, column=0)
+        self.sample_entry = Entry(self.time_removal_frame, width=40, borderwidth=5)
+        self.sample_entry.grid(row=5, column=0, columnspan=2, pady=(0, 10))
+
     def warning(self, warning_text):
         """ Displays the warning text when you put in a wrong type of value. """
         warning_label = Label(self.time_removal_frame, text=warning_text)
@@ -76,3 +82,8 @@ class RemoveTimeMenu:
 
     def get_start_and_end_time(self):
         return self.start_time_entry.get(), self.end_time_entry.get()
+    
+    def get_sample_rate(self):
+        if self.sample_entry.get() == "":
+            return 0
+        return int(self.sample_entry.get())

@@ -15,7 +15,6 @@ class PlotAndGraph():
         """ Calculate statistics """
         self.results = {}
         self.results["total_time"] = float(dfs['Time'].max() - dfs['Time'].min())
-        #Fel på Time när flera filer körs!!
         self.results["ampere_hours"] = (self.results["total_time"] / 3600) * (dfs['Current'].mean() * 0.001)
 
 

@@ -99,9 +99,10 @@ class Menu:
         blf_files = []
         for file in self.file_path_rows:
             blf_files.append(file.get())
-
-        dfs, filename, sample_rate = self.get_write_to_df(blf_files)
-        self._rtm.set_df(dfs, filename, sample_rate)
+        
+        self.sample_rate = self._rtm.get_sample_rate()
+        dfs, filename = self.get_write_to_df(blf_files)
+        self._rtm.set_df(dfs, filename, self.sample_rate)
     
     def get_file_explorer(self, choice):
         """ Gets the list of file paths. """
@@ -109,7 +110,7 @@ class Menu:
     
     def get_write_to_df(self, blf_files):
         """ returns the blf_to_df function. """
-        return self._fp.blf_to_df(blf_files)
+        return self._fp.blf_to_df(blf_files, self.sample_rate)
     
     def get_remove_time(self, df):
         """ returns the remove_time function. """

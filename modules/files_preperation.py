@@ -35,14 +35,12 @@ class FilesPreperation:
                 else:
                     print("One or more files in directory is not blf file type, try again.")
 
-    def blf_to_df(self, file_list):
+    def blf_to_df(self, file_list, sample_rate):
         """ Write to df from blf.\n\n
             file_list - The blf file(s) being read from. """
         if not all(file.lower().endswith('.blf') for file in file_list):
             raise TypeError("Only .blf files are supported to read from.")
         
-        sample_rate = 10
-        list_dfs = []
         df = None
         for index, file in enumerate(file_list):
             blf_data = {"Time": [], "Current": []}
@@ -70,7 +68,7 @@ class FilesPreperation:
             else:
                 df = pd.concat([df, temp], axis=0)
 
-        return df, file_list, sample_rate
+        return df, file_list
 
 
     def remove_time(self, dfs, remove_start_time, remove_end_time):
