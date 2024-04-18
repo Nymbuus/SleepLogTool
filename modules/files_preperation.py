@@ -41,8 +41,10 @@ class FilesPreperation:
         if not all(file.lower().endswith('.blf') for file in file_list):
             raise TypeError("Only .blf files are supported to read from.")
         
+        sample_rate = 10
         list_dfs = []
-        for file in file_list:
+        df = None
+        for index, file in enumerate(file_list):
             blf_data = {"Time": [], "Current": []}
             with open(file, 'rb') as f:
                 blf_return = can.BLFReader(f)
@@ -51,7 +53,7 @@ class FilesPreperation:
                 last_print = 0
                 for i, msg in enumerate(blf_return):
                     status += percent
-                    if i % 10 == 0:
+                    if i % sample_rate == 0:
                         columns = str(msg).strip().split()
                         blf_data["Time"].append(float(columns[1]))
                         current_dec = int(columns[10] + columns[11], 16)
@@ -61,14 +63,17 @@ class FilesPreperation:
                         if int(status) != last_print:
                             print(f"{status:.0f}%")
                             last_print = int(status)
+            
+            temp = pd.DataFrame(blf_data)
+            if index == 0:
+                df = temp
+            else:
+                df = pd.concat([df, temp], axis=0)
 
-            df = pd.DataFrame(blf_data)
-            list_dfs.append(df)
-
-        return list_dfs, file_list
+        return df, file_list, sample_rate
 
 
-    def remove_time(self, df, remove_start_time, remove_end_time):
+    def remove_time(self, dfs, remove_start_time, remove_end_time):
         """ Loads pandas dataframe to a local variable.
             With this we remove the start and end elements provided in minutes.
             If the if cases is'nt used the program will crash. """
@@ -78,8 +83,8 @@ class FilesPreperation:
             raise TypeError("remove_end_time variable was not a integer or float!")
         
         if remove_start_time != 0:
-            df = df[int(remove_start_time):]
+            dfs = dfs[int(remove_start_time):]
         if remove_end_time != 0:
-            df = df[:-int(remove_end_time)]
+            dfs = dfs[:-int(remove_end_time)]
 
-        return df
+        return dfs

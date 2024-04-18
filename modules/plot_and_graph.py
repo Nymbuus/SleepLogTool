@@ -13,32 +13,24 @@ class PlotAndGraph():
 
     def calculating_statistics(self, dfs):
         """ Calculate statistics """
-        self.df_statitics = []
-        for df in dfs:
-            results = {}
-            results["total_time"] = float(df['Time'].max() - df['Time'].min())
-            results["ampere_hours"] = (results["total_time"] / 3600) * (df['Current'].mean() * 0.001)
-            self.df_statitics.append(results)
+        self.results = {}
+        self.results["total_time"] = float(dfs['Time'].max() - dfs['Time'].min())
+        #Fel på Time när flera filer körs!!
+        self.results["ampere_hours"] = (self.results["total_time"] / 3600) * (dfs['Current'].mean() * 0.001)
 
 
     def plotting_graph(self, dfs, filename):
         """ Plotting. """
         fig, ax = plt.subplots()
-        df = None
-        if len(dfs) == 1:
-            df = dfs[0]
-        else:
-            for i in range(1, len(dfs)):
-                df = pd.concat([dfs[i-1], dfs[i]], axis=0)  # Horizontal concatenation (side by side)
-        first_time = df["Time"].min()
-        y = df.Current.to_numpy()
-        x = df.Time.to_numpy()
+        first_time = dfs["Time"].min()
+        y = dfs.Current.to_numpy()
+        x = dfs.Time.to_numpy()
         CAN_channel = filename[0][-7:-4]
         ax.plot((x - first_time), y,
                 label=f"{CAN_channel}  "+
-                    f" Avg: {df['Current'].mean():.2f} mA,"+
-                    f" Max: {df['Current'].max():.2f} mA,"+
-                    f" Min: {df['Current'].min():.2f} mA")
+                    f" Avg: {dfs['Current'].mean():.2f} mA,"+
+                    f" Max: {dfs['Current'].max():.2f} mA,"+
+                    f" Min: {dfs['Current'].min():.2f} mA")
           
         plt.xlabel("Time(s)", fontsize=15)
         plt.ylabel("Current(mA)", fontsize=15)

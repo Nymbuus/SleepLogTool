@@ -1,6 +1,5 @@
 """ Handles the design of the first pop-up menu. """
 from tkinter import *
-from modules.plot_and_graph import PlotAndGraph
 from modules.files_preperation import FilesPreperation
 from modules.remove_time_menu import RemoveTimeMenu
 
@@ -10,7 +9,6 @@ class Menu:
     def __init__(self):
         """ Initializes the class. """
         self.root = Tk()
-        self._pag = PlotAndGraph()
         self._fp = FilesPreperation()
         self._rtm = RemoveTimeMenu()
         self.browse_field = Entry()
@@ -22,7 +20,7 @@ class Menu:
     def main_window(self):
         """ Menu for selecting files and adjust settings. """
         browse_frame = LabelFrame(self.root, text="Choose blf file(s)", padx=10, pady=5)
-        browse_frame.grid(row=0, column=0, padx=10, pady=10, sticky=W)
+        browse_frame.grid(row=0, column=0, padx=10, pady=10, sticky=N)
         self.browse_field = Entry(browse_frame, width=150, borderwidth=5)
         self.browse_field.grid(row=0, column=0, columnspan=3)
         choose_file_button = Button(browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
@@ -32,7 +30,7 @@ class Menu:
         
 
         analyze_cancel_frame = Frame(self.root)
-        analyze_cancel_frame.grid(row=2, column=0, padx=5, sticky=E)
+        analyze_cancel_frame.grid(row=2, column=1, padx=5, sticky=E)
         self.analyze_button = Button(analyze_cancel_frame,
                                      text="Analyze",
                                      state=DISABLED,
@@ -45,6 +43,7 @@ class Menu:
                                     padx=15)
         self.cancel_button.grid(row=0,column=1, padx=15, pady=10)
 
+        self._rtm.time_menu(self.root)
 
         self.root.mainloop()
 
@@ -53,12 +52,12 @@ class Menu:
         self.files = self.get_file_explorer(choice)
         # Frame for path files if beginning of the program or if just deleted.
         if len(self.file_path_rows) == 0:
-            self.path_frame = Frame(self.root, padx=20, pady=5)
-            self.path_frame.grid(row=1, column=0, sticky=W)
+            self.path_frame = LabelFrame(self.root, text="Filepath(s)", padx=10, pady=5)
+            self.path_frame.grid(row=1, column=0, padx=10, sticky=W)
         for file in self.files:
             current_row = len(self.file_path_rows)
-            e = Entry(self.path_frame, width=150, borderwidth=5)
-            e.grid(row=current_row, column=0, padx=5, pady=5, sticky=W)
+            e = Entry(self.path_frame, width=145, borderwidth=5)
+            e.grid(row=current_row, column=0, pady=5, sticky=W)
             e.insert(0, file)
             self.file_path_rows.append(e)
             b = Button(self.path_frame, text="X", padx=5,
@@ -66,7 +65,7 @@ class Menu:
                        self.del_path(self.file_path_rows[x],
                                      self.file_path_del_buttons[x],
                                      x))
-            b.grid(row=current_row, column=1)
+            b.grid(row=current_row, column=1, padx=(10, 0))
             self.file_path_del_buttons.append(b)
         self.update_analyze_button()
 
@@ -95,23 +94,14 @@ class Menu:
 
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
+        # start_time_value, end_time_value = self._rtm.get_start_and_end_time()
+        # if start_time_value and end_time_value:
         blf_files = []
         for file in self.file_path_rows:
             blf_files.append(file.get())
 
-        # Deletes the main window because it's not needed anymore.
-        self.root.destroy()
-
-        dfs, self.filename = self.get_write_to_df(blf_files)
-
-        def continuation(dfs):
-            self.calculate_plot(dfs)
-
-        self._rtm.time_menu(dfs, continuation)
-        
-    def calculate_plot(self, dfs):
-        self._pag.calculating_statistics(dfs)
-        self._pag.plotting_graph(dfs, self.filename)
+        dfs, filename, sample_rate = self.get_write_to_df(blf_files)
+        self._rtm.set_df(dfs, filename, sample_rate)
     
     def get_file_explorer(self, choice):
         """ Gets the list of file paths. """
