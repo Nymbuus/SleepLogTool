@@ -35,7 +35,10 @@ class PlotAndGraph():
         plt.ylabel("Current(mA)", fontsize=15)
         plt.title("Sleeplog analysis", fontsize=24)
         plt.subplots_adjust(left=0.05, bottom=0.25, right=0.97, top=0.955, wspace=None, hspace=None)
-        plt.grid()
+        ax.grid(which = "major", linewidth = 1)
+        ax.grid(which = "minor", linewidth = 0.4)
+        ax.minorticks_on()
+        ax.tick_params(which = "minor", bottom = False, left = False)
         
         # axpos = plt.axes([0.2, 0.1, 0.65, 0.03], facecolor='lightgoldenrodyellow')
         # spos = Slider(axpos, 'Pos', 0.1, 90.0)

@@ -14,6 +14,7 @@ class RemoveTimeMenu:
         self.dfs = None
         self.filename = None
         self.root = None
+        self.warning_label = None
 
     def time_menu(self, root):
         """ Design and functionality for time removal. """
@@ -39,8 +40,8 @@ class RemoveTimeMenu:
 
     def warning(self, warning_text):
         """ Displays the warning text when you put in a wrong type of value. """
-        warning_label = Label(self.time_removal_frame, text=warning_text)
-        warning_label.grid(row=5, column=0)
+        self.warning_label = Label(self.time_removal_frame, text=warning_text)
+        self.warning_label.grid(row=6, column=0, pady=(0, 10))
     
     def set_df(self, dfs, filename, sample_rate):
         """ Removes time from start and end of graph. """
@@ -60,6 +61,7 @@ class RemoveTimeMenu:
             remove_end_time = remove_end_time * (1/sample_rate) * TENTH_SECOND
             if 0 <= remove_start_time < len(self.dfs)+12:
                 if 0 <= remove_end_time < len(self.dfs)+12-remove_start_time:
+                    if self.warning_label: self.warning_label.destroy()
                     self.dfs = self._fp.remove_time(self.dfs, remove_start_time, remove_end_time)
                     self.calculate_plot()
                 elif remove_end_time < 0:
@@ -85,5 +87,5 @@ class RemoveTimeMenu:
     
     def get_sample_rate(self):
         if self.sample_entry.get() == "":
-            return 0
+            return 1
         return int(self.sample_entry.get())
