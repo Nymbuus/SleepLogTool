@@ -20,7 +20,7 @@ class Menu:
     def main_window(self):
         """ Menu for selecting files and adjust settings. """
         browse_frame = LabelFrame(self.root, text="Choose blf file(s)", padx=10, pady=5)
-        browse_frame.grid(row=0, column=0, padx=10, pady=10, sticky=N)
+        browse_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky=N)
         self.browse_field = Entry(browse_frame, width=150, borderwidth=5)
         self.browse_field.grid(row=0, column=0, columnspan=3)
         choose_file_button = Button(browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
@@ -30,7 +30,7 @@ class Menu:
         
 
         analyze_cancel_frame = Frame(self.root)
-        analyze_cancel_frame.grid(row=2, column=1, padx=5, sticky=E)
+        analyze_cancel_frame.grid(row=2, column=1, padx=5, sticky=SE)
         self.analyze_button = Button(analyze_cancel_frame,
                                      text="Analyze",
                                      state=DISABLED,
@@ -53,11 +53,11 @@ class Menu:
         # Frame for path files if beginning of the program or if just deleted.
         if len(self.file_path_rows) == 0:
             self.path_frame = LabelFrame(self.root, text="Filepath(s)", padx=10, pady=5)
-            self.path_frame.grid(row=1, column=0, padx=10, sticky=W)
+            self.path_frame.grid(row=1, rowspan=2, column=0, padx=10, pady=(5, 10), sticky=N)
         for file in self.files:
             current_row = len(self.file_path_rows)
             e = Entry(self.path_frame, width=145, borderwidth=5)
-            e.grid(row=current_row, column=0, pady=5, sticky=W)
+            e.grid(row=current_row, column=0, pady=5, sticky=NW)
             e.insert(0, file)
             self.file_path_rows.append(e)
             b = Button(self.path_frame, text="X", padx=5,
