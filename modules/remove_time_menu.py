@@ -20,23 +20,29 @@ class RemoveTimeMenu:
         """ Design and functionality for time removal. """
         self.root = root
 
-        self.time_removal_frame = LabelFrame(self.root, text="Time Removal")
+        self.time_removal_frame = LabelFrame(self.root, text="Time Removal", padx=10, pady=10)
         self.time_removal_frame.grid(row=0, rowspan=2, column=1, padx=(0, 30), pady=10, sticky=N)
 
         start_time_label = Label(self.time_removal_frame, text="Minutes to remove from start:")
-        start_time_label.grid(row=0, column=0)
+        start_time_label.grid(row=0, column=0, sticky=W)
         self.start_time_entry = Entry(self.time_removal_frame, width=40, borderwidth=5)
-        self.start_time_entry.grid(row=1, column=0, columnspan=2, padx=10)
+        self.start_time_entry.grid(row=1, column=0, columnspan=2)
 
         end_time_label = Label(self.time_removal_frame, text="Minutes to remove from end:")
-        end_time_label.grid(row=2, column=0)
+        end_time_label.grid(row=2, column=0, sticky=W)
         self.end_time_entry = Entry(self.time_removal_frame, width=40, borderwidth=5)
         self.end_time_entry.grid(row=3, column=0, columnspan=2)
 
-        sample_label = Label(self.time_removal_frame, text="Sample Rate:")
-        sample_label.grid(row=4, column=0)
+        sample_label = Label(self.time_removal_frame, justify="left", text="Sample Rate:\n"+
+                                                                           "Low number = More detailed info\n"+
+                                                                           "High number = Smoother graph\n"+
+                                                                           "1 = Sample every 0.01s\n"+
+                                                                           "1000 = Sample every 10s\n"+
+                                                                           "6000 = Sample every 1min\n"+
+                                                                           "360000 = Sample every 1h")
+        sample_label.grid(row=4, column=0, sticky=W)
         self.sample_entry = Entry(self.time_removal_frame, width=40, borderwidth=5)
-        self.sample_entry.grid(row=5, column=0, columnspan=2, pady=(0, 10))
+        self.sample_entry.grid(row=5, column=0, columnspan=2)
 
     def warning(self, warning_text):
         """ Displays the warning text when you put in a wrong type of value. """
