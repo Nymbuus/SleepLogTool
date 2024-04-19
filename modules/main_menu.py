@@ -16,17 +16,20 @@ class Menu:
         self.file_path_rows = []
         self.file_path_del_buttons = []
         self.x = 0
+        self.path_frame_pady = 156
 
     def main_window(self):
         """ Menu for selecting files and adjust settings. """
-        browse_frame = LabelFrame(self.root, text="Choose blf file(s)", padx=10, pady=5)
-        browse_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky=N)
-        self.browse_field = Entry(browse_frame, width=150, borderwidth=5)
-        self.browse_field.grid(row=0, column=0, columnspan=3)
-        choose_file_button = Button(browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
+        self.browse_frame = LabelFrame(self.root, text="Choose blf file(s)", padx=10, pady=5)
+        self.browse_frame.grid(row=0, column=0, padx=10, pady=(10, 180), sticky=S)
+        self.browse_field = Entry(self.browse_frame, width=130, borderwidth=5)
+        self.browse_field.grid(row=0, column=0, columnspan=2,padx=(0, 10), sticky=E)
+        add_button = Button(self.browse_frame, text="Add", command=self.add_browse_field)
+        add_button.grid(row=0, column=2, sticky=W)
+        choose_file_button = Button(self.browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
         choose_file_button.grid(row=1, column=0, sticky=E, pady=10)
-        choose_folder_button = Button(browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
-        choose_folder_button.grid(row=1, column=1, sticky=W, padx=(10, 723), pady=10)
+        choose_folder_button = Button(self.browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
+        choose_folder_button.grid(row=1, column=1, sticky=W, padx=(10, 610), pady=10)
         
 
         analyze_cancel_frame = Frame(self.root)
@@ -52,11 +55,12 @@ class Menu:
         self.files = self.get_file_explorer(choice)
         # Frame for path files if beginning of the program or if just deleted.
         if len(self.file_path_rows) == 0:
+            self.browse_frame.grid(pady=(10, 0))
             self.path_frame = LabelFrame(self.root, text="Filepath(s)", padx=10, pady=5)
-            self.path_frame.grid(row=1, rowspan=2, column=0, padx=10, pady=(5, 10), sticky=N)
+            self.path_frame.grid(row=1, rowspan=2, column=0, padx=10, pady=(5, self.path_frame_pady), sticky=N)
         for file in self.files:
             current_row = len(self.file_path_rows)
-            e = Entry(self.path_frame, width=145, borderwidth=5)
+            e = Entry(self.path_frame, width=131, borderwidth=5)
             e.grid(row=current_row, column=0, pady=5, sticky=NW)
             e.insert(0, file)
             self.file_path_rows.append(e)
@@ -67,6 +71,11 @@ class Menu:
                                      x))
             b.grid(row=current_row, column=1, padx=(10, 0))
             self.file_path_del_buttons.append(b)
+            self.path_frame.grid(pady=(5, self.path_frame_pady))
+            if self.path_frame_pady > 37:
+                self.path_frame_pady -= 37
+            else:
+                self.path_frame_pady = 10
         self.update_analyze_button()
 
     def del_path(self, entry, button, index):
@@ -81,9 +90,21 @@ class Menu:
                                                                self.file_path_del_buttons[x],
                                                                x))
         self.update_analyze_button()
+
+        if len(self.file_path_rows) == 0:
+            self.browse_frame.grid(pady=(10, 180))
+        self.path_frame_pady += 37
+        self.path_frame.grid(pady=(5, self.path_frame_pady))
+
         # Deletes the path_frame if there isn't any path files left.
         if not self.file_path_rows:
             self.path_frame.destroy()
+    
+    def add_browse_field(self):
+        """ Adds path given in browse field to Filepath(s) frame. """
+        file = self.browse_field.get()
+        self.file_path_setup(file)
+
 
     def update_analyze_button(self):
         """ Updates the analyze button """
