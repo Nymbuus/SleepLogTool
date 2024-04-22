@@ -17,7 +17,8 @@ class FilesPreperation:
             while True:
                 file_list = fd.askopenfilenames(title='Choose one or multiple BLF files')
                 if all(file.lower().endswith('.blf') for file in file_list):
-                    print("User choosed", len(file_list), "files to load")
+                    if file_list == "":
+                        return False
                     return file_list
                 else:
                     print("One or more files is not a blf type file, try again.")

@@ -16,7 +16,7 @@ class Menu:
         self.file_path_rows = []
         self.file_path_del_buttons = []
         self.x = 0
-        self.path_frame_pady = 156
+        self.path_frame_pady = 193
 
     def main_window(self):
         """ Menu for selecting files and adjust settings. """
@@ -53,29 +53,30 @@ class Menu:
     def file_path_setup(self, choice):
         """ displayes the file paths in the main window. """
         self.files = self.get_file_explorer(choice)
-        # Frame for path files if beginning of the program or if just deleted.
-        if len(self.file_path_rows) == 0:
-            self.browse_frame.grid(pady=(10, 0))
-            self.path_frame = LabelFrame(self.root, text="Filepath(s)", padx=10, pady=5)
-            self.path_frame.grid(row=1, rowspan=2, column=0, padx=10, pady=(5, self.path_frame_pady), sticky=N)
-        for file in self.files:
-            current_row = len(self.file_path_rows)
-            e = Entry(self.path_frame, width=131, borderwidth=5)
-            e.grid(row=current_row, column=0, pady=5, sticky=NW)
-            e.insert(0, file)
-            self.file_path_rows.append(e)
-            b = Button(self.path_frame, text="X", padx=5,
-                       command=lambda x=len(self.file_path_rows)-1:
-                       self.del_path(self.file_path_rows[x],
-                                     self.file_path_del_buttons[x],
-                                     x))
-            b.grid(row=current_row, column=1, padx=(10, 0))
-            self.file_path_del_buttons.append(b)
-            self.path_frame.grid(pady=(5, self.path_frame_pady))
-            if self.path_frame_pady > 37:
-                self.path_frame_pady -= 37
-            else:
-                self.path_frame_pady = 10
+        if self.files != False:
+            # Frame for path files if beginning of the program or if just deleted.
+            if len(self.file_path_rows) == 0:
+                self.browse_frame.grid(pady=(10, 0))
+                self.path_frame = LabelFrame(self.root, text="Filepath(s)", padx=10, pady=5)
+                self.path_frame.grid(row=1, rowspan=2, column=0, padx=10, pady=(5, self.path_frame_pady), sticky=N)
+            for file in self.files:
+                current_row = len(self.file_path_rows)
+                e = Entry(self.path_frame, width=131, borderwidth=5)
+                e.grid(row=current_row, column=0, pady=5, sticky=NW)
+                e.insert(0, file)
+                self.file_path_rows.append(e)
+                b = Button(self.path_frame, text="X", padx=5,
+                        command=lambda x=len(self.file_path_rows)-1:
+                        self.del_path(self.file_path_rows[x],
+                                        self.file_path_del_buttons[x],
+                                        x))
+                b.grid(row=current_row, column=1, padx=(10, 0))
+                self.file_path_del_buttons.append(b)
+                if self.path_frame_pady > 37:
+                    self.path_frame_pady -= 37
+                else:
+                    self.path_frame_pady = 10
+                self.path_frame.grid(pady=(5, self.path_frame_pady))
         self.update_analyze_button()
 
     def del_path(self, entry, button, index):
@@ -103,7 +104,8 @@ class Menu:
     def add_browse_field(self):
         """ Adds path given in browse field to Filepath(s) frame. """
         file = self.browse_field.get()
-        self.file_path_setup(file)
+        if file:
+            self.file_path_setup(file)
 
 
     def update_analyze_button(self):
