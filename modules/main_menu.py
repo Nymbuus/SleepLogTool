@@ -18,8 +18,18 @@ class Menu:
         self.x = 0
         self.path_frame_pady = 193
 
+
     def main_window(self):
         """ Menu for selecting files and adjust settings. """
+        self.browse_frame_create()
+        self.analyze_cancel_frame_create()
+        self._rtm.time_menu(self.root)
+
+        self.root.mainloop()
+
+
+    def browse_frame_create(self):
+        """ Creates the browse frame and all of it's contents. """
         self.browse_frame = LabelFrame(self.root, text="Choose blf file(s)", padx=10, pady=5)
         self.browse_frame.grid(row=0, column=0, padx=10, pady=(10, 180), sticky=S)
         self.browse_field = Entry(self.browse_frame, width=130, borderwidth=5)
@@ -30,8 +40,10 @@ class Menu:
         choose_file_button.grid(row=1, column=0, sticky=E, pady=10)
         choose_folder_button = Button(self.browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
         choose_folder_button.grid(row=1, column=1, sticky=W, padx=(10, 610), pady=10)
-        
 
+
+    def analyze_cancel_frame_create(self):
+        """ Creates the analyze/cancel frame and all of it's contents. """
         analyze_cancel_frame = Frame(self.root)
         analyze_cancel_frame.grid(row=2, column=1, padx=5, sticky=SE)
         self.analyze_button = Button(analyze_cancel_frame,
@@ -46,9 +58,6 @@ class Menu:
                                     padx=15)
         self.cancel_button.grid(row=0,column=1, padx=15, pady=10)
 
-        self._rtm.time_menu(self.root)
-
-        self.root.mainloop()
 
     def file_path_setup(self, choice):
         """ displayes the file paths in the main window. """
@@ -79,6 +88,7 @@ class Menu:
                 self.path_frame.grid(pady=(5, self.path_frame_pady))
         self.update_analyze_button()
 
+
     def del_path(self, entry, button, index):
         """ Deletes the specified row and then updates the command for delete buttons. """
         entry.destroy()
@@ -101,6 +111,7 @@ class Menu:
         if not self.file_path_rows:
             self.path_frame.destroy()
     
+
     def add_browse_field(self):
         """ Adds path given in browse field to Filepath(s) frame. """
         file = self.browse_field.get()
@@ -115,6 +126,7 @@ class Menu:
         else:
             self.analyze_button["state"] = DISABLED
 
+
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
         # start_time_value, end_time_value = self._rtm.get_start_and_end_time()
@@ -126,15 +138,18 @@ class Menu:
         self.sample_rate = self._rtm.get_sample_rate()
         dfs, filename = self.get_write_to_df(blf_files)
         self._rtm.set_df(dfs, filename, self.sample_rate)
-    
+
+
     def get_file_explorer(self, choice):
         """ Gets the list of file paths. """
         return self._fp.file_explorer(choice)
-    
+
+
     def get_write_to_df(self, blf_files):
         """ returns the blf_to_df function. """
         return self._fp.blf_to_df(blf_files, self.sample_rate)
-    
+
+
     def get_remove_time(self, df):
         """ returns the remove_time function. """
         return self._fp.remove_time(df)
