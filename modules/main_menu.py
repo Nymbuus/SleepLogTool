@@ -16,7 +16,7 @@ class Menu:
         self.file_path_rows = []
         self.file_path_del_buttons = []
         self.x = 0
-        self.path_frame_pady = 193
+        self.path_frame_init()
 
 
     def main_window(self):
@@ -26,12 +26,18 @@ class Menu:
         self._rtm.time_menu(self.root)
 
         self.root.mainloop()
+    
+
+    def path_frame_init(self):
+        self.path_frame_pady = 223
+        self.path_frame = LabelFrame(self.root, text="Filepath(s)", padx=10, pady=5)
+        self.path_frame.grid(row=1, rowspan=2, column=0, padx=10, pady=(5, self.path_frame_pady), sticky=N)
 
 
     def browse_frame_create(self):
         """ Creates the browse frame and all of it's contents. """
         self.browse_frame = LabelFrame(self.root, text="Choose blf file(s)", padx=10, pady=5)
-        self.browse_frame.grid(row=0, column=0, padx=10, pady=(10, 180), sticky=S)
+        self.browse_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky=S)
         self.browse_field = Entry(self.browse_frame, width=130, borderwidth=5)
         self.browse_field.grid(row=0, column=0, columnspan=2,padx=(0, 10), sticky=E)
         add_button = Button(self.browse_frame, text="Add", command=self.add_browse_field)
@@ -68,10 +74,6 @@ class Menu:
             self.files.append(choice)
         if self.files != False:
             # Frame for path files if beginning of the program or if just deleted.
-            if len(self.file_path_rows) == 0:
-                self.browse_frame.grid(pady=(10, 0))
-                self.path_frame = LabelFrame(self.root, text="Filepath(s)", padx=10, pady=5)
-                self.path_frame.grid(row=1, rowspan=2, column=0, padx=10, pady=(5, self.path_frame_pady), sticky=N)
             for file in self.files:
                 current_row = len(self.file_path_rows)
                 e = Entry(self.path_frame, width=131, borderwidth=5)
@@ -85,11 +87,13 @@ class Menu:
                                         x))
                 b.grid(row=current_row, column=1, padx=(10, 0))
                 self.file_path_del_buttons.append(b)
-                if self.path_frame_pady > 37:
+
+                if len(self.file_path_rows) == 1:
+                    self.path_frame_pady -= 65
+                elif self.path_frame_pady > 37 and len(self.file_path_rows) > 1:
                     self.path_frame_pady -= 37
-                else:
-                    self.path_frame_pady = 10
                 self.path_frame.grid(pady=(5, self.path_frame_pady))
+
         self.update_analyze_button()
 
 
@@ -106,14 +110,13 @@ class Menu:
                                                                x))
         self.update_analyze_button()
 
+        # Adds padding below path_frame grid when path are deleted.
         if len(self.file_path_rows) == 0:
-            self.browse_frame.grid(pady=(10, 180))
-        self.path_frame_pady += 37
-        self.path_frame.grid(pady=(5, self.path_frame_pady))
-
-        # Deletes the path_frame if there isn't any path files left.
-        if not self.file_path_rows:
             self.path_frame.destroy()
+            self.path_frame_init()
+        elif len(self.file_path_rows) <= 4 and len(self.file_path_rows) > 0:
+            self.path_frame_pady += 37
+            self.path_frame.grid(pady=(5, self.path_frame_pady))
     
 
     def add_browse_field(self):
