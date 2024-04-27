@@ -59,9 +59,13 @@ class Menu:
         self.cancel_button.grid(row=0,column=1, padx=15, pady=10)
 
 
-    def file_path_setup(self, choice):
+    def file_path_setup(self, choice, add=None):
         """ displayes the file paths in the main window. """
-        self.files = self.get_file_explorer(choice)
+        self.files = []
+        if add == None:
+            self.files = self.get_file_explorer(choice)
+        elif add == "add":
+            self.files.append(choice)
         if self.files != False:
             # Frame for path files if beginning of the program or if just deleted.
             if len(self.file_path_rows) == 0:
@@ -116,7 +120,7 @@ class Menu:
         """ Adds path given in browse field to Filepath(s) frame. """
         file = self.browse_field.get()
         if file:
-            self.file_path_setup(file)
+            self.file_path_setup(file, "add")
 
 
     def update_analyze_button(self):
