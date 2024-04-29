@@ -16,28 +16,29 @@ class Menu:
         self.file_path_rows = []
         self.file_path_del_buttons = []
         self.x = 0
-        self.path_frame_init()
 
 
     def main_window(self):
         """ Menu for selecting files and adjust settings. """
+        self.initial_browse_frame_create()
         self.browse_frame_create()
+        self.path_frame_create()
+        self.parallel_files_settings_frame_create()
         self.analyze_cancel_frame_create()
         self._rtm.time_menu(self.root)
 
         self.root.mainloop()
-    
 
-    def path_frame_init(self):
-        self.path_frame_pady = 223
-        self.path_frame = LabelFrame(self.root, text="Filepath(s)", padx=10, pady=5)
-        self.path_frame.grid(row=1, rowspan=2, column=0, padx=10, pady=(5, self.path_frame_pady), sticky=N)
+
+    def initial_browse_frame_create(self):
+        self.initial_browse_frame = LabelFrame(self.root, text="Initial Browse Frame", padx=10)
+        self.initial_browse_frame.grid(row=0, column=1, padx=10, pady=10, sticky=N)
 
 
     def browse_frame_create(self):
         """ Creates the browse frame and all of it's contents. """
-        self.browse_frame = LabelFrame(self.root, text="Choose blf file(s)", padx=10, pady=5)
-        self.browse_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky=S)
+        self.browse_frame = LabelFrame(self.initial_browse_frame, text="Choose blf file(s)", padx=10, pady=5)
+        self.browse_frame.grid(row=1, column=1, pady=(10, 0), sticky=E)
         self.browse_field = Entry(self.browse_frame, width=130, borderwidth=5)
         self.browse_field.grid(row=0, column=0, columnspan=2,padx=(0, 10), sticky=E)
         add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
@@ -47,11 +48,45 @@ class Menu:
         choose_folder_button = Button(self.browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
         choose_folder_button.grid(row=1, column=1, sticky=W, padx=(10, 610), pady=10)
 
+        # Create a button to toggle the frame
+        self.toggling_frame = Frame(self.initial_browse_frame)
+        self.toggling_frame.grid(row=0, column=0, columnspan=2, pady=(10, 0), sticky=W)
+        toggle_button = Button(self.toggling_frame, text="-", command= self.toggle_frames)
+        toggle_button.grid(row=0, column=0)
+        toggle_line = Label(self.toggling_frame, text="_"*175)
+        toggle_line.grid(row=0, column=1)
+
+
+    def path_frame_create(self):
+        self.path_frame_pady = 223
+        self.path_frame = LabelFrame(self.initial_browse_frame, text="Filepath(s)", padx=10, pady=5)
+        self.path_frame.grid(row=2, rowspan=2, column=1, pady=(5, self.path_frame_pady), sticky=E)
+    
+
+    def toggle_frames(self):
+        if self.browse_frame.winfo_ismapped():
+            self.browse_frame.grid_forget()
+        else:
+            self.browse_frame.grid(row=1, column=1, pady=(10, 0), sticky=E)
+
+        if self.path_frame.winfo_ismapped():
+            self.path_frame.grid_forget()
+        else:
+            self.path_frame.grid(row=2, rowspan=2, column=1, pady=(5, self.path_frame_pady), sticky=E)
+
+
+    def parallel_files_settings_frame_create(self):
+        """ Creates frame that asks the user if it wants parallel lines/files in graph. """
+        self.parallel_files_settings_frame = LabelFrame(self.root, text="Parallel files settings", padx=10, pady=5)
+        self.parallel_files_settings_frame.grid(row=0, column=0, padx=(10, 0), pady=10, sticky=N)
+        self.parallel_add_button = Button(self.parallel_files_settings_frame, text="Add parallel", command=self.add_parallel)
+        self.parallel_add_button.grid(row=0, column=0)
+
 
     def analyze_cancel_frame_create(self):
         """ Creates the analyze/cancel frame and all of it's contents. """
         analyze_cancel_frame = Frame(self.root)
-        analyze_cancel_frame.grid(row=2, column=1, padx=5, sticky=SE)
+        analyze_cancel_frame.grid(row=2, column=2, padx=5, sticky=SE)
         self.analyze_button = Button(analyze_cancel_frame,
                                      text="Analyze",
                                      state=DISABLED,
@@ -76,8 +111,8 @@ class Menu:
             # Frame for path files if beginning of the program or if just deleted.
             for file in self.files:
                 current_row = len(self.file_path_rows)
-                e = Entry(self.path_frame, width=131, borderwidth=5)
-                e.grid(row=current_row, column=0, pady=5, sticky=NW)
+                e = Entry(self.path_frame, width=130, borderwidth=5)
+                e.grid(row=current_row, column=0, padx=(0, 28), pady=5, sticky=NW)
                 e.insert(0, file)
                 self.file_path_rows.append(e)
                 b = Button(self.path_frame, text="X", padx=5,
@@ -113,7 +148,7 @@ class Menu:
         # Adds padding below path_frame grid when path are deleted.
         if len(self.file_path_rows) == 0:
             self.path_frame.destroy()
-            self.path_frame_init()
+            self.path_frame_create()
         elif len(self.file_path_rows) <= 4 and len(self.file_path_rows) > 0:
             self.path_frame_pady += 37
             self.path_frame.grid(pady=(5, self.path_frame_pady))
@@ -124,6 +159,11 @@ class Menu:
         file = self.browse_field.get()
         if file:
             self.file_path_setup(file, "add")
+
+
+    def add_parallel(self):
+        """ Adds an extra frame add files that will be parallel to all other files in other frames when displayed in the graph. """
+
 
 
     def update_analyze_button(self):
