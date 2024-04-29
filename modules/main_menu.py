@@ -40,7 +40,7 @@ class Menu:
         self.browse_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky=S)
         self.browse_field = Entry(self.browse_frame, width=130, borderwidth=5)
         self.browse_field.grid(row=0, column=0, columnspan=2,padx=(0, 10), sticky=E)
-        add_button = Button(self.browse_frame, text="Add", command=self.add_browse_field)
+        add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
         add_button.grid(row=0, column=2, sticky=W)
         choose_file_button = Button(self.browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
         choose_file_button.grid(row=1, column=0, sticky=E, pady=10)

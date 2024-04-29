@@ -24,7 +24,8 @@ class PlotAndGraph():
         first_time = dfs["Time"].min()
         y = dfs.Current.to_numpy()
         x = dfs.Time.to_numpy()
-        CAN_channel = filename[0][-7:-4]
+        # CAN_channel = filename[0][-7:-4]             This is used if the name of the file isn't modified.
+        CAN_channel = "LEM"
         ax.plot((x - first_time), y,
                 label=f"{CAN_channel}  "+
                     f" Avg: {dfs['Current'].mean():.2f} mA,"+
@@ -34,20 +35,11 @@ class PlotAndGraph():
         plt.xlabel("Time(s)", fontsize=15)
         plt.ylabel("Current(mA)", fontsize=15)
         plt.title("Sleeplog analysis", fontsize=24)
-        plt.subplots_adjust(left=0.05, bottom=0.25, right=0.97, top=0.955, wspace=None, hspace=None)
+        plt.subplots_adjust(left=0.25, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=None)
         ax.grid(which = "major", linewidth = 1)
         ax.grid(which = "minor", linewidth = 0.4)
         ax.minorticks_on()
         ax.tick_params(which = "minor", bottom = False, left = False)
-        
-        # axpos = plt.axes([0.2, 0.1, 0.65, 0.03], facecolor='lightgoldenrodyellow')
-        # spos = Slider(axpos, 'Pos', 0.1, 90.0)
-        # def update(val):
-        #     pos = spos.val
-        #     print(f"\npos: {pos}\n")
-        #     ax.axis([pos,pos+10,-5.5,120.5])
-        #     fig.canvas.draw_idle()
-        # spos.on_changed(update)
 
         manager = plt.get_current_fig_manager()
         manager.window.state('zoomed')
