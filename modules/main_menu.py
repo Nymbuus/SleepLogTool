@@ -9,99 +9,115 @@ class Menu:
     def __init__(self):
         """ Initializes the class. """
         self.root = Tk()
-        self.root.geometry("1425x500")
+        self.root.geometry("1250x350")
         self._fp = FilesPreperation()
         self._rtm = RemoveTimeMenu()
         self.browse_field = Entry()
         self.path_frame = LabelFrame()
+        self.path_frames = []
+        self.toggling_frames = []
+        self.toggle_buttons = []
         self.file_path_rows = []
         self.file_path_del_buttons = []
         self.x = 0
+        self.line_plot_frames = []
 
 
     def main_window(self):
         """ Menu for selecting files and adjust settings. """
-        self.all_line_plot_frames_create()
-        self.initial_line_plot_frame_create()
+        self.left_section_frames_create()
+        #self.parallel_line_plot_settings_frame_create()
         self.browse_frame_create()
-        self.path_frame_create()
-        self.parallel_line_plot_settings_frame_create()
+        self.line_plot_frame_create()
         self.analyze_cancel_frame_create()
         self._rtm.time_menu(self.root)
 
         self.root.mainloop()
 
 
-    def all_line_plot_frames_create(self):
-        self.all_line_plot_frames = LabelFrame(self.root, text="All Line Plot Frame(s)", padx=10)
-        self.all_line_plot_frames.grid(row=0, column=1, padx=10, pady=10, sticky=N)
-
-
-    def initial_line_plot_frame_create(self):
-        self.initial_line_plot_frame = LabelFrame(self.all_line_plot_frames, text="Initial Line Plot Frame", padx=10)
-        self.initial_line_plot_frame.grid(row=0, column=0, padx=10, pady=10, sticky=N)
+    def left_section_frames_create(self):
+        """ Holds all frames in the left section of the window. """
+        self.left_section_frames = LabelFrame(self.root, text="Left Section Frames", padx=10)
+        self.left_section_frames.grid(row=0, column=0, padx=10, pady=10, sticky=N)
 
 
     def browse_frame_create(self):
         """ Creates the browse frame and all of it's contents. """
-        self.browse_frame = LabelFrame(self.initial_line_plot_frame, text="Choose blf file(s)", padx=10, pady=5)
-        self.browse_frame.grid(row=1, column=1, pady=(10, 0), sticky=E)
-        self.browse_field = Entry(self.browse_frame, width=130, borderwidth=5)
-        self.browse_field.grid(row=0, column=0, columnspan=2,padx=(0, 10), sticky=E)
+        self.browse_frame = LabelFrame(self.left_section_frames, text="Choose blf file(s)", padx=10, pady=5)
+        self.browse_frame.grid(row=0, column=0, pady=(10, 0), sticky=W)
+        self.browse_field = Entry(self.browse_frame, width=136, borderwidth=5)
+        self.browse_field.grid(row=0, column=0, columnspan=2, padx=(0, 10))
         add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
-        add_button.grid(row=0, column=2, sticky=W)
+        add_button.grid(row=0, column=2, padx=(2, 3), sticky=W)
         choose_file_button = Button(self.browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
         choose_file_button.grid(row=1, column=0, sticky=E, pady=10)
         choose_folder_button = Button(self.browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
-        choose_folder_button.grid(row=1, column=1, sticky=W, padx=(10, 610), pady=10)
+        choose_folder_button.grid(row=1, column=1, sticky=W, padx=10, pady=10)
+        self.line_plot_select = StringVar()
+        self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, "")
+        self.drop_down_box.grid(row=1, column=2, pady=10)
 
-        # Create a button to toggle the frame
-        self.toggling_frame = Frame(self.initial_line_plot_frame)
-        self.toggling_frame.grid(row=0, column=0, columnspan=2, pady=(10, 0), sticky=W)
-        self.toggle_button = Button(self.toggling_frame, text="-", command= self.toggle_frames)
-        self.toggle_button.grid(row=0, column=0)
-        toggle_line = Label(self.toggling_frame, text="_"*175)
+
+    def line_plot_frame_create(self):
+        """ Creates new line plot frame to plot a parallel line in the graph. """
+        len_line_plots = len(self.line_plot_frames)
+        text = f"Line Plot {len_line_plots+1}"
+        line_plot_frame = LabelFrame(self.left_section_frames, text=text, padx=10)
+        line_plot_frame.grid(row=len_line_plots+1, column=0, pady=10)
+        self.line_plot_frames.append(line_plot_frame)
+        self.toggling_frame_create(len_line_plots)
+        self.path_frame_create(len_line_plots)
+
+
+    def toggling_frame_create(self, frame_index):
+        """ Create a button to toggle the frame """
+        toggling_frame = Frame(self.line_plot_frames[frame_index])
+        toggling_frame.grid(row=0, column=0, columnspan=2, pady=(10, 0), sticky=W)
+        toggle_button = Button(toggling_frame, text="-",
+                               command=lambda index=len(self.toggling_frames): self.toggle_frames(index))
+        toggle_button.grid(row=0, column=0)
+        toggle_line = Label(toggling_frame, text="_"*175)
         toggle_line.grid(row=0, column=1)
+        self.toggling_frames.append(toggling_frame)
+        self.toggle_buttons.append(toggle_button)
 
 
-    def path_frame_create(self):
-        self.path_frame = LabelFrame(self.initial_line_plot_frame, text="Filepath(s)", padx=10, pady=5)
-        self.path_frame.grid(row=2, rowspan=2, column=1, pady=5, sticky=E)
+    def path_frame_create(self, frame_index):
+        """ Creates a frame for the paths that will be used in the plot. """
+        path_frame = LabelFrame(self.line_plot_frames[frame_index], text="Filepath(s)", padx=10, pady=5)
+        path_frame.grid(row=2, rowspan=2, column=1, pady=5, sticky=E)
+        self.path_frames.append(path_frame)
     
 
-    def toggle_frames(self):
-        if self.browse_frame.winfo_ismapped():
-            self.browse_frame.grid_forget()
-            self.toggling_frame.grid(pady=10)
-            self.toggle_button.config(text="+")
+    def toggle_frames(self, index):
+        """ Toggles the line plot info. """
+        if self.path_frames[index].winfo_ismapped():
+            self.path_frames[index].grid_forget()
+            self.toggling_frames[index].grid(pady=10)
+            self.toggle_buttons[index].config(text="+")
         else:
-            self.toggling_frame.grid(pady=(10, 0))
-            self.toggle_button.config(text="-")
-            self.browse_frame.grid(row=1, column=1, pady=(10, 0), sticky=E)
-
-        if self.path_frame.winfo_ismapped():
-            self.path_frame.grid_forget()
-        else:
+            self.toggling_frames[index].grid(pady=(10, 0))
+            self.toggle_buttons[index].config(text="-")
             self.path_frame.grid(row=2, rowspan=2, column=1, pady=5, sticky=E)
 
 
-    def parallel_line_plot_settings_frame_create(self):
-        """ Creates frame that asks the user if it wants parallel line plots in graph. """
-        self.parallel_files_settings_frame = LabelFrame(self.root, text="Parallel line plot settings", padx=10, pady=5)
-        self.parallel_files_settings_frame.grid(row=0, column=0, padx=(10, 0), pady=10, sticky=N)
-        self.parallel_add_button = Button(self.parallel_files_settings_frame, text="Add Line Plot", command=self.add_parallel_line_plot)
-        self.parallel_add_button.grid(row=0, column=0)
+    # def parallel_line_plot_settings_frame_create(self):
+    #     """ Creates frame that asks the user if it wants parallel line plots in graph. """
+    #     self.parallel_files_settings_frame = LabelFrame(self.root, text="Parallel line plot settings", padx=10, pady=5)
+    #     self.parallel_files_settings_frame.grid(row=0, column=0, padx=(10, 0), pady=10, sticky=N)
+    #     self.parallel_add_button = Button(self.parallel_files_settings_frame, text="Add Line Plot", command=self.add_parallel_line_plot)
+    #     self.parallel_add_button.grid(row=0, column=0)
 
 
-    def add_parallel_line_plot(self):
-        """ Adds an extra line plot that will be parallel to all other line plot. """
-
+    # def add_parallel_line_plot(self):
+    #     """ Adds an extra line plot that will be parallel to all other line plot. """
+    #     self.line_plot_frame_create()
 
 
     def analyze_cancel_frame_create(self):
         """ Creates the analyze/cancel frame and all of it's contents. """
         analyze_cancel_frame = Frame(self.root)
-        analyze_cancel_frame.grid(row=2, column=2, padx=5, sticky=SE)
+        analyze_cancel_frame.grid(row=2, column=1, padx=5, sticky=SE)
         self.analyze_button = Button(analyze_cancel_frame,
                                      text="Analyze",
                                      state=DISABLED,
@@ -126,11 +142,11 @@ class Menu:
             # Frame for path files if beginning of the program or if just deleted.
             for file in self.files:
                 current_row = len(self.file_path_rows)
-                e = Entry(self.path_frame, width=130, borderwidth=5)
+                e = Entry(self.path_frames[0], width=130, borderwidth=5)
                 e.grid(row=current_row, column=0, padx=(0, 28), pady=5, sticky=NW)
                 e.insert(0, file)
                 self.file_path_rows.append(e)
-                b = Button(self.path_frame, text="X", padx=5,
+                b = Button(self.path_frames[0], text="X", padx=5,
                         command=lambda x=len(self.file_path_rows)-1:
                         self.del_path(self.file_path_rows[x],
                                         self.file_path_del_buttons[x],

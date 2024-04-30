@@ -21,7 +21,7 @@ class RemoveTimeMenu:
         self.root = root
 
         self.time_removal_frame = LabelFrame(self.root, text="Time Removal", padx=10, pady=10)
-        self.time_removal_frame.grid(row=0, rowspan=2, column=2, padx=(0, 20), pady=10, sticky=N)
+        self.time_removal_frame.grid(row=0, rowspan=2, column=1, padx=(0, 20), pady=10, sticky=N)
 
         start_time_label = Label(self.time_removal_frame, text="Minutes to remove from start:")
         start_time_label.grid(row=0, column=0, sticky=W)
