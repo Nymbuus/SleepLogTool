@@ -21,6 +21,8 @@ class Menu:
         self.file_path_del_buttons = []
         self.x = 0
         self.line_plot_frames = []
+        self.optionsmenu_list = []
+        self.line_plot_select = StringVar()
 
 
     def main_window(self):
@@ -46,16 +48,17 @@ class Menu:
         self.browse_frame = LabelFrame(self.left_section_frames, text="Choose blf file(s)", padx=10, pady=5)
         self.browse_frame.grid(row=0, column=0, pady=(10, 0), sticky=W)
         self.browse_field = Entry(self.browse_frame, width=136, borderwidth=5)
-        self.browse_field.grid(row=0, column=0, columnspan=2, padx=(0, 10))
+        self.browse_field.grid(row=0, column=0, columnspan=5, padx=(0, 10), pady=(0, 10))
         add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
-        add_button.grid(row=0, column=2, padx=(2, 3), sticky=W)
+        add_button.grid(row=0, column=5, padx=(2, 3), sticky=N)
         choose_file_button = Button(self.browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
-        choose_file_button.grid(row=1, column=0, sticky=E, pady=10)
+        choose_file_button.grid(row=1, column=0, sticky=W)
         choose_folder_button = Button(self.browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
-        choose_folder_button.grid(row=1, column=1, sticky=W, padx=10, pady=10)
-        self.line_plot_select = StringVar()
-        self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, "")
-        self.drop_down_box.grid(row=1, column=2, pady=10)
+        choose_folder_button.grid(row=1, column=1, padx=10)
+        add_plot_line_button = Button(self.browse_frame, text="Add Plot Line", command=self.line_plot_frame_create)
+        add_plot_line_button.grid(row=1, column=2, padx=(0, 30))
+        drop_down_box_text = Label(self.browse_frame, text="Select Line Plot to add files to:")
+        drop_down_box_text.grid(row=1, column=3, sticky=E)
 
 
     def line_plot_frame_create(self):
@@ -67,6 +70,10 @@ class Menu:
         self.line_plot_frames.append(line_plot_frame)
         self.toggling_frame_create(len_line_plots)
         self.path_frame_create(len_line_plots)
+        self.optionsmenu_list.append(text)
+        self.line_plot_select.set(text)
+        self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
+        self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
 
 
     def toggling_frame_create(self, frame_index):
@@ -98,7 +105,7 @@ class Menu:
         else:
             self.toggling_frames[index].grid(pady=(10, 0))
             self.toggle_buttons[index].config(text="-")
-            self.path_frame.grid(row=2, rowspan=2, column=1, pady=5, sticky=E)
+            self.path_frames[index].grid(row=2, rowspan=2, column=1, pady=5, sticky=E)
 
 
     # def parallel_line_plot_settings_frame_create(self):
@@ -142,11 +149,13 @@ class Menu:
             # Frame for path files if beginning of the program or if just deleted.
             for file in self.files:
                 current_row = len(self.file_path_rows)
-                e = Entry(self.path_frames[0], width=130, borderwidth=5)
+                # Gets what path_frame it should put the files in.
+                path_frame_index = int(self.line_plot_select.get()[-1:])-1
+                e = Entry(self.path_frames[path_frame_index], width=130, borderwidth=5)
                 e.grid(row=current_row, column=0, padx=(0, 28), pady=5, sticky=NW)
                 e.insert(0, file)
                 self.file_path_rows.append(e)
-                b = Button(self.path_frames[0], text="X", padx=5,
+                b = Button(self.path_frames[path_frame_index], text="X", padx=5,
                         command=lambda x=len(self.file_path_rows)-1:
                         self.del_path(self.file_path_rows[x],
                                         self.file_path_del_buttons[x],
