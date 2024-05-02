@@ -23,15 +23,15 @@ class PlotAndGraph():
     def plotting_graph(self, dfs, filename, last_dfs):
         """ Plotting. """
         if self.first_time_here:
-            fig, ax = plt.subplots()
+            self.fig, self.ax = plt.subplots()
             plt.xlabel("Time(s)", fontsize=15)
             plt.ylabel("Current(mA)", fontsize=15)
             plt.title("Sleeplog analysis", fontsize=24)
             plt.subplots_adjust(left=0.25, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=None)
-            ax.grid(which = "major", linewidth = 1)
-            ax.grid(which = "minor", linewidth = 0.4)
-            ax.minorticks_on()
-            ax.tick_params(which = "minor", bottom = False, left = False)
+            self.ax.grid(which = "major", linewidth = 1)
+            self.ax.grid(which = "minor", linewidth = 0.4)
+            self.ax.minorticks_on()
+            self.ax.tick_params(which = "minor", bottom = False, left = False)
             manager = plt.get_current_fig_manager()
             manager.window.state('zoomed')
 
@@ -43,12 +43,12 @@ class PlotAndGraph():
         # CAN_channel = filename[0][-7:-4]             This is used if the name of the file isn't modified.
         CAN_channel = f"LEM{self.index}"
         self.index += 1
-        ax.plot((x - first_time), y,
+        self.ax.plot((x - first_time), y,
                 label=f"{CAN_channel}  "+
                     f" Avg: {dfs['Current'].mean():.2f} mA,"+
                     f" Max: {dfs['Current'].max():.2f} mA,"+
                     f" Min: {dfs['Current'].min():.2f} mA")
-        fig.legend(loc="upper left")
+        self.fig.legend(loc="upper left")
 
         return
 

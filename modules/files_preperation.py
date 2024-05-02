@@ -39,6 +39,7 @@ class FilesPreperation:
     def blf_to_df(self, file_list, sample_rate):
         """ Write to df from blf.\n\n
             file_list - The blf file(s) being read from. """
+        print("\nBLF TO DF\n")
         if not all(file.lower().endswith('.blf') for file in file_list):
             raise TypeError("Only .blf files are supported to read from.")
         

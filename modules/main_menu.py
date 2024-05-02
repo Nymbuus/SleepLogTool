@@ -76,6 +76,7 @@ class Menu:
         self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
         # Adds a empty list to the 2D list.
         self.file_path_arrays.append([])
+        self.file_path_del_buttons.append([])
 
 
     def toggling_frame_create(self, frame_index):
@@ -131,7 +132,7 @@ class Menu:
         """ displayes the file paths in the main window. """
         self.files = []
         if add == None:
-            self.files = self.get_file_explorer(choice)
+            self.files = self._fp.file_explorer(choice)
         elif add == "add":
             self.files.append(choice)
         if self.files != False:
@@ -145,13 +146,12 @@ class Menu:
                 e.insert(0, file)
                 self.file_path_arrays[path_frame_index].append(e)
                 b = Button(self.path_frames[path_frame_index], text="X", padx=5,
-                        command=lambda x=len(self.file_path_arrays[path_frame_index])-1:
-                        self.del_path(self.file_path_arrays[path_frame_index][x],
-                                        self.file_path_del_buttons[path_frame_index][x],
-                                        x, path_frame_index))
+                           command=lambda x=len(self.file_path_arrays[path_frame_index])-1, y=path_frame_index:
+                           self.del_path(self.file_path_arrays[y][x],
+                                         self.file_path_del_buttons[y][x],
+                                         x, y))
                 b.grid(row=current_row, column=1, padx=(10, 0))
                 self.file_path_del_buttons[path_frame_index].append(b)
-                # Append funkar inte på del_buttons men på file_path_arrays
 
         self.update_analyze_button()
 
@@ -163,9 +163,9 @@ class Menu:
         del self.file_path_arrays[path_frame_index][index]
         del self.file_path_del_buttons[path_frame_index][index]
         for i in range(len(self.file_path_arrays[path_frame_index])):
-            self.file_path_del_buttons[path_frame_index][i].config(command=lambda x=i:
-                                                 self.del_path(self.file_path_arrays[path_frame_index][x],
-                                                               self.file_path_del_buttons[path_frame_index][x],
+            self.file_path_del_buttons[path_frame_index][i].config(command=lambda x=i, y=path_frame_index:
+                                                 self.del_path(self.file_path_arrays[y][x],
+                                                               self.file_path_del_buttons[y][x],
                                                                x))
         self.update_analyze_button()
 
@@ -187,10 +187,10 @@ class Menu:
 
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
-        blf_files = []
         self.sample_rate = self._rtm.get_sample_rate()
         last_dfs = False
         for i, array in enumerate(self.file_path_arrays):
+            blf_files = []
             for file in array:
                 blf_files.append(file.get())
         
@@ -198,13 +198,3 @@ class Menu:
             if len(self.file_path_arrays)-1 == i:
                 last_dfs = True
             self._rtm.set_df(dfs, filename, self.sample_rate, last_dfs)
-
-
-    def get_file_explorer(self, choice):
-        """ Gets the list of file paths. """
-        return self._fp.file_explorer(choice)
-
-
-    def get_remove_time(self, df):
-        """ returns the remove_time function. """
-        return self._fp.remove_time(df)
