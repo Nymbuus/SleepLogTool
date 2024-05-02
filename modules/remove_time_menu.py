@@ -49,7 +49,7 @@ class RemoveTimeMenu:
         self.warning_label = Label(self.time_removal_frame, text=warning_text)
         self.warning_label.grid(row=6, column=0, pady=(0, 10))
     
-    def set_df(self, dfs, filename, sample_rate):
+    def set_df(self, dfs, filename, sample_rate, last_dfs):
         """ Removes time from start and end of graph. """
         self.dfs = dfs
         self.filename = filename
@@ -69,7 +69,8 @@ class RemoveTimeMenu:
                 if 0 <= remove_end_time < len(self.dfs)+12-remove_start_time:
                     if self.warning_label: self.warning_label.destroy()
                     self.dfs = self._fp.remove_time(self.dfs, remove_start_time, remove_end_time)
-                    self.calculate_plot()
+                    self.calculate_plot(last_dfs)
+                    return
                 elif remove_end_time < 0:
                     self.warning("End time too low value. Try again.")
                 elif remove_start_time >= len(self.dfs)+12-remove_start_time:
@@ -84,9 +85,11 @@ class RemoveTimeMenu:
     def get_df(self):
         return self.dfs
 
-    def calculate_plot(self):
+    def calculate_plot(self, last_dfs):
+        #SLUTADE HÄR!!! if first time then calculate and create fig and ax. Then draw first line. Then draw second line. Then know if last line to plot everything.
         self._pag.calculating_statistics(self.dfs)
-        self._pag.plotting_graph(self.dfs, self.filename)
+        self._pag.plotting_graph(self.dfs, self.filename, last_dfs)
+        return
 
     def get_start_and_end_time(self):
         return self.start_time_entry.get(), self.end_time_entry.get()

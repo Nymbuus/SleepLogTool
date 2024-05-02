@@ -17,7 +17,7 @@ class Menu:
         self.path_frames = []
         self.toggling_frames = []
         self.toggle_buttons = []
-        self.file_path_rows = []
+        self.file_path_arrays = []
         self.file_path_del_buttons = []
         self.x = 0
         self.line_plot_frames = []
@@ -74,6 +74,8 @@ class Menu:
         self.line_plot_select.set(text)
         self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
         self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
+        # Adds a empty list to the 2D list.
+        self.file_path_arrays.append([])
 
 
     def toggling_frame_create(self, frame_index):
@@ -108,19 +110,6 @@ class Menu:
             self.path_frames[index].grid(row=2, rowspan=2, column=1, pady=5, sticky=E)
 
 
-    # def parallel_line_plot_settings_frame_create(self):
-    #     """ Creates frame that asks the user if it wants parallel line plots in graph. """
-    #     self.parallel_files_settings_frame = LabelFrame(self.root, text="Parallel line plot settings", padx=10, pady=5)
-    #     self.parallel_files_settings_frame.grid(row=0, column=0, padx=(10, 0), pady=10, sticky=N)
-    #     self.parallel_add_button = Button(self.parallel_files_settings_frame, text="Add Line Plot", command=self.add_parallel_line_plot)
-    #     self.parallel_add_button.grid(row=0, column=0)
-
-
-    # def add_parallel_line_plot(self):
-    #     """ Adds an extra line plot that will be parallel to all other line plot. """
-    #     self.line_plot_frame_create()
-
-
     def analyze_cancel_frame_create(self):
         """ Creates the analyze/cancel frame and all of it's contents. """
         analyze_cancel_frame = Frame(self.root)
@@ -147,35 +136,36 @@ class Menu:
             self.files.append(choice)
         if self.files != False:
             # Frame for path files if beginning of the program or if just deleted.
+            # Gets what path_frame it should put the files in.
+            path_frame_index = int(self.line_plot_select.get()[-1:])-1
             for file in self.files:
-                current_row = len(self.file_path_rows)
-                # Gets what path_frame it should put the files in.
-                path_frame_index = int(self.line_plot_select.get()[-1:])-1
+                current_row = len(self.file_path_arrays[path_frame_index])
                 e = Entry(self.path_frames[path_frame_index], width=130, borderwidth=5)
                 e.grid(row=current_row, column=0, padx=(0, 28), pady=5, sticky=NW)
                 e.insert(0, file)
-                self.file_path_rows.append(e)
+                self.file_path_arrays[path_frame_index].append(e)
                 b = Button(self.path_frames[path_frame_index], text="X", padx=5,
-                        command=lambda x=len(self.file_path_rows)-1:
-                        self.del_path(self.file_path_rows[x],
-                                        self.file_path_del_buttons[x],
-                                        x))
+                        command=lambda x=len(self.file_path_arrays[path_frame_index])-1:
+                        self.del_path(self.file_path_arrays[path_frame_index][x],
+                                        self.file_path_del_buttons[path_frame_index][x],
+                                        x, path_frame_index))
                 b.grid(row=current_row, column=1, padx=(10, 0))
-                self.file_path_del_buttons.append(b)
+                self.file_path_del_buttons[path_frame_index].append(b)
+                # Append funkar inte på del_buttons men på file_path_arrays
 
         self.update_analyze_button()
 
 
-    def del_path(self, entry, button, index):
+    def del_path(self, entry, button, index, path_frame_index):
         """ Deletes the specified row and then updates the command for delete buttons. """
         entry.destroy()
         button.destroy()
-        del self.file_path_rows[index]
-        del self.file_path_del_buttons[index]
-        for i in range(len(self.file_path_rows)):
-            self.file_path_del_buttons[i].config(command=lambda x=i:
-                                                 self.del_path(self.file_path_rows[x],
-                                                               self.file_path_del_buttons[x],
+        del self.file_path_arrays[path_frame_index][index]
+        del self.file_path_del_buttons[path_frame_index][index]
+        for i in range(len(self.file_path_arrays[path_frame_index])):
+            self.file_path_del_buttons[path_frame_index][i].config(command=lambda x=i:
+                                                 self.del_path(self.file_path_arrays[path_frame_index][x],
+                                                               self.file_path_del_buttons[path_frame_index][x],
                                                                x))
         self.update_analyze_button()
 
@@ -189,7 +179,7 @@ class Menu:
 
     def update_analyze_button(self):
         """ Updates the analyze button """
-        if self.file_path_rows:
+        if self.file_path_arrays:
             self.analyze_button["state"] = NORMAL
         else:
             self.analyze_button["state"] = DISABLED
@@ -197,25 +187,22 @@ class Menu:
 
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
-        # start_time_value, end_time_value = self._rtm.get_start_and_end_time()
-        # if start_time_value and end_time_value:
         blf_files = []
-        for file in self.file_path_rows:
-            blf_files.append(file.get())
-        
         self.sample_rate = self._rtm.get_sample_rate()
-        dfs, filename = self.get_write_to_df(blf_files)
-        self._rtm.set_df(dfs, filename, self.sample_rate)
+        last_dfs = False
+        for i, array in enumerate(self.file_path_arrays):
+            for file in array:
+                blf_files.append(file.get())
+        
+            dfs, filename = self._fp.blf_to_df(blf_files, self.sample_rate)
+            if len(self.file_path_arrays)-1 == i:
+                last_dfs = True
+            self._rtm.set_df(dfs, filename, self.sample_rate, last_dfs)
 
 
     def get_file_explorer(self, choice):
         """ Gets the list of file paths. """
         return self._fp.file_explorer(choice)
-
-
-    def get_write_to_df(self, blf_files):
-        """ returns the blf_to_df function. """
-        return self._fp.blf_to_df(blf_files, self.sample_rate)
 
 
     def get_remove_time(self, df):

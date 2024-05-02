@@ -10,6 +10,8 @@ class PlotAndGraph():
 
     def __init__(self):
         """ Initializes the class. """
+        self.first_time_here = True
+        self.index = 1
 
     def calculating_statistics(self, dfs):
         """ Calculate statistics """
@@ -18,54 +20,58 @@ class PlotAndGraph():
         self.results["ampere_hours"] = (self.results["total_time"] / 3600) * (dfs['Current'].mean() * 0.001)
 
 
-    def plotting_graph(self, dfs, filename):
+    def plotting_graph(self, dfs, filename, last_dfs):
         """ Plotting. """
-        fig, ax = plt.subplots()
+        if self.first_time_here:
+            fig, ax = plt.subplots()
+            plt.xlabel("Time(s)", fontsize=15)
+            plt.ylabel("Current(mA)", fontsize=15)
+            plt.title("Sleeplog analysis", fontsize=24)
+            plt.subplots_adjust(left=0.25, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=None)
+            ax.grid(which = "major", linewidth = 1)
+            ax.grid(which = "minor", linewidth = 0.4)
+            ax.minorticks_on()
+            ax.tick_params(which = "minor", bottom = False, left = False)
+            manager = plt.get_current_fig_manager()
+            manager.window.state('zoomed')
+
+            self.first_time_here = False
+
         first_time = dfs["Time"].min()
         y = dfs.Current.to_numpy()
         x = dfs.Time.to_numpy()
         # CAN_channel = filename[0][-7:-4]             This is used if the name of the file isn't modified.
-        CAN_channel = "LEM"
+        CAN_channel = f"LEM{self.index}"
+        self.index += 1
         ax.plot((x - first_time), y,
                 label=f"{CAN_channel}  "+
                     f" Avg: {dfs['Current'].mean():.2f} mA,"+
                     f" Max: {dfs['Current'].max():.2f} mA,"+
                     f" Min: {dfs['Current'].min():.2f} mA")
-          
-        plt.xlabel("Time(s)", fontsize=15)
-        plt.ylabel("Current(mA)", fontsize=15)
-        plt.title("Sleeplog analysis", fontsize=24)
-        plt.subplots_adjust(left=0.25, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=None)
-        ax.grid(which = "major", linewidth = 1)
-        ax.grid(which = "minor", linewidth = 0.4)
-        ax.minorticks_on()
-        ax.tick_params(which = "minor", bottom = False, left = False)
-
-        manager = plt.get_current_fig_manager()
-        manager.window.state('zoomed')
-
         fig.legend(loc="upper left")
 
-        point, = ax.plot(0, 0, 'ro')
-        text = ax.text(0, 0, '', va='bottom')
-        x_time_min = min(x)
+        return
 
-        def update_point(event):
-            if event.inaxes == ax:
-                x_mouse = event.xdata
+        # point, = ax.plot(0, 0, 'ro')
+        # text = ax.text(0, 0, '', va='bottom')
+        # x_time_min = min(x)
 
-                # np.argmin() takes the smallest value and returns the index.
-                plus_x_mouse = x_time_min + x_mouse
-                idx = np.argmin(np.abs(x - plus_x_mouse))
+        # def update_point(event):
+        #     if event.inaxes == ax:
+        #         x_mouse = event.xdata
 
-                # Update the position of the draggable point
-                point.set_xdata(x[idx] - x_time_min)
-                point.set_ydata(y[idx])
+        #         # np.argmin() takes the smallest value and returns the index.
+        #         plus_x_mouse = x_time_min + x_mouse
+        #         idx = np.argmin(np.abs(x - plus_x_mouse))
 
-                # Update the text annotation with coordinates
-                text.set_text(f'({x[idx] - x_time_min:.2f}s, {y[idx]:.2f}mA)')
-                text.set_position((x[idx] - x_time_min, y[idx]))
+        #         # Update the position of the draggable point
+        #         point.set_xdata(x[idx] - x_time_min)
+        #         point.set_ydata(y[idx])
 
-                fig.canvas.draw_idle()
+        #         # Update the text annotation with coordinates
+        #         text.set_text(f'({x[idx] - x_time_min:.2f}s, {y[idx]:.2f}mA)')
+        #         text.set_position((x[idx] - x_time_min, y[idx]))
 
-        fig.canvas.mpl_connect('motion_notify_event', update_point)
+        #         fig.canvas.draw_idle()
+
+        # fig.canvas.mpl_connect('motion_notify_event', update_point)
