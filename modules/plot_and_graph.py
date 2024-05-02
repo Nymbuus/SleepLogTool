@@ -24,17 +24,6 @@ class PlotAndGraph():
         """ Plotting. """
         if self.first_time_here:
             self.fig, self.ax = plt.subplots()
-            plt.xlabel("Time(s)", fontsize=15)
-            plt.ylabel("Current(mA)", fontsize=15)
-            plt.title("Sleeplog analysis", fontsize=24)
-            plt.subplots_adjust(left=0.25, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=None)
-            self.ax.grid(which = "major", linewidth = 1)
-            self.ax.grid(which = "minor", linewidth = 0.4)
-            self.ax.minorticks_on()
-            self.ax.tick_params(which = "minor", bottom = False, left = False)
-            manager = plt.get_current_fig_manager()
-            manager.window.state('zoomed')
-
             self.first_time_here = False
 
         first_time = dfs["Time"].min()
@@ -48,7 +37,19 @@ class PlotAndGraph():
                     f" Avg: {dfs['Current'].mean():.2f} mA,"+
                     f" Max: {dfs['Current'].max():.2f} mA,"+
                     f" Min: {dfs['Current'].min():.2f} mA")
-        self.fig.legend(loc="upper left")
+
+        if last_dfs:
+            plt.xlabel("Time(s)", fontsize=15)
+            plt.ylabel("Current(mA)", fontsize=15)
+            plt.title("Sleeplog analysis", fontsize=24)
+            plt.subplots_adjust(left=0.25, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=None)
+            self.ax.grid(which = "major", linewidth = 1)
+            self.ax.grid(which = "minor", linewidth = 0.4)
+            self.ax.minorticks_on()
+            self.ax.tick_params(which = "minor", bottom = False, left = False)
+            manager = plt.get_current_fig_manager()
+            manager.window.state('zoomed')
+            self.fig.legend(loc="upper left")
 
         return
 
