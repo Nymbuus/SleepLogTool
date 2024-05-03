@@ -16,6 +16,7 @@ class RemoveTimeMenu:
         self.root = None
         self.warning_label = None
 
+
     def time_menu(self, root):
         """ Design and functionality for time removal. """
         self.root = root
@@ -44,15 +45,15 @@ class RemoveTimeMenu:
         self.sample_entry = Entry(self.time_removal_frame, width=40, borderwidth=5)
         self.sample_entry.grid(row=5, column=0, columnspan=2)
 
+
     def warning(self, warning_text):
         """ Displays the warning text when you put in a wrong type of value. """
         self.warning_label = Label(self.time_removal_frame, text=warning_text)
         self.warning_label.grid(row=6, column=0, pady=(0, 10))
+
     
-    def set_df(self, dfs, filename, sample_rate, last_dfs):
+    def set_df(self, dfs, filename, stats, sample_rate, last_dfs):
         """ Removes time from start and end of graph. """
-        self.dfs = dfs
-        self.filename = filename
         if self.start_time_entry.get() == "":
             remove_start_time = 0
         else:
@@ -65,34 +66,27 @@ class RemoveTimeMenu:
         try:
             remove_start_time = remove_start_time * (1/sample_rate) * TENTH_SECOND
             remove_end_time = remove_end_time * (1/sample_rate) * TENTH_SECOND
-            if 0 <= remove_start_time < len(self.dfs)+12:
-                if 0 <= remove_end_time < len(self.dfs)+12-remove_start_time:
+            if 0 <= remove_start_time < len(dfs)+12:
+                if 0 <= remove_end_time < len(dfs)+12-remove_start_time:
                     if self.warning_label: self.warning_label.destroy()
-                    self.dfs = self._fp.remove_time(self.dfs, remove_start_time, remove_end_time)
-                    self.calculate_plot(last_dfs)
+                    dfs = self._fp.remove_time(dfs, remove_start_time, remove_end_time)
+                    self._pag.plotting_graph(dfs, filename, stats, last_dfs)
                     return
                 elif remove_end_time < 0:
                     self.warning("End time too low value. Try again.")
-                elif remove_start_time >= len(self.dfs)+12-remove_start_time:
+                elif remove_start_time >= len(dfs)+12-remove_start_time:
                     self.warning("End time too high value. Try again.")
             elif remove_start_time < 0:
                 self.warning("Start time too low value. Try again.")
-            elif remove_start_time >= len(self.dfs)+12:
+            elif remove_start_time >= len(dfs)+12:
                 self.warning("Start time too high value. Try again.")
         except ValueError as err:
             print(f"ValueError: {err}. Try again.")
-    
-    def get_df(self):
-        return self.dfs
 
-    def calculate_plot(self, last_dfs):
-        #SLUTADE HÄR!!! if first time then calculate and create fig and ax. Then draw first line. Then draw second line. Then know if last line to plot everything.
-        self._pag.calculating_statistics(self.dfs)
-        self._pag.plotting_graph(self.dfs, self.filename, last_dfs)
-        return
 
     def get_start_and_end_time(self):
         return self.start_time_entry.get(), self.end_time_entry.get()
+
     
     def get_sample_rate(self):
         if self.sample_entry.get() == "":

@@ -44,6 +44,7 @@ class FilesPreperation:
             raise TypeError("Only .blf files are supported to read from.")
         
         df = None
+        stats = {"Current": []}
         for index, file in enumerate(file_list):
             blf_data = {"Time": [], "Current": []}
             with open(file, 'rb') as f:
@@ -53,25 +54,34 @@ class FilesPreperation:
                 last_print = 0
                 for i, msg in enumerate(blf_return):
                     status += percent
+                    columns = str(msg).strip().split()
+                    current_dec = int(columns[10] + columns[11], 16)
+                    # Fortfarande inte säker ifall man kan lägga in 40000 här under istället för det som var innan.
+                    if current_dec > 40000:
+                        current_dec -= 72769
+                    stats["Current"].append(current_dec)
                     if i % sample_rate == 0:
-                        columns = str(msg).strip().split()
                         blf_data["Time"].append(float(columns[1]))
-                        current_dec = int(columns[10] + columns[11], 16)
-                        # Fortfarande inte säker ifall man kan lägga in 40000 här under istället för det som var innan.
-                        if current_dec > 40000:
-                            current_dec -= 72769
                         blf_data["Current"].append(current_dec)
                         if int(status) != last_print:
                             print(f"{status:.0f}%")
                             last_print = int(status)
             
             temp = pd.DataFrame(blf_data)
+            tempstats = pd.DataFrame(stats)
             if index == 0:
                 df = temp
+                dfstats = tempstats
             else:
                 df = pd.concat([df, temp], axis=0)
+                dfstats = pd.concat([dfstats, tempstats], axis=0)
+        
+        current_avg = dfstats["Current"].mean()
+        current_max = dfstats["Current"].max()
+        current_min = dfstats["Current"].min()
+        statslist = [current_avg, current_max, current_min]
 
-        return df, file_list
+        return df, file_list, statslist
 
 
     def remove_time(self, dfs, remove_start_time, remove_end_time):

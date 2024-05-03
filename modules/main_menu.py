@@ -194,7 +194,7 @@ class Menu:
             for file in array:
                 blf_files.append(file.get())
         
-            dfs, filename = self._fp.blf_to_df(blf_files, self.sample_rate)
+            dfs, filename, stats = self._fp.blf_to_df(blf_files, self.sample_rate)
             if len(self.file_path_arrays)-1 == i:
                 last_dfs = True
-            self._rtm.set_df(dfs, filename, self.sample_rate, last_dfs)
+            self._rtm.set_df(dfs, filename, stats, self.sample_rate, last_dfs)

@@ -13,15 +13,10 @@ class PlotAndGraph():
         self.first_time_here = True
         self.index = 1
 
-    def calculating_statistics(self, dfs):
-        """ Calculate statistics """
-        self.results = {}
-        self.results["total_time"] = float(dfs['Time'].max() - dfs['Time'].min())
-        self.results["ampere_hours"] = (self.results["total_time"] / 3600) * (dfs['Current'].mean() * 0.001)
 
-
-    def plotting_graph(self, dfs, filename, last_dfs):
+    def plotting_graph(self, dfs, filename, stats, last_dfs):
         """ Plotting. """
+        # Will only execute first time this function is called.
         if self.first_time_here:
             self.fig, self.ax = plt.subplots()
             self.first_time_here = False
@@ -36,8 +31,12 @@ class PlotAndGraph():
                 label=f"{CAN_channel}  "+
                     f" Avg: {dfs['Current'].mean():.2f} mA,"+
                     f" Max: {dfs['Current'].max():.2f} mA,"+
-                    f" Min: {dfs['Current'].min():.2f} mA")
+                    f" Min: {dfs['Current'].min():.2f} mA\n"+
+                    f" Avg: {stats[0].mean():.2f} mA,"+
+                    f" Max: {stats[1].max():.2f} mA,"+
+                    f" Min: {stats[2].min():.2f} mA")
 
+        # Will execute if all lines are plotted.
         if last_dfs:
             plt.xlabel("Time(s)", fontsize=15)
             plt.ylabel("Current(mA)", fontsize=15)
