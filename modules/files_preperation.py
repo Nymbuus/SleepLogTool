@@ -57,6 +57,7 @@ class FilesPreperation:
                     columns = str(msg).strip().split()
                     current_dec = int(columns[9] + columns[10] + columns[11], 16)
                     check_negative = int(columns[8], 16)
+                    # If the MSB in cloumns[8] is equal to zero, the number is negative.
                     if check_negative < 128:
                         current_dec -= 16777216
                     stats["Current"].append(current_dec)

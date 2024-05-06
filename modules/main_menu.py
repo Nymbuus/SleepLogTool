@@ -166,7 +166,7 @@ class Menu:
             self.file_path_del_buttons[path_frame_index][i].config(command=lambda x=i, y=path_frame_index:
                                                  self.del_path(self.file_path_arrays[y][x],
                                                                self.file_path_del_buttons[y][x],
-                                                               x))
+                                                               x, y))
         self.update_analyze_button()
 
 
