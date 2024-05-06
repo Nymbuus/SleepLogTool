@@ -52,7 +52,7 @@ class RemoveTimeMenu:
         self.warning_label.grid(row=6, column=0, pady=(0, 10))
 
     
-    def set_df(self, dfs, filename, stats, sample_rate, last_dfs):
+    def set_df(self, dfs, filename, stats, sample_rate, first_dfs, last_dfs):
         """ Removes time from start and end of graph. """
         if self.start_time_entry.get() == "":
             remove_start_time = 0
@@ -70,7 +70,7 @@ class RemoveTimeMenu:
                 if 0 <= remove_end_time < len(dfs)+12-remove_start_time:
                     if self.warning_label: self.warning_label.destroy()
                     dfs = self._fp.remove_time(dfs, remove_start_time, remove_end_time)
-                    self._pag.plotting_graph(dfs, filename, stats, last_dfs)
+                    self._pag.plotting_graph(dfs, filename, stats, first_dfs, last_dfs)
                     return
                 elif remove_end_time < 0:
                     self.warning("End time too low value. Try again.")

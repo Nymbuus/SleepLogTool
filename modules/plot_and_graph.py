@@ -10,16 +10,14 @@ class PlotAndGraph():
 
     def __init__(self):
         """ Initializes the class. """
-        self.first_time_here = True
         self.index = 1
 
 
-    def plotting_graph(self, dfs, filename, stats, last_dfs):
+    def plotting_graph(self, dfs, filename, stats, first_dfs, last_dfs):
         """ Plotting. """
-        # Will only execute first time this function is called.
-        if self.first_time_here:
+        # Will only execute when the the first dfs comes in.
+        if first_dfs:
             self.fig, self.ax = plt.subplots()
-            self.first_time_here = False
 
         first_time = dfs["Time"].min()
         y = dfs.Current.to_numpy()

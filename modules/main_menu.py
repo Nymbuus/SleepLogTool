@@ -188,6 +188,7 @@ class Menu:
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
         self.sample_rate = self._rtm.get_sample_rate()
+        first_dfs = True
         last_dfs = False
         for i, array in enumerate(self.file_path_arrays):
             blf_files = []
@@ -195,6 +196,8 @@ class Menu:
                 blf_files.append(file.get())
         
             dfs, filename, stats = self._fp.blf_to_df(blf_files, self.sample_rate)
+            if i > 0:
+                first_dfs = False
             if len(self.file_path_arrays)-1 == i:
                 last_dfs = True
-            self._rtm.set_df(dfs, filename, stats, self.sample_rate, last_dfs)
+            self._rtm.set_df(dfs, filename, stats, self.sample_rate, first_dfs, last_dfs)

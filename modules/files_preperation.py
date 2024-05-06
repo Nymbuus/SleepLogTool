@@ -55,10 +55,10 @@ class FilesPreperation:
                 for i, msg in enumerate(blf_return):
                     status += percent
                     columns = str(msg).strip().split()
-                    current_dec = int(columns[10] + columns[11], 16)
-                    # Fortfarande inte säker ifall man kan lägga in 40000 här under istället för det som var innan.
-                    if current_dec > 40000:
-                        current_dec -= 72769
+                    current_dec = int(columns[9] + columns[10] + columns[11], 16)
+                    check_negative = int(columns[8], 16)
+                    if check_negative < 128:
+                        current_dec -= 16777216
                     stats["Current"].append(current_dec)
                     if i % sample_rate == 0:
                         blf_data["Time"].append(float(columns[1]))
