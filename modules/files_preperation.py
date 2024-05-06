@@ -44,6 +44,7 @@ class FilesPreperation:
             raise TypeError("Only .blf files are supported to read from.")
         
         df = None
+        dfstats = None
         stats = {"Current": []}
         for index, file in enumerate(file_list):
             blf_data = {"Time": [], "Current": []}

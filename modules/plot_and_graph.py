@@ -29,10 +29,7 @@ class PlotAndGraph():
                 label=f"{CAN_channel}  "+
                     f" Avg: {dfs['Current'].mean():.2f} mA,"+
                     f" Max: {dfs['Current'].max():.2f} mA,"+
-                    f" Min: {dfs['Current'].min():.2f} mA\n"+
-                    f" Avg: {stats[0].mean():.2f} mA,"+
-                    f" Max: {stats[1].max():.2f} mA,"+
-                    f" Min: {stats[2].min():.2f} mA")
+                    f" Min: {dfs['Current'].min():.2f} mA")
 
         # Will execute if all lines are plotted.
         if last_dfs:
