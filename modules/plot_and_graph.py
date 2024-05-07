@@ -22,7 +22,6 @@ class PlotAndGraph():
         first_time = dfs["Time"].min()
         y = dfs.Current.to_numpy()
         x = dfs.Time.to_numpy()
-        # CAN_channel = filename[0][-7:-4]             This is used if the name of the file isn't modified.
         CAN_channel = f"LEM{self.index}"
         self.index += 1
         self.ax.plot((x - first_time), y,
@@ -46,27 +45,4 @@ class PlotAndGraph():
             self.fig.legend(loc="upper left")
 
         return
-
-        # point, = ax.plot(0, 0, 'ro')
-        # text = ax.text(0, 0, '', va='bottom')
-        # x_time_min = min(x)
-
-        # def update_point(event):
-        #     if event.inaxes == ax:
-        #         x_mouse = event.xdata
-
-        #         # np.argmin() takes the smallest value and returns the index.
-        #         plus_x_mouse = x_time_min + x_mouse
-        #         idx = np.argmin(np.abs(x - plus_x_mouse))
-
-        #         # Update the position of the draggable point
-        #         point.set_xdata(x[idx] - x_time_min)
-        #         point.set_ydata(y[idx])
-
-        #         # Update the text annotation with coordinates
-        #         text.set_text(f'({x[idx] - x_time_min:.2f}s, {y[idx]:.2f}mA)')
-        #         text.set_position((x[idx] - x_time_min, y[idx]))
-
-        #         fig.canvas.draw_idle()
-
-        # fig.canvas.mpl_connect('motion_notify_event', update_point)
+    
