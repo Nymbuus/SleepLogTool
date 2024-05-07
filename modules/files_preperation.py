@@ -36,54 +36,58 @@ class FilesPreperation:
                 else:
                     print("One or more files in directory is not blf file type, try again.")
 
-    def blf_to_df(self, file_list, sample_rate):
+    def blf_to_df(self, file_list):
         """ Write to df from blf.\n\n
             file_list - The blf file(s) being read from. """
-        print("\nBLF TO DF\n")
+        
         if not all(file.lower().endswith('.blf') for file in file_list):
             raise TypeError("Only .blf files are supported to read from.")
         
         df = None
-        dfstats = None
-        stats = {"Current": []}
+        channel = None
         for index, file in enumerate(file_list):
             blf_data = {"Time": [], "Current": []}
             with open(file, 'rb') as f:
-                blf_return = can.BLFReader(f)
+                channel_get_blf = can.BLFReader(f)
+                for msg in channel_get_blf:
+                    channel = msg.channel
+                    break
+            f.close()
+
+            with open(file, 'rb') as e:
+                blf_return = can.BLFReader(e)
                 percent = 100 / blf_return.object_count
                 status = 0
                 last_print = 0
                 for i, msg in enumerate(blf_return):
                     status += percent
-                    columns = str(msg).strip().split()
-                    current_dec = int(columns[9] + columns[10] + columns[11], 16)
-                    check_negative = int(columns[8], 16)
-                    # If the MSB in cloumns[8] is equal to zero, the number is negative.
-                    if check_negative < 128:
+                    data = msg.data
+                    hex1 = hex(data[1])[2:]
+                    if len(hex1) == 1:
+                        hex1 = "0"+hex1
+                    hex2 = hex(data[2])[2:]
+                    if len(hex2) == 1:
+                        hex2 = "0"+hex2
+                    hex3 = hex(data[3])[2:]
+                    if len(hex3) == 1:
+                        hex3 = "0"+hex3
+                    current_dec = int(hex1+hex2+hex3,16)
+                    # If byte 0 is less then 128, the number is negative.
+                    if data[0] < 128:
                         current_dec -= 16777216
-                    stats["Current"].append(current_dec)
-                    if i % sample_rate == 0:
-                        blf_data["Time"].append(float(columns[1]))
-                        blf_data["Current"].append(current_dec)
-                        if int(status) != last_print:
-                            print(f"{status:.0f}%")
-                            last_print = int(status)
+                    blf_data["Time"].append(msg.timestamp)
+                    blf_data["Current"].append(current_dec)
+                    if round(status) != last_print:
+                        print(f"{round(status)}%")
+                        last_print = round(status)
             
             temp = pd.DataFrame(blf_data)
-            tempstats = pd.DataFrame(stats)
             if index == 0:
                 df = temp
-                dfstats = tempstats
             else:
                 df = pd.concat([df, temp], axis=0)
-                dfstats = pd.concat([dfstats, tempstats], axis=0)
-        
-        current_avg = dfstats["Current"].mean()
-        current_max = dfstats["Current"].max()
-        current_min = dfstats["Current"].min()
-        statslist = [current_avg, current_max, current_min]
 
-        return df, file_list, statslist
+        return df, channel
 
 
     def remove_time(self, dfs, remove_start_time, remove_end_time):

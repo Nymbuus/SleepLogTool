@@ -34,17 +34,6 @@ class RemoveTimeMenu:
         self.end_time_entry = Entry(self.time_removal_frame, width=40, borderwidth=5)
         self.end_time_entry.grid(row=3, column=0, columnspan=2)
 
-        sample_label = Label(self.time_removal_frame, justify="left", text="Sample Rate:\n"+
-                                                                           "Low number = More detailed info\n"+
-                                                                           "High number = Smoother graph\n"+
-                                                                           "1 = Sample every 0.01s\n"+
-                                                                           "1000 = Sample every 10s\n"+
-                                                                           "6000 = Sample every 1min\n"+
-                                                                           "360000 = Sample every 1h")
-        sample_label.grid(row=4, column=0, sticky=W)
-        self.sample_entry = Entry(self.time_removal_frame, width=40, borderwidth=5)
-        self.sample_entry.grid(row=5, column=0, columnspan=2)
-
 
     def warning(self, warning_text):
         """ Displays the warning text when you put in a wrong type of value. """
@@ -52,7 +41,7 @@ class RemoveTimeMenu:
         self.warning_label.grid(row=6, column=0, pady=(0, 10))
 
     
-    def set_df(self, dfs, filename, stats, sample_rate, first_dfs, last_dfs):
+    def set_df(self, plotinfo):
         """ Removes time from start and end of graph. """
         if self.start_time_entry.get() == "":
             remove_start_time = 0
@@ -64,21 +53,21 @@ class RemoveTimeMenu:
             remove_end_time = float(self.end_time_entry.get())
 
         try:
-            remove_start_time = remove_start_time * (1/sample_rate) * TENTH_SECOND
-            remove_end_time = remove_end_time * (1/sample_rate) * TENTH_SECOND
-            if 0 <= remove_start_time < len(dfs)+12:
-                if 0 <= remove_end_time < len(dfs)+12-remove_start_time:
+            remove_start_time = remove_start_time * TENTH_SECOND
+            remove_end_time = remove_end_time  * TENTH_SECOND
+            if 0 <= remove_start_time < len(plotinfo["Dfs"])+12:
+                if 0 <= remove_end_time < len(plotinfo["Dfs"])+12-remove_start_time:
                     if self.warning_label: self.warning_label.destroy()
-                    dfs = self._fp.remove_time(dfs, remove_start_time, remove_end_time)
-                    self._pag.plotting_graph(dfs, filename, stats, first_dfs, last_dfs)
+                    plotinfo["Dfs"] = self._fp.remove_time(plotinfo["Dfs"], remove_start_time, remove_end_time)
+                    self._pag.plotting_graph(plotinfo)
                     return
                 elif remove_end_time < 0:
                     self.warning("End time too low value. Try again.")
-                elif remove_start_time >= len(dfs)+12-remove_start_time:
+                elif remove_start_time >= len(plotinfo["Dfs"])+12-remove_start_time:
                     self.warning("End time too high value. Try again.")
             elif remove_start_time < 0:
                 self.warning("Start time too low value. Try again.")
-            elif remove_start_time >= len(dfs)+12:
+            elif remove_start_time >= len(plotinfo["Dfs"])+12:
                 self.warning("Start time too high value. Try again.")
         except ValueError as err:
             print(f"ValueError: {err}. Try again.")
@@ -86,9 +75,3 @@ class RemoveTimeMenu:
 
     def get_start_and_end_time(self):
         return self.start_time_entry.get(), self.end_time_entry.get()
-
-    
-    def get_sample_rate(self):
-        if self.sample_entry.get() == "":
-            return 1
-        return int(self.sample_entry.get())

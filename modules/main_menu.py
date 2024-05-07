@@ -23,6 +23,8 @@ class Menu:
         self.optionsmenu_list = []
         self.line_plot_select = StringVar()
         self.line_plot_del_buttons = []
+        self.indexLEM = 1
+        self.indexBL = 1
 
 
     def main_window(self):
@@ -65,8 +67,19 @@ class Menu:
         """ Creates new line plot frame to plot a parallel line in the graph. """
         len_line_plots = len(self.line_plot_frames)
         text = f"Line Plot {len_line_plots+1}"
-        self.line_plot_frame = LabelFrame(self.left_section_frames, text=text, padx=10)
+        self.line_plot_frame = LabelFrame(self.left_section_frames, text=text, padx=10, pady=5)
         self.line_plot_frame.grid(row=len_line_plots+1, column=0, pady=10)
+
+        self.line_plot_name_label = Label(self.line_plot_frame, text="Line plot name:")
+        self.line_plot_name_label.grid(row=0, column=0, sticky=W)
+        self.line_plot_name_entry = Entry(self.line_plot_frame, width=25, borderwidth=5)
+        self.line_plot_name_entry.grid(row=0, column=1, padx=(0, 640))
+
+        self.line_plot_del_button = Button(self.line_plot_frame, text="X",
+                                           command=lambda x=len(self.line_plot_frames)-1: self.line_plot_del(x))
+        self.line_plot_del_button.grid(row=0, column=2)
+        self.line_plot_del_buttons.append(self.line_plot_del_button)
+
         self.line_plot_frames.append(self.line_plot_frame)
         self.toggling_frame_create(len_line_plots)
         self.path_frame_create(len_line_plots)
@@ -76,11 +89,6 @@ class Menu:
         self.line_plot_select.set(text)
         self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
         self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
-
-        self.line_plot_del_button = Button(self.line_plot_frame, text="X",
-                                           command=lambda x=len(self.line_plot_frames)-1: self.line_plot_del(x))
-        self.line_plot_del_button.grid(row=0, column=2, padx=(6, 0))
-        self.line_plot_del_buttons.append(self.line_plot_del_button)
 
         # Adds a empty list to the 2D lists.
         self.file_path_arrays.append([])
@@ -115,7 +123,7 @@ class Menu:
     def toggling_frame_create(self, frame_index):
         """ Create a button to toggle the frame """
         toggling_frame = Frame(self.line_plot_frames[frame_index])
-        toggling_frame.grid(row=0, column=0, columnspan=2, pady=(10, 0), sticky=W)
+        toggling_frame.grid(row=1, column=0, columnspan=2, sticky=W)
         toggle_button = Button(toggling_frame, text="-",
                                command=lambda index=len(self.toggling_frames): self.toggle_frames(index))
         toggle_button.grid(row=0, column=0)
@@ -128,7 +136,7 @@ class Menu:
     def path_frame_create(self, frame_index):
         """ Creates a frame for the paths that will be used in the plot. """
         path_frame = LabelFrame(self.line_plot_frames[frame_index], text="Filepath(s)", padx=10, pady=5)
-        path_frame.grid(row=2, rowspan=2, column=1, pady=5, sticky=E)
+        path_frame.grid(row=2, column=0, columnspan=2, padx=(20, 0), pady=5, sticky=W)
         self.path_frames.append(path_frame)
     
 
@@ -136,12 +144,10 @@ class Menu:
         """ Toggles the line plot info. """
         if self.path_frames[index].winfo_ismapped():
             self.path_frames[index].grid_forget()
-            self.toggling_frames[index].grid(pady=10)
             self.toggle_buttons[index].config(text="+")
         else:
-            self.toggling_frames[index].grid(pady=(10, 0))
             self.toggle_buttons[index].config(text="-")
-            self.path_frames[index].grid(row=2, rowspan=2, column=1, pady=5, sticky=E)
+            self.path_frames[index].grid(row=2, column=1, pady=5, sticky=E)
 
 
     def analyze_cancel_frame_create(self):
@@ -222,17 +228,32 @@ class Menu:
 
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
-        self.sample_rate = self._rtm.get_sample_rate()
         first_dfs = True
         last_dfs = False
         for i, array in enumerate(self.file_path_arrays):
             blf_files = []
+            get_channel = False
+            isLEM = False
+            isBL = False
             for file in array:
                 blf_files.append(file.get())
-        
-            dfs, filename, stats = self._fp.blf_to_df(blf_files, self.sample_rate)
-            if i > 0:
-                first_dfs = False
-            if len(self.file_path_arrays)-1 == i:
-                last_dfs = True
-            self._rtm.set_df(dfs, filename, stats, self.sample_rate, first_dfs, last_dfs)
+
+            line_plot_name = self.line_plot_name_entry.get()
+            dfs, channel = self._fp.blf_to_df(blf_files)
+            if line_plot_name == "":
+                if channel == 10:
+                    line_plot_name = f"LEM{self.indexLEM}"
+                    self.indexLEM += 1
+                else:
+                    line_plot_name = f"BL{self.indexLEM}"
+                    self.indexBL += 1
+            if channel == 10:
+                isLEM = True
+            else:
+                isBL = True
+
+            if i > 0: first_dfs = False
+            if len(self.file_path_arrays)-1 == i: last_dfs = True
+            
+            plot_info = {"Dfs":dfs, "Name":line_plot_name, "First":first_dfs, "Last":last_dfs, "LEM":isLEM, "BL":isBL}
+            self._rtm.set_df(plot_info)
