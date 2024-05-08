@@ -25,6 +25,7 @@ class Menu:
         self.line_plot_del_buttons = []
         self.indexLEM = 1
         self.indexBL = 1
+        self.line_plot_name_entries = []
 
 
     def main_window(self):
@@ -74,9 +75,10 @@ class Menu:
         self.line_plot_name_label.grid(row=0, column=0, sticky=W)
         self.line_plot_name_entry = Entry(self.line_plot_frame, width=25, borderwidth=5)
         self.line_plot_name_entry.grid(row=0, column=1, padx=(0, 640))
+        self.line_plot_name_entries.append(self.line_plot_name_entry)
 
         self.line_plot_del_button = Button(self.line_plot_frame, text="X",
-                                           command=lambda x=len(self.line_plot_frames)-1: self.line_plot_del(x))
+                                           command=lambda x=len(self.line_plot_frames): self.line_plot_del(x))
         self.line_plot_del_button.grid(row=0, column=2)
         self.line_plot_del_buttons.append(self.line_plot_del_button)
 
@@ -90,7 +92,6 @@ class Menu:
         self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
         self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
 
-        # Adds a empty list to the 2D lists.
         self.file_path_arrays.append([])
         self.file_path_del_buttons.append([])
     
@@ -100,6 +101,8 @@ class Menu:
         del self.line_plot_frames[x]
         del self.line_plot_del_buttons[x]
         del self.path_frames[x]
+        del self.line_plot_name_entries[x]
+        del self.file_path_arrays[x]
         for i, frame in enumerate(self.line_plot_frames):
             text = f"Line Plot {i+1}"
             frame.config(text=text)
@@ -147,7 +150,7 @@ class Menu:
             self.toggle_buttons[index].config(text="+")
         else:
             self.toggle_buttons[index].config(text="-")
-            self.path_frames[index].grid(row=2, column=1, pady=5, sticky=E)
+            self.path_frames[index].grid(row=2, column=0, columnspan=2, padx=(20, 0), pady=5, sticky=W)
 
 
     def analyze_cancel_frame_create(self):
@@ -172,20 +175,25 @@ class Menu:
         if len(self.line_plot_frames) == 0:
             return
         self.files = []
+
         if add == None:
             self.files = self._fp.file_explorer(choice)
         elif add == "add":
             self.files.append(choice)
+
         if self.files != False:
             # Frame for path files if beginning of the program or if just deleted.
             # Gets what path_frame it should put the files in.
             path_frame_index = int(self.line_plot_select.get()[-1:])-1
+
             for file in self.files:
                 current_row = len(self.file_path_arrays[path_frame_index])
+
                 e = Entry(self.path_frames[path_frame_index], width=130, borderwidth=5)
                 e.grid(row=current_row, column=0, padx=(0, 28), pady=5, sticky=NW)
                 e.insert(0, file)
                 self.file_path_arrays[path_frame_index].append(e)
+
                 b = Button(self.path_frames[path_frame_index], text="X", padx=5,
                            command=lambda x=len(self.file_path_arrays[path_frame_index])-1, y=path_frame_index:
                            self.del_path(self.file_path_arrays[y][x],
@@ -228,32 +236,40 @@ class Menu:
 
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
-        first_dfs = True
+        self.indexLEM = 1
+        self.indexBL = 1
         last_dfs = False
+        dfs = None
+        line_plot_name = None
+        isLEM = None
+        isBL = None
         for i, array in enumerate(self.file_path_arrays):
-            blf_files = []
-            get_channel = False
-            isLEM = False
-            isBL = False
-            for file in array:
-                blf_files.append(file.get())
+            first_dfs = False
+            skip = False
+            if len(array) != 0:
+                blf_files = []
+                isLEM = False
+                isBL = False
+                for file in array:
+                    blf_files.append(file.get())
 
-            line_plot_name = self.line_plot_name_entry.get()
-            dfs, channel = self._fp.blf_to_df(blf_files)
-            if line_plot_name == "":
+                line_plot_name = self.line_plot_name_entries[i].get()
+                dfs, channel = self._fp.blf_to_df(blf_files)
+                if line_plot_name == "":
+                    if channel == 10:
+                        line_plot_name = f"LEM{self.indexLEM}"
+                        self.indexLEM += 1
+                    else:
+                        line_plot_name = f"BL{self.indexLEM}"
+                        self.indexBL += 1
                 if channel == 10:
-                    line_plot_name = f"LEM{self.indexLEM}"
-                    self.indexLEM += 1
+                    isLEM = True
                 else:
-                    line_plot_name = f"BL{self.indexLEM}"
-                    self.indexBL += 1
-            if channel == 10:
-                isLEM = True
+                    isBL = True
             else:
-                isBL = True
-
-            if i > 0: first_dfs = False
+                skip = True
+            if i == 0: first_dfs = True
             if len(self.file_path_arrays)-1 == i: last_dfs = True
             
-            plot_info = {"Dfs":dfs, "Name":line_plot_name, "First":first_dfs, "Last":last_dfs, "LEM":isLEM, "BL":isBL}
+            plot_info = {"Dfs":dfs, "Name":line_plot_name, "First":first_dfs, "Last":last_dfs, "LEM":isLEM, "BL":isBL, "Skip":skip}
             self._rtm.set_df(plot_info)

@@ -14,6 +14,12 @@ class PlotAndGraph():
 
     def plotting_graph(self, plotinfo):
         """ Plotting. """
+        if plotinfo["Skip"] == True:
+            if plotinfo["First"] == True:
+                self.fig, (self.axLEM, self.axBL) = plt.subplots(2, 1)
+            if plotinfo["Last"]:
+                self.plot_window()
+            return
         self.dfs = plotinfo["Dfs"]
         self.name = plotinfo["Name"]
 
@@ -40,10 +46,10 @@ class PlotAndGraph():
         y = self.dfs.Current.to_numpy()
         x = self.dfs.Time.to_numpy()
         self.axLEM.plot((x - first_time), y,
-                label=f"{self.name}  "+
-                    f" Avg: {self.dfs['Current'].mean():.2f} mA,"+
-                    f" Max: {self.dfs['Current'].max():.2f} mA,"+
-                    f" Min: {self.dfs['Current'].min():.2f} mA")
+                         label=f"{self.name}  "+
+                             f" Avg: {self.dfs['Current'].mean():.2f} mA,"+
+                             f" Max: {self.dfs['Current'].max():.2f} mA,"+
+                             f" Min: {self.dfs['Current'].min():.2f} mA")
 
     def BL_plot(self):
         """ Plots one line for BusLoad """
@@ -51,18 +57,18 @@ class PlotAndGraph():
         y = self.dfs.Busload.to_numpy()
         x = self.dfs.Time.to_numpy()
         self.axBL.plot((x - first_time), y,
-                label=f"{self.name}  "+
-                    f" Avg: {self.dfs['Busload'].mean():.2f} %,"+
-                    f" Max: {self.dfs['Busload'].max():.2f} %,"+
-                    f" Min: {self.dfs['Busload'].min():.2f} %")
+                        label=f"{self.name}  "+
+                              f" Avg: {self.dfs['Busload'].mean():.2f} %,"+
+                              f" Max: {self.dfs['Busload'].max():.2f} %,"+
+                              f" Min: {self.dfs['Busload'].min():.2f} %")
 
     def plot_window(self):
         """ Plots the graphwindow. """
         plt.xlabel("Time[s]", fontsize=15)
         self.axLEM.set_ylabel("Current[mA]", fontsize=15)
         self.axBL.set_ylabel("BusLoad[%]", fontsize=15)
-        plt.title("CAN Bus Analysis", fontsize=24)
-        plt.subplots_adjust(left=0.25, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=0.2)
+        self.axLEM.set_title("CAN Bus Analysis", fontsize=24)
+        plt.subplots_adjust(left=0.25, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=0.1)
 
         self.axLEM.grid(which = "major", linewidth = 1)
         self.axLEM.grid(which = "minor", linewidth = 0.4)
