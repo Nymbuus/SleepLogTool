@@ -11,6 +11,7 @@ class FilesPreperation:
 
     def __init__(self):
         """ Initialises the class. """
+        self.total_time_before = 0
 
     def file_explorer(self, choice):
         """ Lets the user chose files to analyze. """
@@ -45,6 +46,7 @@ class FilesPreperation:
             raise TypeError("Only .blf files are supported to read from.")
         
         channel = None
+        df = None
         for index, file in enumerate(file_list):
             # Gets the channel on the CANbus.
             with open(file, 'rb') as f:
@@ -56,14 +58,22 @@ class FilesPreperation:
 
             # Checks what CANbus and calls corresponding function to prep it.
             if channel == 10:
-                return self.LEM_prep(file, index, channel)
+                blf_data, channel = self.LEM_prep(file, index, channel)
             else:
-                return self.BL_prep(file, index, channel)
+                blf_data, channel = self.BL_prep(file, index, channel)
+            
+            # Loads data into pandas dataframe.
+            temp = pd.DataFrame(blf_data)
+            if index == 0:
+                df = temp
+            else:
+                df = pd.concat([df, temp], axis=0)
+            
+        return df, channel
     
 
     def LEM_prep(self, file, index, channel):
         """ If the file contains the LEM bus this will load in the data to the dataframe. """
-        df = None
         blf_data = {"Time": [], "Current": []}
         # Opens blf file to be read.
         with open(file, 'rb') as e:
@@ -99,15 +109,8 @@ class FilesPreperation:
                 if round(status) != last_print:
                     print(f"{round(status)}%")
                     last_print = round(status)
-            
-            # Loads data into pandas dataframe.
-            temp = pd.DataFrame(blf_data)
-            if index == 0:
-                df = temp
-            else:
-                df = pd.concat([df, temp], axis=0)
 
-        return df, channel
+        return blf_data, channel
 
 
     def BL_prep(self, file, index, channel):
@@ -120,7 +123,8 @@ class FilesPreperation:
             blf_data["Busload"].append(0)
 
             total_time = round(blf_return.stop_timestamp - blf_return.start_timestamp)+1
-            blf_data["Time"] = np.arange(0, total_time)
+            blf_data["Time"] = np.arange(self.total_time_before, self.total_time_before + total_time)
+            self.total_time_before += total_time-1
 
             percent = 100 / blf_return.object_count
             status = 0
@@ -142,14 +146,8 @@ class FilesPreperation:
                 if round(status) != last_print:
                     print(f"{round(status)}%")
                     last_print = round(status)
-            # Loads data into pandas dataframe.
-            temp = pd.DataFrame(blf_data)
-            if index == 0:
-                df = temp
-            else:
-                df = pd.concat([df, temp], axis=0)
 
-        return df, channel
+        return blf_data, channel
 
 
     def remove_time(self, dfs, remove_start_time, remove_end_time):
