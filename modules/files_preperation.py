@@ -2,6 +2,7 @@ import os
 import tkinter.filedialog as fd
 import can
 import pandas as pd
+import numpy as np
 
 MINUTE_TO_10MS = 6000
 
@@ -31,7 +32,6 @@ class FilesPreperation:
                         file_list.append(os.path.join(root,file))
 
                 if all(file.lower().endswith('.blf') for file in file_list):
-                    print("User choosed", len(file_list), "files to load")
                     return file_list
                 else:
                     print("One or more files in directory is not blf file type, try again.")
@@ -40,13 +40,13 @@ class FilesPreperation:
         """ Write to df from blf.\n\n
             file_list - The blf file(s) being read from. """
         
+        # Checks if there's only blf files in the list.
         if not all(file.lower().endswith('.blf') for file in file_list):
             raise TypeError("Only .blf files are supported to read from.")
         
-        df = None
         channel = None
         for index, file in enumerate(file_list):
-            blf_data = {"Time": [], "Current": []}
+            # Gets the channel on the CANbus.
             with open(file, 'rb') as f:
                 channel_get_blf = can.BLFReader(f)
                 for msg in channel_get_blf:
@@ -54,33 +54,95 @@ class FilesPreperation:
                     break
             f.close()
 
-            with open(file, 'rb') as e:
-                blf_return = can.BLFReader(e)
-                percent = 100 / blf_return.object_count
-                status = 0
-                last_print = 0
-                for i, msg in enumerate(blf_return):
-                    status += percent
-                    data = msg.data
-                    hex1 = hex(data[1])[2:]
-                    if len(hex1) == 1:
-                        hex1 = "0"+hex1
-                    hex2 = hex(data[2])[2:]
-                    if len(hex2) == 1:
-                        hex2 = "0"+hex2
-                    hex3 = hex(data[3])[2:]
-                    if len(hex3) == 1:
-                        hex3 = "0"+hex3
-                    current_dec = int(hex1+hex2+hex3,16)
-                    # If byte 0 is less then 128, the number is negative.
-                    if data[0] < 128:
-                        current_dec -= 16777216
-                    blf_data["Time"].append(msg.timestamp)
-                    blf_data["Current"].append(current_dec)
-                    if round(status) != last_print:
-                        print(f"{round(status)}%")
-                        last_print = round(status)
+            # Checks what CANbus and calls corresponding function to prep it.
+            if channel == 10:
+                return self.LEM_prep(file, index, channel)
+            else:
+                return self.BL_prep(file, index, channel)
+    
+
+    def LEM_prep(self, file, index, channel):
+        """ If the file contains the LEM bus this will load in the data to the dataframe. """
+        df = None
+        blf_data = {"Time": [], "Current": []}
+        # Opens blf file to be read.
+        with open(file, 'rb') as e:
+            blf_return = can.BLFReader(e)
+            percent = 100 / blf_return.object_count
+            status = 0
+            last_print = 0
+            for i, msg in enumerate(blf_return):
+                status += percent
+                data = msg.data
+
+                # Preps and reads out the current value.
+                hex1 = hex(data[1])[2:]
+                if len(hex1) == 1:
+                    hex1 = "0"+hex1
+                hex2 = hex(data[2])[2:]
+                if len(hex2) == 1:
+                    hex2 = "0"+hex2
+                hex3 = hex(data[3])[2:]
+                if len(hex3) == 1:
+                    hex3 = "0"+hex3
+                current_dec = int(hex1+hex2+hex3,16)
+
+                # If byte 0 is less then 128, the number is negative.
+                if data[0] < 128:
+                    current_dec -= 16777216
+                
+                # Stores wanted data.
+                blf_data["Time"].append(msg.timestamp)
+                blf_data["Current"].append(current_dec)
+
+                # Prints the loading status in percentage.
+                if round(status) != last_print:
+                    print(f"{round(status)}%")
+                    last_print = round(status)
             
+            # Loads data into pandas dataframe.
+            temp = pd.DataFrame(blf_data)
+            if index == 0:
+                df = temp
+            else:
+                df = pd.concat([df, temp], axis=0)
+
+        return df, channel
+
+
+    def BL_prep(self, file, index, channel):
+        """ If the file don't contain the LEM bus this will load in the data to the dataframe. """
+        blf_data = {"Time": [], "Busload": []}
+        # Opens blf file to be read.
+        with open(file, 'rb') as e:
+            blf_return = can.BLFReader(e)
+
+            blf_data["Busload"].append(0)
+
+            total_time = round(blf_return.stop_timestamp - blf_return.start_timestamp)+1
+            blf_data["Time"] = np.arange(0, total_time)
+
+            percent = 100 / blf_return.object_count
+            status = 0
+            last_print = 0
+            count = 0
+            sample_count = 1
+
+            for i, msg in enumerate(blf_return):
+                status += percent
+
+                # Get the busload every second in percentage. It's not totaly accurate but the margin of error is about 1%.
+                if msg.timestamp >= blf_return.start_timestamp + sample_count or i == blf_return.object_count-1:
+                    blf_data["Busload"].append((count/4219)*100)
+                    count = 0
+                    sample_count += 1
+                count += 1
+
+                # Prints the loading status in percentage.
+                if round(status) != last_print:
+                    print(f"{round(status)}%")
+                    last_print = round(status)
+            # Loads data into pandas dataframe.
             temp = pd.DataFrame(blf_data)
             if index == 0:
                 df = temp

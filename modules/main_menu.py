@@ -23,8 +23,13 @@ class Menu:
         self.optionsmenu_list = []
         self.line_plot_select = StringVar()
         self.line_plot_del_buttons = []
-        self.indexLEM = 1
-        self.indexBL = 1
+        self.index_body = 1
+        self.index_front1 = 1
+        self.index_front3 = 1
+        self.index_mid1 = 1
+        self.index_rear1 = 1
+        self.index_LEM = 1
+        self.index_unknown = 1
         self.line_plot_name_entries = []
 
 
@@ -236,7 +241,7 @@ class Menu:
 
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
-        self.indexLEM = 1
+        self.index_LEM = 1
         self.indexBL = 1
         last_dfs = False
         dfs = None
@@ -256,12 +261,28 @@ class Menu:
                 line_plot_name = self.line_plot_name_entries[i].get()
                 dfs, channel = self._fp.blf_to_df(blf_files)
                 if line_plot_name == "":
-                    if channel == 10:
-                        line_plot_name = f"LEM{self.indexLEM}"
-                        self.indexLEM += 1
-                    else:
-                        line_plot_name = f"BL{self.indexLEM}"
-                        self.indexBL += 1
+                    match channel:
+                        case 2:
+                            line_plot_name = f"Body #{self.index_body}"
+                            self.index_body += 1
+                        case 6:
+                            line_plot_name = f"Front1 #{self.index_front1}"
+                            self.index_front1 += 1
+                        case 7:
+                            line_plot_name = f"Front3 #{self.index_front3}"
+                            self.index_front3 += 1
+                        case 8:
+                            line_plot_name = f"Mid1 #{self.index_mid1}"
+                            self.index_mid1 += 1
+                        case 9:
+                            line_plot_name = f"Rear1 #{self.index_rear1}"
+                            self.index_rear1 += 1
+                        case 10:
+                            line_plot_name = f"LEM #{self.index_LEM}"
+                            self.index_LEM += 1
+                        case _:
+                            line_plot_name = f"Unknown Bus #{self.index_unknown}"
+                            self.index_unknown += 1
                 if channel == 10:
                     isLEM = True
                 else:

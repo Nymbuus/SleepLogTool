@@ -74,6 +74,11 @@ class PlotAndGraph():
         self.axLEM.grid(which = "minor", linewidth = 0.4)
         self.axLEM.minorticks_on()
         self.axLEM.tick_params(which = "minor", bottom = False, left = False)
+        self.axBL.grid(which = "major", linewidth = 1)
+        self.axBL.grid(which = "minor", linewidth = 0.4)
+        self.axBL.minorticks_on()
+        self.axBL.tick_params(which = "minor", bottom = False, left = False)
+
         manager = plt.get_current_fig_manager()
         manager.window.state('zoomed')
         self.fig.legend(loc="upper left")
