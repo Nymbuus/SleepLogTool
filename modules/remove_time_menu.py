@@ -3,6 +3,7 @@ from modules.files_preperation import FilesPreperation
 from modules.plot_and_graph import PlotAndGraph
 
 TENTH_SECOND = 6000
+SECOND = 60
 
 class RemoveTimeMenu:
     """ Menu for selecting how much time to remove from start and end of the blf file. """
@@ -57,8 +58,12 @@ class RemoveTimeMenu:
             remove_end_time = float(self.end_time_entry.get())
 
         try:
-            remove_start_time = remove_start_time * TENTH_SECOND
-            remove_end_time = remove_end_time  * TENTH_SECOND
+            if plotinfo["LEM"]:
+                remove_start_time = remove_start_time * TENTH_SECOND
+                remove_end_time = remove_end_time  * TENTH_SECOND
+            elif plotinfo["BL"]:
+                remove_start_time = remove_start_time * SECOND
+                remove_end_time = remove_end_time  * SECOND
             if 0 <= remove_start_time < len(plotinfo["Dfs"])+12:
                 if 0 <= remove_end_time < len(plotinfo["Dfs"])+12-remove_start_time:
                     if self.warning_label: self.warning_label.destroy()

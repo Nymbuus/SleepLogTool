@@ -62,6 +62,7 @@ class PlotAndGraph():
                               f" Max: {self.dfs['Busload'].max():.2f} %,"+
                               f" Min: {self.dfs['Busload'].min():.2f} %")
 
+
     def plot_window(self):
         """ Plots the graphwindow. """
         plt.xlabel("Time[s]", fontsize=15)
@@ -81,4 +82,5 @@ class PlotAndGraph():
 
         manager = plt.get_current_fig_manager()
         manager.window.state('zoomed')
-        self.fig.legend(loc="upper left")
+        self.axLEM.legend(bbox_to_anchor=(-0.34, 1), loc="upper left")
+        self.axBL.legend(bbox_to_anchor=(-0.34, 1), loc="upper left")
