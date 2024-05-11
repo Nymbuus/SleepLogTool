@@ -108,16 +108,22 @@ class Menu:
         del self.path_frames[x]
         del self.line_plot_name_entries[x]
         del self.file_path_arrays[x]
+        del self.file_path_del_buttons[x]
+
         for i, frame in enumerate(self.line_plot_frames):
             text = f"Line Plot {i+1}"
             frame.config(text=text)
+            frame.grid(row=i+1)
             #self.line_plot_frames[0].config(text=text)
+
         for i, button in enumerate(self.line_plot_del_buttons):
             button.config(command=lambda y=len(self.line_plot_frames)-1: self.line_plot_del(y))
+
         self.drop_down_box.destroy()
         del self.optionsmenu_list[x]
         for i in range(0, len(self.optionsmenu_list)):
             self.optionsmenu_list[i] = f"Line Plot {i+1}"
+
         if len(self.optionsmenu_list) == 0:
             self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, "")
             self.drop_down_box.grid(row=1, column=4, padx=(0, 310), sticky=W)
