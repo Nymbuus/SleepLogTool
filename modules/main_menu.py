@@ -114,10 +114,9 @@ class Menu:
             text = f"Line Plot {i+1}"
             frame.config(text=text)
             frame.grid(row=i+1)
-            #self.line_plot_frames[0].config(text=text)
 
         for i, button in enumerate(self.line_plot_del_buttons):
-            button.config(command=lambda y=len(self.line_plot_frames)-1: self.line_plot_del(y))
+            button.config(command=lambda y=i: self.line_plot_del(y))
 
         self.drop_down_box.destroy()
         del self.optionsmenu_list[x]
