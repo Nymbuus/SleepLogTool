@@ -16,7 +16,6 @@ class Menu:
         self.path_frames = []
         self.toggling_frames = []
         self.toggle_buttons = []
-        self.file_path_arrays = []
         self.file_path_del_buttons = []
         self.x = 0
         self.line_plot_frames = []
@@ -59,6 +58,7 @@ class Menu:
         self.browse_field.grid(row=0, column=0, columnspan=5, padx=(0, 10), pady=(0, 10))
         add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
         add_button.grid(row=0, column=5, padx=(2, 3), sticky=N)
+
         choose_file_button = Button(self.browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
         choose_file_button.grid(row=1, column=0, sticky=W)
         choose_folder_button = Button(self.browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
@@ -89,26 +89,27 @@ class Menu:
 
         self.line_plot_frames.append(self.line_plot_frame)
         self.toggling_frame_create(len_line_plots)
-        self.path_frame_create(len_line_plots)
         self.optionsmenu_list.append(text)
         if self.line_plot_select.get() == "-":
             self.drop_down_box.destroy()
         self.line_plot_select.set(text)
         self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
         self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
-
-        self.file_path_arrays.append([])
-        self.file_path_del_buttons.append([])
     
 
     def line_plot_del(self, x):
         self.line_plot_frames[x].destroy()
         del self.line_plot_frames[x]
         del self.line_plot_del_buttons[x]
-        del self.path_frames[x]
         del self.line_plot_name_entries[x]
-        del self.file_path_arrays[x]
-        del self.file_path_del_buttons[x]
+
+        try:
+            self.path_frames[x]
+            del self.path_frames[x]
+            del self.file_path_arrays[x]
+            del self.file_path_del_buttons[x]
+        except:
+            _ = None
 
         for i, frame in enumerate(self.line_plot_frames):
             text = f"Line Plot {i+1}"
@@ -132,6 +133,8 @@ class Menu:
             self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
             self.line_plot_select.set(f"Line Plot 1")
 
+        self.update_analyze_button()
+
 
     def toggling_frame_create(self, frame_index):
         """ Create a button to toggle the frame """
@@ -146,11 +149,17 @@ class Menu:
         self.toggle_buttons.append(toggle_button)
 
 
-    def path_frame_create(self, frame_index):
+    def path_frame_create(self, path_frame_index, append):
         """ Creates a frame for the paths that will be used in the plot. """
-        path_frame = LabelFrame(self.line_plot_frames[frame_index], text="Filepath(s)", padx=10, pady=5)
+        path_frame = LabelFrame(self.line_plot_frames[path_frame_index], text="Filepath(s)", padx=10, pady=5)
         path_frame.grid(row=2, column=0, columnspan=2, padx=(20, 0), pady=5, sticky=W)
-        self.path_frames.append(path_frame)
+        if append:
+            for i in range(0, path_frame_index+1):
+                self.path_frames.append(path_frame)
+                self.file_path_arrays.append([])
+                self.file_path_del_buttons.append([])
+        else:
+            self.path_frames[path_frame_index] = path_frame
     
 
     def toggle_frames(self, index):
@@ -182,6 +191,7 @@ class Menu:
 
     def file_path_setup(self, choice, add=None):
         """ displayes the file paths in the main window. """
+        
         if len(self.line_plot_frames) == 0:
             return
         self.files = []
@@ -195,6 +205,19 @@ class Menu:
             # Frame for path files if beginning of the program or if just deleted.
             # Gets what path_frame it should put the files in.
             path_frame_index = int(self.line_plot_select.get()[-1:])-1
+            append = True
+
+            try:
+                self.file_path_arrays
+            except:
+                self.file_path_arrays = []
+
+            try:
+                if len(self.file_path_arrays[path_frame_index]) == 0:
+                    append = False
+                    self.path_frame_create(path_frame_index, append)
+            except:
+                self.path_frame_create(path_frame_index, append)
 
             for file in self.files:
                 current_row = len(self.file_path_arrays[path_frame_index])
@@ -221,11 +244,18 @@ class Menu:
         button.destroy()
         del self.file_path_arrays[path_frame_index][index]
         del self.file_path_del_buttons[path_frame_index][index]
-        for i in range(len(self.file_path_arrays[path_frame_index])):
-            self.file_path_del_buttons[path_frame_index][i].config(command=lambda x=i, y=path_frame_index:
-                                                 self.del_path(self.file_path_arrays[y][x],
-                                                               self.file_path_del_buttons[y][x],
-                                                               x, y))
+        if len(self.file_path_arrays[path_frame_index]) == 0:
+            self.path_frames[path_frame_index].destroy()
+            del self.path_frames[path_frame_index]
+        
+        if all(isinstance(x, list) and not x for x in self.file_path_arrays):
+            del self.file_path_arrays
+        else:
+            for i in range(len(self.file_path_arrays[path_frame_index])):
+                self.file_path_del_buttons[path_frame_index][i].config(command=lambda x=i, y=path_frame_index:
+                                                    self.del_path(self.file_path_arrays[y][x],
+                                                                self.file_path_del_buttons[y][x],
+                                                                x, y))
         self.update_analyze_button()
 
 
