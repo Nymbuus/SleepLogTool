@@ -89,19 +89,19 @@ class Menu:
 
         self.line_plot_frames.append(self.line_plot_frame)
         self.toggling_frame_create(len_line_plots)
-        self.path_frame_create(len_line_plots)
+        self.path_frame_create(len_line_plots, append=True)
         self.optionsmenu_list.append(text)
         if self.line_plot_select.get() == "-":
             self.drop_down_box.destroy()
         self.line_plot_select.set(text)
         self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
         self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
-
         self.file_path_arrays.append([])
         self.file_path_del_buttons.append([])
     
 
     def line_plot_del(self, x):
+        """ Deletes the specified line_plot_frame, deletes everything else within it and updates all lists associated with it. """
         self.line_plot_frames[x].destroy()
         del self.line_plot_frames[x]
         del self.line_plot_del_buttons[x]
@@ -110,13 +110,23 @@ class Menu:
         del self.file_path_arrays[x]
         del self.file_path_del_buttons[x]
 
+        # Update line_plot_frames text and row in it's grid.
         for i, frame in enumerate(self.line_plot_frames):
             text = f"Line Plot {i+1}"
             frame.config(text=text)
             frame.grid(row=i+1)
-
+        
+        # Update line_plot_frames delete buttons.
         for i, button in enumerate(self.line_plot_del_buttons):
             button.config(command=lambda y=i: self.line_plot_del(y))
+        
+        # Update file_paths delete buttons.
+        for i in range(len(self.file_path_arrays)):
+            for j in range(len(self.file_path_arrays[i])):
+                self.file_path_del_buttons[i][j].config(command=lambda x=j, y=i:
+                                                    self.del_path(self.file_path_arrays[y][x],
+                                                                self.file_path_del_buttons[y][x],
+                                                                x, y))
 
         self.drop_down_box.destroy()
         del self.optionsmenu_list[x]
@@ -146,11 +156,15 @@ class Menu:
         self.toggle_buttons.append(toggle_button)
 
 
-    def path_frame_create(self, frame_index):
+    def path_frame_create(self, frame_index, append):
         """ Creates a frame for the paths that will be used in the plot. """
         path_frame = LabelFrame(self.line_plot_frames[frame_index], text="Filepath(s)", padx=10, pady=5)
         path_frame.grid(row=2, column=0, columnspan=2, padx=(20, 0), pady=5, sticky=W)
-        self.path_frames.append(path_frame)
+
+        if append:
+            self.path_frames.append(path_frame)
+        else:
+            self.path_frames[frame_index] = path_frame
     
 
     def toggle_frames(self, index):
@@ -196,6 +210,9 @@ class Menu:
             # Gets what path_frame it should put the files in.
             path_frame_index = int(self.line_plot_select.get()[-1:])-1
 
+            if self.path_frames[path_frame_index] == []:
+                self.path_frame_create(path_frame_index, append=False)
+
             for file in self.files:
                 current_row = len(self.file_path_arrays[path_frame_index])
 
@@ -219,8 +236,12 @@ class Menu:
         """ Deletes the specified row and then updates the command for delete buttons. """
         entry.destroy()
         button.destroy()
+        
         del self.file_path_arrays[path_frame_index][index]
         del self.file_path_del_buttons[path_frame_index][index]
+        if len(self.file_path_arrays[path_frame_index]) == 0:
+            self.path_frames[path_frame_index].destroy()
+            self.path_frames[path_frame_index] = []
         for i in range(len(self.file_path_arrays[path_frame_index])):
             self.file_path_del_buttons[path_frame_index][i].config(command=lambda x=i, y=path_frame_index:
                                                  self.del_path(self.file_path_arrays[y][x],
@@ -238,10 +259,10 @@ class Menu:
 
     def update_analyze_button(self):
         """ Updates the analyze button """
-        if self.file_path_arrays:
-            self.analyze_button["state"] = NORMAL
-        else:
+        if all(isinstance(x, list) and not x for x in self.file_path_arrays):
             self.analyze_button["state"] = DISABLED
+        else:
+            self.analyze_button["state"] = NORMAL
 
 
     def analyze_data(self):
