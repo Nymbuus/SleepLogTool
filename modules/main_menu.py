@@ -58,17 +58,19 @@ class Menu:
         self.browse_frame = LabelFrame(self.left_section_frames, text="Choose blf file(s)", padx=10, pady=5)
         self.browse_frame.grid(row=0, column=0, pady=10, sticky=W)
         self.browse_field = Entry(self.browse_frame, width=140, borderwidth=5)
-        self.browse_field.grid(row=0, column=0, columnspan=5, padx=(0, 10), pady=(0, 10))
+        self.browse_field.grid(row=0, column=0, columnspan=6, padx=(0, 10), pady=(0, 10))
         add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
-        add_button.grid(row=0, column=5, padx=(2, 3), sticky=N)
+        add_button.grid(row=0, column=6, padx=(2, 3), sticky=N)
         choose_file_button = Button(self.browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
         choose_file_button.grid(row=1, column=0, sticky=W)
         choose_folder_button = Button(self.browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
         choose_folder_button.grid(row=1, column=1, padx=10)
+        extract_LEM_button = Button(self.browse_frame, text="Extract LEM(s)", command=lambda:self.file_path_setup("extract LEM"))
+        extract_LEM_button.grid(row=1, column=2,)
         add_plot_line_button = Button(self.browse_frame, text="Add Plot Line", command=self.line_plot_frame_create)
-        add_plot_line_button.grid(row=1, column=2, padx=(0, 30))
+        add_plot_line_button.grid(row=1, column=3, padx=(10, 30))
         drop_down_box_text = Label(self.browse_frame, text="Select Line Plot to add files to:")
-        drop_down_box_text.grid(row=1, column=3, sticky=E)
+        drop_down_box_text.grid(row=1, column=4, sticky=E)
 
 
     def line_plot_frame_create(self):
@@ -97,7 +99,7 @@ class Menu:
             self.drop_down_box.destroy()
         self.line_plot_select.set(text)
         self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
-        self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
+        self.drop_down_box.grid(row=1, column=5, padx=(0, 160), sticky=W)
         self.file_path_arrays.append([])
         self.file_path_del_buttons.append([])
         self.decide_bus.append(None)
@@ -139,11 +141,11 @@ class Menu:
 
         if len(self.optionsmenu_list) == 0:
             self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, "")
-            self.drop_down_box.grid(row=1, column=4, padx=(0, 310), sticky=W)
+            self.drop_down_box.grid(row=1, column=5, padx=(0, 210), sticky=W)
             self.line_plot_select.set("-")
         else:
             self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
-            self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
+            self.drop_down_box.grid(row=1, column=5, padx=(0, 160), sticky=W)
             self.line_plot_select.set(f"Line Plot 1")
 
 
