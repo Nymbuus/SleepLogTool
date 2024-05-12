@@ -1,5 +1,6 @@
 """ Handles the design of the first pop-up menu. """
 from tkinter import *
+import can
 from modules.files_preperation import FilesPreperation
 from modules.remove_time_menu import RemoveTimeMenu
 
@@ -31,6 +32,7 @@ class Menu:
         self.index_LEM = 1
         self.index_unknown = 1
         self.line_plot_name_entries = []
+        self.decide_bus = []
 
 
     def main_window(self):
@@ -98,6 +100,7 @@ class Menu:
         self.drop_down_box.grid(row=1, column=4, padx=(0, 260), sticky=W)
         self.file_path_arrays.append([])
         self.file_path_del_buttons.append([])
+        self.decide_bus.append(None)
     
 
     def line_plot_del(self, x):
@@ -109,6 +112,7 @@ class Menu:
         del self.line_plot_name_entries[x]
         del self.file_path_arrays[x]
         del self.file_path_del_buttons[x]
+        del self.decide_bus[x]
 
         # Update line_plot_frames text and row in it's grid.
         for i, frame in enumerate(self.line_plot_frames):
@@ -202,6 +206,30 @@ class Menu:
 
         if add == None:
             self.files = self._fp.file_explorer(choice)
+
+            frame_index = int(self.line_plot_select.get()[-1:])-1
+            if self.decide_bus[frame_index] != None:
+                for file in self.files:
+                    with open(file, 'rb') as f:
+                        channel_get_blf = can.BLFReader(f)
+                        for msg in channel_get_blf:
+                            if self.decide_bus[frame_index] == msg.channel:
+                                print("same bus OK")
+                                self.wrong_bus_warning(wrong=False)
+                                break
+                            else:
+                                print("Not same bus Not OK")
+                                self.wrong_bus_warning(wrong=True)
+                                return
+                    f.close()
+            else:
+                with open(self.files[0], 'rb') as f:
+                    channel_get_blf = can.BLFReader(f)
+                    for msg in channel_get_blf:
+                        self.decide_bus[frame_index] = msg.channel
+                        break
+                f.close()
+
         elif add == "add":
             self.files.append(choice)
 
@@ -212,7 +240,6 @@ class Menu:
 
             if self.path_frames[path_frame_index] == []:
                 self.path_frame_create(path_frame_index, append=False)
-
             for file in self.files:
                 current_row = len(self.file_path_arrays[path_frame_index])
 
@@ -242,12 +269,27 @@ class Menu:
         if len(self.file_path_arrays[path_frame_index]) == 0:
             self.path_frames[path_frame_index].destroy()
             self.path_frames[path_frame_index] = []
+            self.wrong_bus_warning(wrong=False)
+            self.decide_bus[path_frame_index] = None
+
         for i in range(len(self.file_path_arrays[path_frame_index])):
             self.file_path_del_buttons[path_frame_index][i].config(command=lambda x=i, y=path_frame_index:
                                                  self.del_path(self.file_path_arrays[y][x],
                                                                self.file_path_del_buttons[y][x],
                                                                x, y))
         self.update_analyze_button()
+
+
+    def wrong_bus_warning(self, wrong):
+        if wrong:
+            self.bus_warning_label = Label(self.browse_frame, text="Chosen file(s) don't match bus in this line plot!\n"+
+                                                                   "Choose correct bus.")
+            self.bus_warning_label.grid(row=2, column=0, columnspan=5, sticky=W)
+        else:
+            try:
+                self.bus_warning_label.destroy()
+            except:
+                _ = None
 
 
     def add_browse_field(self):
