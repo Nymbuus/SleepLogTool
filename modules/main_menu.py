@@ -321,6 +321,7 @@ class Menu:
         line_plot_name = None
         isLEM = None
         isBL = None
+        start_file_count = True
         for i, array in enumerate(self.file_path_arrays):
             first_dfs = False
             skip = False
@@ -332,7 +333,8 @@ class Menu:
                     blf_files.append(file.get())
 
                 line_plot_name = self.line_plot_name_entries[i].get()
-                dfs, channel = self._fp.blf_to_df(blf_files)
+                dfs, channel = self._fp.blf_to_df(blf_files, start_file_count)
+                start_file_count = False
                 if line_plot_name == "":
                     match channel:
                         case 2:
