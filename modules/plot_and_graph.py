@@ -7,6 +7,7 @@ class PlotAndGraph():
 
     def __init__(self):
         """ Initializes the class. """
+        self.legend = {"LEM":False, "BL":False}
 
 
     def plotting_graph(self, plotinfo, time_unit):
@@ -15,7 +16,7 @@ class PlotAndGraph():
             if plotinfo["First"] == True:
                 self.fig, (self.axLEM, self.axBL) = plt.subplots(2, 1)
             if plotinfo["Last"]:
-                self.plot_window()
+                self.plot_window(time_unit)
             return
         self.dfs = plotinfo["Dfs"]
         self.name = plotinfo["Name"]
@@ -28,8 +29,10 @@ class PlotAndGraph():
         # Plots a line in the LEM or BL graph window.
         if plotinfo["LEM"]:
             self.LEM_plot(time_unit)
+            self.legend["LEM"] = True
         elif plotinfo["BL"]:
             self.BL_plot(time_unit)
+            self.legend["BL"] = True
         else:
             print("Couldn't find LEM or BL to plot.")
 
@@ -87,5 +90,8 @@ class PlotAndGraph():
 
         manager = plt.get_current_fig_manager()
         manager.window.state('zoomed')
-        self.axLEM.legend(bbox_to_anchor=(-0.34, 1), loc="upper left")
-        self.axBL.legend(bbox_to_anchor=(-0.34, 1), loc="upper left")
+        if self.legend["LEM"]:
+            self.axLEM.legend(bbox_to_anchor=(-0.34, 1), loc="upper left")
+        if self.legend["BL"]:
+            self.axBL.legend(bbox_to_anchor=(-0.34, 1), loc="upper left")
+        self.legend = {"LEM":False, "BL":False}

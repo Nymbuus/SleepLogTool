@@ -58,7 +58,7 @@ class TimeMenu:
     def set_df(self, plotinfo):
         """ Removes time from start and end of graph. """
         if plotinfo["Skip"] == True:
-            self._pag.plotting_graph(plotinfo)
+            self._pag.plotting_graph(plotinfo, self.time_unit_selected.get())
             return
 
         if self.start_time_entry.get() == "":

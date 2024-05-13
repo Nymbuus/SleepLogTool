@@ -163,7 +163,6 @@ class FilesPreperation:
             last_print = 0
             count = 0
             sample_count = 1
-
             for i, msg in enumerate(blf_return):
                 status += percent
 
@@ -175,9 +174,10 @@ class FilesPreperation:
                 count += 1
 
                 # Prints the loading status in percentage.
-                if round(status) != last_print:
-                    print(f"{round(status)}%")
-                    last_print = round(status)
+                rounded_status = round(status)
+                if rounded_status != last_print and rounded_status > last_print + 9:
+                    print(f"{rounded_status}%")
+                    last_print = rounded_status
 
         return blf_data, channel
 
