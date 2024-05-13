@@ -208,30 +208,31 @@ class Menu:
 
         if add == None:
             self.files = self._fp.file_explorer(choice)
-
-            frame_index = int(self.line_plot_select.get()[-1:])-1
-            if self.decide_bus[frame_index] != None:
-                for file in self.files:
-                    with open(file, 'rb') as f:
+            if self.files:
+                frame_index = int(self.line_plot_select.get()[-1:])-1
+                if self.decide_bus[frame_index] != None:
+                    for file in self.files:
+                        with open(file, 'rb') as f:
+                            channel_get_blf = can.BLFReader(f)
+                            for msg in channel_get_blf:
+                                if self.decide_bus[frame_index] == msg.channel:
+                                    print("same bus OK")
+                                    self.wrong_bus_warning(wrong=False)
+                                    break
+                                else:
+                                    print("Not same bus Not OK")
+                                    self.wrong_bus_warning(wrong=True)
+                                    return
+                        f.close()
+                else:
+                    with open(self.files[0], 'rb') as f:
                         channel_get_blf = can.BLFReader(f)
                         for msg in channel_get_blf:
-                            if self.decide_bus[frame_index] == msg.channel:
-                                print("same bus OK")
-                                self.wrong_bus_warning(wrong=False)
-                                break
-                            else:
-                                print("Not same bus Not OK")
-                                self.wrong_bus_warning(wrong=True)
-                                return
+                            self.decide_bus[frame_index] = msg.channel
+                            break
                     f.close()
             else:
-                with open(self.files[0], 'rb') as f:
-                    channel_get_blf = can.BLFReader(f)
-                    for msg in channel_get_blf:
-                        self.decide_bus[frame_index] = msg.channel
-                        break
-                f.close()
-
+                return
         elif add == "add":
             self.files.append(choice)
 

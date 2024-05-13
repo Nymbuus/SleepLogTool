@@ -1,8 +1,5 @@
 """ Imports. Numpy will be used. """
 import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from matplotlib.widgets import Slider
 
 
 class PlotAndGraph():
