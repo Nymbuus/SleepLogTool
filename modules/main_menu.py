@@ -210,8 +210,10 @@ class Menu:
             self.files = self._fp.file_explorer(choice)
             if self.files:
                 frame_index = int(self.line_plot_select.get()[-1:])-1
-                if self.decide_bus[frame_index] != None:
-                    for file in self.files:
+                if len(self.file_path_arrays[frame_index]) == 0:
+                    self.decide_bus[frame_index] = None
+                for file in self.files:
+                    if self.decide_bus[frame_index] != None:
                         with open(file, 'rb') as f:
                             channel_get_blf = can.BLFReader(f)
                             for msg in channel_get_blf:
@@ -224,13 +226,13 @@ class Menu:
                                     self.wrong_bus_warning(wrong=True)
                                     return
                         f.close()
-                else:
-                    with open(self.files[0], 'rb') as f:
-                        channel_get_blf = can.BLFReader(f)
-                        for msg in channel_get_blf:
-                            self.decide_bus[frame_index] = msg.channel
-                            break
-                    f.close()
+                    else:
+                        with open(self.files[0], 'rb') as f:
+                            channel_get_blf = can.BLFReader(f)
+                            for msg in channel_get_blf:
+                                self.decide_bus[frame_index] = msg.channel
+                                break
+                        f.close()
             else:
                 return
         elif add == "add":
