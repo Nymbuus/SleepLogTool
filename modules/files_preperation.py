@@ -4,12 +4,14 @@ import can
 import pandas as pd
 import numpy as np
 
+
 class FilesPreperation:
     """ Preps the files before displaying them. """
 
     def __init__(self):
         """ Initialises the class. """
         self.total_time_before = 0
+        self.file_number = 1
 
     def file_explorer(self, choice):
         """ Lets the user chose files to analyze. """
@@ -72,6 +74,9 @@ class FilesPreperation:
         channel = None
         df = None
         for index, file in enumerate(file_list):
+            print(f"\nFile #{self.file_number}:")
+            self.file_number += 1
+
             # Gets the channel on the CANbus.
             with open(file, 'rb') as f:
                 channel_get_blf = can.BLFReader(f)
@@ -130,9 +135,10 @@ class FilesPreperation:
                 blf_data["Current"].append(current_dec)
 
                 # Prints the loading status in percentage.
-                if round(status) != last_print:
-                    print(f"{round(status)}%")
-                    last_print = round(status)
+                rounded_status = round(status)
+                if rounded_status != last_print and rounded_status > last_print + 9:
+                    print(f"{rounded_status}%")
+                    last_print = rounded_status
 
         return blf_data, channel
 

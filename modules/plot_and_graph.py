@@ -12,7 +12,7 @@ class PlotAndGraph():
         """ Initializes the class. """
 
 
-    def plotting_graph(self, plotinfo):
+    def plotting_graph(self, plotinfo, time_unit):
         """ Plotting. """
         if plotinfo["Skip"] == True:
             if plotinfo["First"] == True:
@@ -30,42 +30,50 @@ class PlotAndGraph():
 
         # Plots a line in the LEM or BL graph window.
         if plotinfo["LEM"]:
-            self.LEM_plot()
+            self.LEM_plot(time_unit)
         elif plotinfo["BL"]:
-            self.BL_plot()
+            self.BL_plot(time_unit)
         else:
             print("Couldn't find LEM or BL to plot.")
 
         # Will execute if all lines are plotted.
         if plotinfo["Last"]:
-            self.plot_window()
+            self.plot_window(time_unit)
     
-    def LEM_plot(self):
+    def LEM_plot(self, time_unit):
         """ Plots one line for LEM """
         first_time = self.dfs["Time"].min()
         y = self.dfs.Current.to_numpy()
         x = self.dfs.Time.to_numpy()
-        self.axLEM.plot((x - first_time), y,
+        self.axLEM.plot(((x - first_time))/time_unit, y,
                          label=f"{self.name}  "+
                              f" Avg: {self.dfs['Current'].mean():.2f} mA,"+
                              f" Max: {self.dfs['Current'].max():.2f} mA,"+
                              f" Min: {self.dfs['Current'].min():.2f} mA")
 
-    def BL_plot(self):
+    def BL_plot(self, time_unit):
         """ Plots one line for BusLoad """
         first_time = self.dfs["Time"].min()
         y = self.dfs.Busload.to_numpy()
         x = self.dfs.Time.to_numpy()
-        self.axBL.plot((x - first_time), y,
+        self.axBL.plot(((x - first_time))/time_unit, y,
                         label=f"{self.name}  "+
                               f" Avg: {self.dfs['Busload'].mean():.2f} %,"+
                               f" Max: {self.dfs['Busload'].max():.2f} %,"+
                               f" Min: {self.dfs['Busload'].min():.2f} %")
 
 
-    def plot_window(self):
+    def plot_window(self, time_unit):
         """ Plots the graphwindow. """
-        plt.xlabel("Time[s]", fontsize=15)
+        time_unit_character = None
+        match time_unit:
+            case 1:
+                time_unit_character = "s"
+            case 60:
+                time_unit_character = "m"
+            case 3600:
+                time_unit_character = "h"
+        plt.xlabel(f"Time[{time_unit_character}]", fontsize=15)
         self.axLEM.set_ylabel("Current[mA]", fontsize=15)
         self.axBL.set_ylabel("BusLoad[%]", fontsize=15)
         self.axLEM.set_title("CAN Bus Analysis", fontsize=24)

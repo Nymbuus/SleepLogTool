@@ -2,7 +2,7 @@
 from tkinter import *
 import can
 from modules.files_preperation import FilesPreperation
-from modules.remove_time_menu import RemoveTimeMenu
+from modules.time_menu import TimeMenu
 
 class Menu:
     """ Handles the design of the first pop-up menu. """
@@ -11,7 +11,7 @@ class Menu:
         """ Initializes the class. """
         self.root = Tk()
         self._fp = FilesPreperation()
-        self._rtm = RemoveTimeMenu()
+        self._rtm = TimeMenu()
         self.browse_field = Entry()
         self.path_frame = LabelFrame()
         self.path_frames = []
