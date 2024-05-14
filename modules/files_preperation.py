@@ -15,8 +15,11 @@ class FilesPreperation:
 
     def file_explorer(self, choice):
         """ Lets the user chose files to analyze. """
+        # Checks what button the user pressed to act accordingly.
         match choice:
+            # If Choose file(s) was chosen.
             case "file":
+                # Will ask the user to chose file(s). If user cancel out it will stop.
                 while True:
                     file_list = fd.askopenfilenames(title='Choose one or multiple BLF files')
                     if all(file.lower().endswith('.blf') for file in file_list):
@@ -26,7 +29,9 @@ class FilesPreperation:
                     else:
                         print("One or more files is not a blf type file, try again.")
 
+            # If Choose folder(s) was chosen.
             case "folder":
+                # Will ask the user to chose folder(s). If user cancel out it will stop.
                 while True:
                     folder_list = fd.askdirectory(title="Choose one or more folders containing BLF files")
                     file_list = []
@@ -39,18 +44,25 @@ class FilesPreperation:
                     else:
                         print("One or more files in directory is not blf file type, try again.")
 
+            # If Extract LEM(s) was chosen.
             case "extract LEM":
                 while True:
+                    file_list = []
                     folder_list = []
                     folder_list.append(fd.askdirectory(title="Choose one or more folders containing BLF files"))
-                    file_list = []
+                    # Takes the folder(s) chosen and loops through every folder until there is no more.
+                    # Will only extract LEM files on it's way.
                     while True:
+                        # Loops through folder(s) chosen by user.
                         for dir in folder_list:
+                            # Loops through the folder and looks upp root path, directory (which I don't use here) and files.
                             for root, dirs, files in os.walk(dir):
                                 root = root.replace("\\", "/")
+                                # Loops through all files and creates search path to file.
                                 for file in files:
                                     search_path = root + "/" + file
                                     if search_path.endswith(".blf"):
+                                        # Checks if the file is a LEM file and if so, adds it the the file list.
                                         with open(search_path, 'rb') as f:
                                             channel_get_blf = can.BLFReader(f)
                                             for msg in channel_get_blf:
@@ -64,13 +76,14 @@ class FilesPreperation:
         
 
     def blf_to_df(self, file_list, start_file_count):
-        """ Write to df from blf.\n\n
-            file_list - The blf file(s) being read from. """
+        """ Write to df from blf. """
+        """ file_list - The blf file(s) being read from. """
         
         # Checks if there's only blf files in the list.
         if not all(file.lower().endswith('.blf') for file in file_list):
             raise TypeError("Only .blf files are supported to read from.")
         
+        # Prints the file that is loading.
         if start_file_count:
             self.file_number = 1
         channel = None

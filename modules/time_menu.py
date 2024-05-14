@@ -22,22 +22,25 @@ class TimeMenu:
 
 
     def time_menu(self, root):
-        """ Design and functionality for time removal. """
+        """ Design and functionality for time settings frame. """
         self.root = root
 
         self.time_frame = LabelFrame(self.root, text="Time Settings", padx=10, pady=10)
         self.time_frame.grid(row=0, rowspan=2, column=1, padx=(0, 20), pady=10, sticky=N)
 
+        # Remove time from start part.
         start_time_label = Label(self.time_frame, text="Minutes to remove from start:")
         start_time_label.grid(row=0, column=0, columnspan=3, sticky=W)
         self.start_time_entry = Entry(self.time_frame, width=40, borderwidth=5)
         self.start_time_entry.grid(row=1, column=0, columnspan=3)
 
+        # Remove time from end part.
         end_time_label = Label(self.time_frame, text="Minutes to remove from end:")
         end_time_label.grid(row=2, column=0, columnspan=3, sticky=W)
         self.end_time_entry = Entry(self.time_frame, width=40, borderwidth=5)
         self.end_time_entry.grid(row=3, column=0, columnspan=3)
 
+        # Selection of time unit part.
         self.time_unit_selected = IntVar(value=60)
         self.time_unit_label = Label(self.time_frame, text="Choose time unit for graph:")
         self.time_unit_label.grid(row=4, column=0, columnspan=3, sticky=W)
@@ -50,17 +53,20 @@ class TimeMenu:
 
 
     def warning(self, warning_text):
-        """ Displays the warning text when you put in a wrong type of value. """
+        """ Displays the warning text when you put in wrong type of value. """
         self.warning_label = Label(self.time_frame, text=warning_text)
         self.warning_label.grid(row=6, column=0, pady=(0, 10))
 
     
     def set_df(self, plotinfo):
         """ Removes time from start and end of graph. """
+        """ This will not remove time from every file in the graph, just the ones in the start and end. """
+        # Will skip set_df function if true and go to plotting directly.
         if plotinfo["Skip"] == True:
             self._pag.plotting_graph(plotinfo, self.time_unit_selected.get())
             return
 
+        # If either remove start or end time entry is empty, remove time is set to 0 for that variable.
         if self.start_time_entry.get() == "":
             remove_start_time = 0
         else:
@@ -71,15 +77,23 @@ class TimeMenu:
             remove_end_time = float(self.end_time_entry.get())
 
         try:
+            # Will convert time given in minutes to correct time unit depending on the file.
             if plotinfo["LEM"]:
                 remove_start_time = remove_start_time * TENTH_SECOND
                 remove_end_time = remove_end_time  * TENTH_SECOND
             elif plotinfo["BL"]:
                 remove_start_time = remove_start_time * SECOND
                 remove_end_time = remove_end_time  * SECOND
+
+            # Checks if the numbers given in the time entries are too small (negative) or too big compared to the dataframe time.
             if 0 <= remove_start_time < len(plotinfo["Dfs"])+12:
                 if 0 <= remove_end_time < len(plotinfo["Dfs"])+12-remove_start_time:
-                    if self.warning_label: self.warning_label.destroy()
+
+                    # If the number are accected the warning label is deleted if there was one displayed.
+                    if self.warning_label:
+                        self.warning_label.destroy()
+                    
+                    # Takes the dataframe and calls the function to remove the specified time, then plots the graph.
                     plotinfo["Dfs"] = self._fp.remove_time(plotinfo["Dfs"], remove_start_time, remove_end_time)
                     self._pag.plotting_graph(plotinfo, self.time_unit_selected.get())
                     return

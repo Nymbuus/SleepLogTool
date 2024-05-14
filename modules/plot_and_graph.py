@@ -11,13 +11,15 @@ class PlotAndGraph():
 
 
     def plotting_graph(self, plotinfo, time_unit):
-        """ Plotting. """
+        """ Plotting dataframes time and current/busload in one graph for current and one for busload. """
+        # Skips ploting a new line but will still check if it's the first or last time this function is called.
         if plotinfo["Skip"] == True:
             if plotinfo["First"] == True:
                 self.fig, (self.axLEM, self.axBL) = plt.subplots(2, 1)
             if plotinfo["Last"]:
                 self.plot_window(time_unit)
             return
+        
         self.dfs = plotinfo["Dfs"]
         self.name = plotinfo["Name"]
 
@@ -66,6 +68,8 @@ class PlotAndGraph():
     def plot_window(self, time_unit):
         """ Plots the graphwindow. """
         time_unit_character = None
+
+        # Checks what time unit to put in x-axis.
         match time_unit:
             case 1:
                 time_unit_character = "s"
@@ -73,12 +77,17 @@ class PlotAndGraph():
                 time_unit_character = "m"
             case 3600:
                 time_unit_character = "h"
+        
+        # Plots all labels in graph.
         plt.xlabel(f"Time[{time_unit_character}]", fontsize=15)
         self.axLEM.set_ylabel("Current[mA]", fontsize=15)
         self.axBL.set_ylabel("BusLoad[%]", fontsize=15)
         self.axLEM.set_title("CAN Bus Analysis", fontsize=24)
+
+        # Adjusts the graph frames.
         plt.subplots_adjust(left=0.25, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=0.1)
 
+        # Adds the grid to both graphs.
         self.axLEM.grid(which = "major", linewidth = 1)
         self.axLEM.grid(which = "minor", linewidth = 0.4)
         self.axLEM.minorticks_on()
@@ -88,10 +97,14 @@ class PlotAndGraph():
         self.axBL.minorticks_on()
         self.axBL.tick_params(which = "minor", bottom = False, left = False)
 
+        # Sets window in fullscreen.
         manager = plt.get_current_fig_manager()
         manager.window.state('zoomed')
+
+        # Checks if there's LEM and BusLoad file in the plots to display their legend.
         if self.legend["LEM"]:
             self.axLEM.legend(bbox_to_anchor=(-0.34, 1), loc="upper left")
         if self.legend["BL"]:
             self.axBL.legend(bbox_to_anchor=(-0.34, 1), loc="upper left")
         self.legend = {"LEM":False, "BL":False}
+        
