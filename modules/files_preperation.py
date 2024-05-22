@@ -66,7 +66,7 @@ class FilesPreperation:
                                         with open(search_path, 'rb') as f:
                                             channel_get_blf = can.BLFReader(f)
                                             for msg in channel_get_blf:
-                                                if 10 == msg.channel:
+                                                if 10 == msg.channel or 24 == msg.channel or 25 == msg.channel:
                                                     file_list.append(os.path.join(search_path))
                                                     break
                                                 else:
@@ -101,7 +101,7 @@ class FilesPreperation:
             f.close()
 
             # Checks what CANbus and calls corresponding function to prep it.
-            if channel == 10:
+            if channel == 10 or channel == 24 or channel == 25:
                 blf_data, channel = self.LEM_prep(file, index, channel)
             else:
                 blf_data, channel = self.BL_prep(file, index, channel)

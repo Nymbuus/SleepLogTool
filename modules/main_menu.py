@@ -392,11 +392,17 @@ class Menu:
                         case 10:
                             line_plot_name = f"LEM #{self.index_LEM}"
                             self.index_LEM += 1
+                        case 24:
+                            line_plot_name = f"LEM #{self.index_LEM}"
+                            self.index_LEM += 1
+                        case 25:
+                            line_plot_name = f"LEM #{self.index_LEM}"
+                            self.index_LEM += 1
                         case _:
                             line_plot_name = f"Unknown Bus #{self.index_unknown}"
                             self.index_unknown += 1
                 # Checks if the dataframe is a LEM file or BusLoad file.
-                if channel == 10:
+                if channel == 10 or channel == 24 or channel == 25:
                     isLEM = True
                 else:
                     isBL = True
