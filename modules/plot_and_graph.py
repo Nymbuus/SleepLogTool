@@ -49,9 +49,9 @@ class PlotAndGraph():
         x = self.dfs.Time.to_numpy()
         self.axLEM.plot(((x - first_time))/time_unit, y,
                          label=f"{self.name}  "+
-                             f" Avg: {self.dfs['Current'].mean():.2f} mA,"+
-                             f" Max: {self.dfs['Current'].max():.2f} mA,"+
-                             f" Min: {self.dfs['Current'].min():.2f} mA")
+                             f" Avg: {self.dfs['Current'].mean():.1f} mA,"+
+                             f" Max: {self.dfs['Current'].max():.1f} mA,"+
+                             f" Min: {self.dfs['Current'].min():.1f} mA")
 
     def BL_plot(self, time_unit):
         """ Plots one line for BusLoad """
@@ -85,7 +85,7 @@ class PlotAndGraph():
         self.axLEM.set_title("CAN Bus Analysis", fontsize=24)
 
         # Adjusts the graph frames.
-        plt.subplots_adjust(left=0.25, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=0.1)
+        plt.subplots_adjust(left=0.33, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=0.1)
 
         # Adds the grid to both graphs.
         self.axLEM.grid(which = "major", linewidth = 1)
@@ -103,8 +103,8 @@ class PlotAndGraph():
 
         # Checks if there's LEM and BusLoad file in the plots to display their legend.
         if self.legend["LEM"]:
-            self.axLEM.legend(bbox_to_anchor=(-0.34, 1), loc="upper left")
+            self.axLEM.legend(bbox_to_anchor=(-0.51, 1), loc="upper left")
         if self.legend["BL"]:
-            self.axBL.legend(bbox_to_anchor=(-0.34, 1), loc="upper left")
+            self.axBL.legend(bbox_to_anchor=(-0.51, 1), loc="upper left")
         self.legend = {"LEM":False, "BL":False}
         
