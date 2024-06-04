@@ -12,10 +12,13 @@ class PlotAndGraph():
 
     def plotting_graph(self, plotinfo, time_unit):
         """ Plotting dataframes time and current/busload in one graph for current and one for busload. """
+
+        self.plotinfo = plotinfo
+
         # Skips ploting a new line but will still check if it's the first or last time this function is called.
-        if plotinfo["Skip"] == True:
-            if plotinfo["First"] == True:
-                self.fig, (self.axLEM, self.axBL) = plt.subplots(2, 1)
+        if plotinfo["Skip"]:
+            if plotinfo["First"]:
+                self.chosen_graphs()
             if plotinfo["Last"]:
                 self.plot_window(time_unit)
             return
@@ -25,8 +28,7 @@ class PlotAndGraph():
 
         # Will only execute when the the first dfs comes in.
         if plotinfo["First"]:
-            # axLEM is graph for the LEM files, axBL is for the BusLoad files.
-            self.fig, (self.axLEM, self.axBL) = plt.subplots(2, 1)
+            self.chosen_graphs()
 
         # Plots a line in the LEM or BL graph window.
         if plotinfo["LEM"]:
@@ -80,31 +82,52 @@ class PlotAndGraph():
         
         # Plots all labels in graph.
         plt.xlabel(f"Time[{time_unit_character}]", fontsize=15)
-        self.axLEM.set_ylabel("Current[mA]", fontsize=15)
-        self.axBL.set_ylabel("BusLoad[%]", fontsize=15)
-        self.axLEM.set_title("CAN Bus Analysis", fontsize=24)
+        if self.plotinfo["LEM_graph"]:
+            self.axLEM.set_ylabel("Current[mA]", fontsize=15)
+            self.axLEM.set_title("CAN Bus Analysis", fontsize=24)
+        if self.plotinfo["BL_graph"]:
+            self.axBL.set_ylabel("BusLoad[%]", fontsize=15)
+            self.axBL.set_title("CAN Bus Analysis", fontsize=24)
 
         # Adjusts the graph frames.
-        plt.subplots_adjust(left=0.33, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=0.1)
+        if self.plotinfo["LEM_graph"] and self.plotinfo["BL_graph"]:
+            plt.subplots_adjust(left=0.33, bottom=0.05, right=0.97, top=0.955, wspace=None, hspace=0.1)
+        else:
+            plt.subplots_adjust(left=0.33, bottom=0.05, right=0.97, top=0.955)
 
         # Adds the grid to both graphs.
-        self.axLEM.grid(which = "major", linewidth = 1)
-        self.axLEM.grid(which = "minor", linewidth = 0.4)
-        self.axLEM.minorticks_on()
-        self.axLEM.tick_params(which = "minor", bottom = False, left = False)
-        self.axBL.grid(which = "major", linewidth = 1)
-        self.axBL.grid(which = "minor", linewidth = 0.4)
-        self.axBL.minorticks_on()
-        self.axBL.tick_params(which = "minor", bottom = False, left = False)
+        if self.plotinfo["LEM_graph"]:
+            self.axLEM.grid(which = "major", linewidth = 1)
+            self.axLEM.grid(which = "minor", linewidth = 0.4)
+            self.axLEM.minorticks_on()
+            self.axLEM.tick_params(which = "minor", bottom = False, left = False)
+        if self.plotinfo["BL_graph"]:
+            self.axBL.grid(which = "major", linewidth = 1)
+            self.axBL.grid(which = "minor", linewidth = 0.4)
+            self.axBL.minorticks_on()
+            self.axBL.tick_params(which = "minor", bottom = False, left = False)
 
         # Sets window in fullscreen.
         manager = plt.get_current_fig_manager()
         manager.window.state('zoomed')
 
         # Checks if there's LEM and BusLoad file in the plots to display their legend.
-        if self.legend["LEM"]:
+        if self.legend["LEM"] and self.plotinfo["LEM_graph"]:
             self.axLEM.legend(bbox_to_anchor=(-0.51, 1), loc="upper left")
-        if self.legend["BL"]:
+        if self.legend["BL"] and self.plotinfo["BL_graph"]:
             self.axBL.legend(bbox_to_anchor=(-0.51, 1), loc="upper left")
         self.legend = {"LEM":False, "BL":False}
         
+
+    def chosen_graphs(self):
+        """ Decides which graphs are used. """
+        
+        # axLEM is graph for the LEM files, axBL is for the BusLoad files.
+        if self.plotinfo["LEM_graph"] and self.plotinfo["BL_graph"]:
+            self.fig, (self.axLEM, self.axBL) = plt.subplots(2, 1)
+        elif self.plotinfo["LEM_graph"]:
+            self.fig, self.axLEM = plt.subplots()
+        elif self.plotinfo["BL_graph"]:
+            self.fig, self.axBL = plt.subplots()
+        else:
+            raise NameError

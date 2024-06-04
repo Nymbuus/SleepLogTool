@@ -3,6 +3,7 @@ from tkinter import *
 import can
 from modules.files_preperation import FilesPreperation
 from modules.time_menu import TimeMenu
+from modules.other_settings_menu import OtherSettingsMenu
 
 class Menu:
     """ Handles the design of the first pop-up menu. """
@@ -11,7 +12,8 @@ class Menu:
         """ Initializes the class. """
         self.root = Tk()
         self._fp = FilesPreperation()
-        self._rtm = TimeMenu()
+        self._rtm = TimeMenu(self.root)
+        self._osm = OtherSettingsMenu(self.root)
         self.browse_field = Entry()
         self.path_frame = LabelFrame()
         self.path_frames = []
@@ -42,7 +44,8 @@ class Menu:
         self.browse_frame_create()
         self.line_plot_frame_create()
         self.analyze_cancel_frame_create()
-        self._rtm.time_menu(self.root)
+        self._rtm.time_menu()
+        self._osm.frame()
 
         self.root.mainloop()
 
@@ -208,7 +211,7 @@ class Menu:
     def analyze_cancel_frame_create(self):
         """ Creates the analyze/cancel frame and all of it's contents. """
         analyze_cancel_frame = Frame(self.root)
-        analyze_cancel_frame.grid(row=2, column=1, padx=5, sticky=SE)
+        analyze_cancel_frame.grid(row=3, column=1, padx=5, sticky=SE)
         self.analyze_button = Button(analyze_cancel_frame,
                                      text="Analyze",
                                      state=DISABLED,
@@ -354,6 +357,7 @@ class Menu:
         isLEM = None
         isBL = None
         start_file_count = True
+        LEM_graph, BL_graph = self._osm.get_choose_graph()
         # Loops through every list of files in every line plot.
         for i, array in enumerate(self.file_path_arrays):
             first_dfs = False
@@ -369,7 +373,7 @@ class Menu:
                 # Gets the name for the line plot.
                 line_plot_name = self.line_plot_name_entries[i].get()
                 # Gets the dataframe and the channel of the dataframe.
-                dfs, channel = self._fp.blf_to_df(blf_files, start_file_count)
+                dfs, channel = self._fp.blf_to_df(blf_files, start_file_count, LEM_graph, BL_graph)
                 start_file_count = False
                 # Checks if there was a name given and if there was none it get an automated one.
                 if line_plot_name == "":
@@ -414,5 +418,13 @@ class Menu:
             if len(self.file_path_arrays)-1 == i: last_dfs = True
             
             # Packs up the info about the dataframe and sends it for time removal.
-            plot_info = {"Dfs":dfs, "Name":line_plot_name, "First":first_dfs, "Last":last_dfs, "LEM":isLEM, "BL":isBL, "Skip":skip}
+            plot_info = {"Dfs":dfs,
+                         "Name":line_plot_name,
+                         "First":first_dfs,
+                         "Last":last_dfs,
+                         "LEM":isLEM,
+                         "BL":isBL,
+                         "Skip":skip,
+                         "LEM_graph":LEM_graph,
+                         "BL_graph":BL_graph}
             self._rtm.set_df(plot_info)
