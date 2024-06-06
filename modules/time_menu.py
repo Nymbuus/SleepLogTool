@@ -10,23 +10,22 @@ class TimeMenu:
     """ How much time to remove from start and end of the blf file. """
     """ What time unit to choose (seconds, minutes, hours). """
 
-    def __init__(self):
+    def __init__(self, root):
         """ Initializes the class. """
+        self.root = root
         self._fp = FilesPreperation()
         self._pag = PlotAndGraph()
         self.dfs = None
         self.filename = None
-        self.root = None
         self.warning_label = None
         self.time_unit = None
 
 
-    def time_menu(self, root):
+    def time_menu(self):
         """ Design and functionality for time settings frame. """
-        self.root = root
 
         self.time_frame = LabelFrame(self.root, text="Time Settings", padx=10, pady=10)
-        self.time_frame.grid(row=0, rowspan=2, column=1, padx=(0, 20), pady=10, sticky=N)
+        self.time_frame.grid(row=0, rowspan=2, column=1, padx=(0, 20), pady=(10, 0), sticky=N)
 
         # Remove time from start part.
         start_time_label = Label(self.time_frame, text="Minutes to remove from start:")

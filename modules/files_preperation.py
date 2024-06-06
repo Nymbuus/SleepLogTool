@@ -66,7 +66,7 @@ class FilesPreperation:
                                         with open(search_path, 'rb') as f:
                                             channel_get_blf = can.BLFReader(f)
                                             for msg in channel_get_blf:
-                                                if 10 == msg.channel:
+                                                if 10 == msg.channel or 24 == msg.channel or 25 == msg.channel:
                                                     file_list.append(os.path.join(search_path))
                                                     break
                                                 else:
@@ -75,7 +75,7 @@ class FilesPreperation:
                         return file_list
         
 
-    def blf_to_df(self, file_list, start_file_count):
+    def blf_to_df(self, file_list, start_file_count, LEM_graph, BL_graph):
         """ Write to df from blf. """
         """ file_list - The blf file(s) being read from. """
         
@@ -101,10 +101,13 @@ class FilesPreperation:
             f.close()
 
             # Checks what CANbus and calls corresponding function to prep it.
-            if channel == 10:
-                blf_data, channel = self.LEM_prep(file, index, channel)
+            # Second layer of if-statements check if LEM or BL-graph are selected in the settings.
+            if channel == 10 or channel == 24 or channel == 25:
+                if LEM_graph:
+                    blf_data, channel = self.LEM_prep(file, index, channel)
             else:
-                blf_data, channel = self.BL_prep(file, index, channel)
+                if BL_graph:
+                    blf_data, channel = self.BL_prep(file, index, channel)
             
             # Loads data into pandas dataframe.
             temp = pd.DataFrame(blf_data)
