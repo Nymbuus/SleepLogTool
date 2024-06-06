@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 import can
 from modules.files_preperation import FilesPreperation
 from modules.time_menu import TimeMenu
@@ -52,7 +53,7 @@ class Menu:
     def left_section_frames_create(self):
         """ Holds all frames in the left section of the window. """
         self.left_section_frames = LabelFrame(self.root, text="Left Section Frames", padx=10)
-        self.left_section_frames.grid(row=0, rowspan=3, column=0, padx=10, pady=10, sticky=N)
+        self.left_section_frames.grid(row=0, rowspan=4, column=0, padx=10, pady=10, sticky=N)
 
 
     def browse_frame_create(self):
@@ -231,7 +232,6 @@ class Menu:
             return
         self.files = []
 
-        
         # Gets what frame to put file(s) in.
         frame_index = int(self.line_plot_select.get()[-1:])-1
 
@@ -252,11 +252,10 @@ class Menu:
                             for msg in channel_get_blf:
                                 if self.decide_bus[frame_index] == msg.channel:
                                     print("same bus OK")
-                                    self.wrong_bus_warning(wrong=False)
                                     break
                                 else:
                                     print("Not same bus Not OK")
-                                    self.wrong_bus_warning(wrong=True)
+                                    self.show_warning("Not the same bus-type as in the line plot")
                                     return
                         f.close()
                     else:
@@ -307,7 +306,6 @@ class Menu:
         if len(self.file_path_arrays[path_frame_index]) == 0:
             self.path_frames[path_frame_index].destroy()
             self.path_frames[path_frame_index] = []
-            self.wrong_bus_warning(wrong=False)
             self.decide_bus[path_frame_index] = None
 
         for i in range(len(self.file_path_arrays[path_frame_index])):
@@ -316,19 +314,6 @@ class Menu:
                                                                self.file_path_del_buttons[y][x],
                                                                x, y))
         self.update_analyze_button()
-
-
-    def wrong_bus_warning(self, wrong):
-        """ A warning display under the browse field that warns for wrong bus type in file. """
-        if wrong:
-            self.bus_warning_label = Label(self.browse_frame, text="Chosen file(s) don't match bus in this line plot!\n"+
-                                                                   "Choose correct bus.")
-            self.bus_warning_label.grid(row=2, column=0, columnspan=5, sticky=W)
-        else:
-            try:
-                self.bus_warning_label.destroy()
-            except:
-                _ = None
 
 
     def add_browse_field(self):
@@ -348,6 +333,10 @@ class Menu:
 
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
+        LEM_graph, BL_graph = self._osm.get_choose_graph()
+        if LEM_graph == False and BL_graph == False:
+            self.show_warning("Choose a graph in settings")
+            return
         self.index_LEM = 1
         self.indexBL = 1
         last_dfs = False
@@ -356,7 +345,6 @@ class Menu:
         isLEM = None
         isBL = None
         start_file_count = True
-        LEM_graph, BL_graph = self._osm.get_choose_graph()
         # Loops through every list of files in every line plot.
         for i, array in enumerate(self.file_path_arrays):
             first_dfs = False
@@ -427,3 +415,7 @@ class Menu:
                          "LEM_graph":LEM_graph,
                          "BL_graph":BL_graph}
             self._rtm.set_df(plot_info)
+
+
+    def show_warning(self, warning_text):
+        messagebox.showwarning("warning", warning_text)

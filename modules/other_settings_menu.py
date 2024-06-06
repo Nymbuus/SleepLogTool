@@ -20,6 +20,7 @@ class OtherSettingsMenu:
 
     def choose_graph(self):
         self.LEM_toggle = BooleanVar()
+        self.LEM_toggle.set(True)
         self.LEM_checkbutton = Checkbutton(self.settings_menu_frame,
                                            text="LEM graph",
                                            variable=self.LEM_toggle,
@@ -27,6 +28,7 @@ class OtherSettingsMenu:
                                            offvalue=False)
         self.LEM_checkbutton.grid(row=0, column=0, sticky=W)
         self.BL_toggle = BooleanVar()
+        self.BL_toggle.set(True)
         self.BL_checkbutton = Checkbutton(self.settings_menu_frame,
                                           text="BL graph",
                                           variable=self.BL_toggle,
