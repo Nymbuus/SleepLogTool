@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from SleepLogTool.modules.files_preperation import FilesPreperation
+from modules.files_preperation import FilesPreperation
 
 SHORT_BLF = ["SleepLogTool\\blf_testfiles\\Trace_BP11_Display_1_20240221_133700_20240221_133859_#08-1_LEM.blf"]
 LONG_BLF = ["Sleeplogtool\\blf_testfiles\\Trace_BP11_Display_1_20240220_160600_20240221_062959_#08-1_LEM.blf"]

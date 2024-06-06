@@ -1,9 +1,8 @@
-""" Imports. Numpy will be used. """
 import matplotlib.pyplot as plt
 
 
 class PlotAndGraph():
-    """ Calculates the statistics that will be shown i graph and the plots it. """
+    """ Plotting the graphs window. """
 
     def __init__(self):
         """ Initializes the class. """

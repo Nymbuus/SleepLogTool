@@ -1,11 +1,10 @@
-""" Handles the design of the first pop-up menu. """
 from tkinter import *
 import can
 from modules.files_preperation import FilesPreperation
 from modules.time_menu import TimeMenu
 
 class Menu:
-    """ Handles the design of the first pop-up menu. """
+    """ Handles the design and functionality of the menu. """
 
     def __init__(self):
         """ Initializes the class. """
