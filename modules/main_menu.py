@@ -35,6 +35,7 @@ class Menu:
         self.index_unknown = 1
         self.line_plot_name_entries = []
         self.decide_bus = []
+        self.line_plot_invert_cbs = []
 
 
     def main_window(self):
@@ -95,14 +96,23 @@ class Menu:
         self.line_plot_name_label = Label(self.line_plot_frame, text="Line plot name:")
         self.line_plot_name_label.grid(row=0, column=0, sticky=W)
         self.line_plot_name_entry = Entry(self.line_plot_frame, width=25, borderwidth=5)
-        self.line_plot_name_entry.grid(row=0, column=1, padx=(0, 640))
+        self.line_plot_name_entry.grid(row=0, column=1)
         self.line_plot_name_entries.append(self.line_plot_name_entry)
+
+        invert_LEM = BooleanVar()
+        line_plot_invert_cb = Checkbutton(self.line_plot_frame,
+                                                        text="Do you feel inverted? (Only inverts LEM)",
+                                                        variable=invert_LEM,
+                                                        onvalue=True,
+                                                        offvalue=False)
+        line_plot_invert_cb.grid(row=0, column=2, padx=(40, 360))
+        self.line_plot_invert_cbs.append(invert_LEM)
 
         # Delete button for specified line plot.
         # Uses lambda function to store correct number at the time of defining the delete button.
         self.line_plot_del_button = Button(self.line_plot_frame, text="X",
                                            command=lambda x=len(self.line_plot_frames): self.line_plot_del(x))
-        self.line_plot_del_button.grid(row=0, column=2)
+        self.line_plot_del_button.grid(row=0, column=3)
         self.line_plot_del_buttons.append(self.line_plot_del_button)
 
         # Adds line plots to list to use later in functions below.
@@ -136,6 +146,7 @@ class Menu:
         del self.file_path_arrays[x]
         del self.file_path_del_buttons[x]
         del self.decide_bus[x]
+        del self.line_plot_invert_cbs[x]
 
         # Updates line_plot_frames text and row in it's grid.
         for i, frame in enumerate(self.line_plot_frames):
@@ -176,7 +187,7 @@ class Menu:
     def toggling_frame_create(self, frame_index):
         """ Create a button to toggle the frame """
         toggling_frame = Frame(self.line_plot_frames[frame_index])
-        toggling_frame.grid(row=1, column=0, columnspan=2, sticky=W)
+        toggling_frame.grid(row=1, column=0, columnspan=3, sticky=W)
         toggle_button = Button(toggling_frame, text="-",
                                command=lambda index=len(self.toggling_frames): self.toggle_frames(index))
         toggle_button.grid(row=0, column=0)
@@ -189,7 +200,7 @@ class Menu:
     def path_frame_create(self, frame_index, append):
         """ Creates a frame for the paths that will be used in the plot. """
         path_frame = LabelFrame(self.line_plot_frames[frame_index], text="Filepath(s)", padx=10, pady=5)
-        path_frame.grid(row=2, column=0, columnspan=2, padx=(20, 0), pady=5, sticky=W)
+        path_frame.grid(row=2, column=0, columnspan=3, padx=(20, 0), pady=5, sticky=W)
 
         # If it's the first path in the frame it will create a list otherwise append to it.
         if append:
@@ -403,6 +414,8 @@ class Menu:
             # Checks if it's the first or/and last dataframe.
             if i == 0: first_dfs = True
             if len(self.file_path_arrays)-1 == i: last_dfs = True
+
+            LEM_invert = self.line_plot_invert_cbs[i].get()
             
             # Packs up the info about the dataframe and sends it for time removal.
             plot_info = {"Dfs":dfs,
@@ -413,7 +426,8 @@ class Menu:
                          "BL":isBL,
                          "Skip":skip,
                          "LEM_graph":LEM_graph,
-                         "BL_graph":BL_graph}
+                         "BL_graph":BL_graph,
+                         "LEM_invert":LEM_invert}
             self._rtm.set_df(plot_info)
 
 

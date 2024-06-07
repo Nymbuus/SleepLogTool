@@ -48,22 +48,34 @@ class PlotAndGraph():
         first_time = self.dfs["Time"].min()
         y = self.dfs.Current.to_numpy()
         x = self.dfs.Time.to_numpy()
-        self.axLEM.plot(((x - first_time))/time_unit, y,
-                         label=f"{self.name}  "+
-                             f" Avg: {self.dfs['Current'].mean():.1f} mA,"+
-                             f" Max: {self.dfs['Current'].max():.1f} mA,"+
-                             f" Min: {self.dfs['Current'].min():.1f} mA")
+
+        # preps x and y for plotting.
+        x = x - first_time
+        x = x / time_unit
+        if self.plotinfo["LEM_invert"]:
+            y = y * (-1)
+
+        self.axLEM.plot(x, y,
+                        label=f"{self.name}  "+
+                              f" Avg: {y.mean():.1f} mA,"+
+                              f" Max: {y.max():.1f} mA,"+
+                              f" Min: {y.min():.1f} mA")
 
     def BL_plot(self, time_unit):
         """ Plots one line for BusLoad """
         first_time = self.dfs["Time"].min()
         y = self.dfs.Busload.to_numpy()
         x = self.dfs.Time.to_numpy()
-        self.axBL.plot(((x - first_time))/time_unit, y,
-                        label=f"{self.name}  "+
-                              f" Avg: {self.dfs['Busload'].mean():.2f} %,"+
-                              f" Max: {self.dfs['Busload'].max():.2f} %,"+
-                              f" Min: {self.dfs['Busload'].min():.2f} %")
+
+        # preps x for plotting.
+        x = x - first_time
+        x = x / time_unit
+
+        self.axBL.plot(x, y,
+                       label=f"{self.name}  "+
+                             f" Avg: {y.mean():.2f} %,"+
+                             f" Max: {y.max():.2f} %,"+
+                             f" Min: {y.min():.2f} %")
 
 
     def plot_window(self, time_unit):
@@ -81,10 +93,10 @@ class PlotAndGraph():
         
         # Plots all labels in graph.
         plt.xlabel(f"Time[{time_unit_character}]", fontsize=15)
-        if self.plotinfo["LEM_graph"]:
+        if (self.plotinfo["LEM_graph"] and self.plotinfo["BL_graph"]) or self.plotinfo["LEM_graph"]:
             self.axLEM.set_ylabel("Current[mA]", fontsize=15)
             self.axLEM.set_title("CAN Bus Analysis", fontsize=24)
-        if self.plotinfo["BL_graph"]:
+        else:
             self.axBL.set_ylabel("BusLoad[%]", fontsize=15)
             self.axBL.set_title("CAN Bus Analysis", fontsize=24)
 
