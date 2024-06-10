@@ -261,7 +261,7 @@ class Menu:
                         with open(file, 'rb') as f:
                             channel_get_blf = can.BLFReader(f)
                             for msg in channel_get_blf:
-                                if msg.channel == 10 or msg.channel == 24 or msg.channel == 25 or msg.channel == 26:
+                                if msg.channel == 10 or msg.channel == 23 or msg.channel == 24 or msg.channel == 25 or msg.channel == 26:
                                     if self.decide_bus[frame_index] == "LEM":
                                         print("same bus OK")
                                         break
@@ -281,7 +281,7 @@ class Menu:
                         with open(self.files[0], 'rb') as f:
                             channel_get_blf = can.BLFReader(f)
                             for msg in channel_get_blf:
-                                if msg.channel == 10 or msg.channel == 24 or msg.channel == 25 or msg.channel == 26:
+                                if msg.channel == 10 or msg.channel == 23 or msg.channel == 24 or msg.channel == 25 or msg.channel == 26:
                                     self.decide_bus[frame_index] = "LEM"
                                 else:
                                     self.decide_bus[frame_index] = msg.channel
@@ -405,6 +405,9 @@ class Menu:
                         case 10:
                             line_plot_name = f"LEM #{self.index_LEM}"
                             self.index_LEM += 1
+                        case 23:
+                            line_plot_name = f"LEM #{self.index_LEM}"
+                            self.index_LEM += 1
                         case 24:
                             line_plot_name = f"LEM #{self.index_LEM}"
                             self.index_LEM += 1
@@ -418,7 +421,7 @@ class Menu:
                             line_plot_name = f"Unknown Bus #{self.index_unknown}"
                             self.index_unknown += 1
                 # Checks if the dataframe is a LEM file or BusLoad file.
-                if channel == 10 or channel == 24 or channel == 25 or channel == 26:
+                if channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
                     isLEM = True
                 else:
                     isBL = True
