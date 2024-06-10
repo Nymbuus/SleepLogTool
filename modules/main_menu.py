@@ -5,6 +5,8 @@ from modules.files_preperation import FilesPreperation
 from modules.time_menu import TimeMenu
 from modules.other_settings_menu import OtherSettingsMenu
 
+from modules.button import MyButton
+
 class Menu:
     """ Handles the design and functionality of the menu. """
 
@@ -81,6 +83,14 @@ class Menu:
         add_plot_line_button.grid(row=1, column=3, padx=(10, 30))
         drop_down_box_text = Label(self.browse_frame, text="Select Line Plot to add files to:")
         drop_down_box_text.grid(row=1, column=4, sticky=E)
+
+        välj_fil_button = MyButton(frame=self.browse_frame,
+                                   text="välj fil",
+                                   padx=0,
+                                   pady=0,
+                                   command=lambda:self.file_path_setup("file"),
+                                   row=1,
+                                   column=6)
 
 
     def line_plot_frame_create(self):
