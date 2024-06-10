@@ -261,6 +261,14 @@ class Menu:
                         with open(file, 'rb') as f:
                             channel_get_blf = can.BLFReader(f)
                             for msg in channel_get_blf:
+                                if msg.channel == 10 or msg.channel == 24 or msg.channel == 25 or msg.channel == 26:
+                                    if self.decide_bus[frame_index] == "LEM":
+                                        print("same bus OK")
+                                        break
+                                    else:
+                                        print("Not same bus Not OK")
+                                        self.show_warning("Not the same bus-type as in the line plot")
+                                        return
                                 if self.decide_bus[frame_index] == msg.channel:
                                     print("same bus OK")
                                     break
@@ -273,7 +281,10 @@ class Menu:
                         with open(self.files[0], 'rb') as f:
                             channel_get_blf = can.BLFReader(f)
                             for msg in channel_get_blf:
-                                self.decide_bus[frame_index] = msg.channel
+                                if msg.channel == 10 or msg.channel == 24 or msg.channel == 25 or msg.channel == 26:
+                                    self.decide_bus[frame_index] = "LEM"
+                                else:
+                                    self.decide_bus[frame_index] = msg.channel
                                 break
                         f.close()
             else:
@@ -400,11 +411,14 @@ class Menu:
                         case 25:
                             line_plot_name = f"LEM #{self.index_LEM}"
                             self.index_LEM += 1
+                        case 26:
+                            line_plot_name = f"LEM #{self.index_LEM}"
+                            self.index_LEM += 1
                         case _:
                             line_plot_name = f"Unknown Bus #{self.index_unknown}"
                             self.index_unknown += 1
                 # Checks if the dataframe is a LEM file or BusLoad file.
-                if channel == 10 or channel == 24 or channel == 25:
+                if channel == 10 or channel == 24 or channel == 25 or channel == 26:
                     isLEM = True
                 else:
                     isBL = True
