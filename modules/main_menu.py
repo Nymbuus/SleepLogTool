@@ -4,7 +4,7 @@ import can
 from modules.files_preperation import FilesPreperation
 from modules.time_menu import TimeMenu
 from modules.other_settings_menu import OtherSettingsMenu
-
+from modules.widgets.button import MyButton
 
 
 class Menu:
