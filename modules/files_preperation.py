@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-class FilesPreperation:
+class FilesPreparation:
     """ Preps the files before displaying them. """
 
     def __init__(self):

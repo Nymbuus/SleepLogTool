@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import can
-from modules.files_preperation import FilesPreperation
+from modules.files_preperation import FilesPreparation
 from modules.time_menu import TimeMenu
 from modules.other_settings_menu import OtherSettingsMenu
 
@@ -11,7 +11,7 @@ class Menu:
     def __init__(self):
         """ Initializes the class. """
         self.root = Tk()
-        self._fp = FilesPreperation()
+        self._fp = FilesPreparation()
         self._rtm = TimeMenu(self.root)
         self._osm = OtherSettingsMenu(self.root)
         self.browse_field = Entry()

@@ -1,5 +1,5 @@
 from tkinter import *
-from modules.files_preperation import FilesPreperation
+from modules.files_preperation import FilesPreparation
 from modules.plot_and_graph import PlotAndGraph
 
 TENTH_SECOND = 6000
@@ -13,7 +13,7 @@ class TimeMenu:
     def __init__(self, root):
         """ Initializes the class. """
         self.root = root
-        self._fp = FilesPreperation()
+        self._fp = FilesPreparation()
         self._pag = PlotAndGraph()
         self.dfs = None
         self.filename = None
