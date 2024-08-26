@@ -14,6 +14,23 @@ class Menu:
         self._fp = FilesPreparation()
         self._rtm = TimeMenu(self.root)
         self._osm = OtherSettingsMenu(self.root)
+
+
+    def main_window(self):
+        """ Menu for selecting files and adjust settings. """
+        self.initialize_vars()
+        self.initalize_and_reset_bus_channel_indexes()
+        self.left_section_frames_create()
+        self.browse_frame_create()
+        self.line_plot_frame_create()
+        self.analyze_cancel_frame_create()
+        self._rtm.time_menu()
+        self._osm.frame()
+
+        self.root.mainloop()
+
+
+    def initialize_vars(self):
         self.browse_field = Entry()
         self.path_frame = LabelFrame()
         self.path_frames = []
@@ -26,6 +43,12 @@ class Menu:
         self.optionsmenu_list = []
         self.line_plot_select = StringVar()
         self.line_plot_del_buttons = []
+        self.line_plot_name_entries = []
+        self.decide_bus = []
+        self.line_plot_invert_cbs = []
+
+
+    def initalize_and_reset_bus_channel_indexes(self):
         self.index_body = 1
         self.index_front1 = 1
         self.index_front3 = 1
@@ -33,22 +56,6 @@ class Menu:
         self.index_rear1 = 1
         self.index_LEM = 1
         self.index_unknown = 1
-        self.line_plot_name_entries = []
-        self.decide_bus = []
-        self.line_plot_invert_cbs = []
-
-
-    def main_window(self):
-        """ Menu for selecting files and adjust settings. """
-        self.left_section_frames_create()
-        #self.parallel_line_plot_settings_frame_create()
-        self.browse_frame_create()
-        self.line_plot_frame_create()
-        self.analyze_cancel_frame_create()
-        self._rtm.time_menu()
-        self._osm.frame()
-
-        self.root.mainloop()
 
 
     def left_section_frames_create(self):
@@ -355,17 +362,14 @@ class Menu:
 
     def analyze_data(self):
         """ Takes the present filepaths and analyzes the data in the blf files. """
+        self.initalize_and_reset_bus_channel_indexes()
         LEM_graph, BL_graph = self._osm.get_choose_graph()
         if LEM_graph == False and BL_graph == False:
             self.show_warning("Choose a graph in settings")
             return
-        self.index_LEM = 1
-        self.indexBL = 1
         last_dfs = False
         dfs = None
         line_plot_name = None
-        isLEM = None
-        isBL = None
         start_file_count = True
         # Loops through every list of files in every line plot.
         for i, array in enumerate(self.file_path_arrays):
@@ -384,47 +388,8 @@ class Menu:
                 # Gets the dataframe and the channel of the dataframe.
                 dfs, channel = self._fp.blf_to_df(blf_files, start_file_count, LEM_graph, BL_graph)
                 start_file_count = False
-                # Checks if there was a name given and if there was none it get an automated one.
-                if line_plot_name == "":
-                    match channel:
-                        case 2:
-                            line_plot_name = f"Body #{self.index_body}"
-                            self.index_body += 1
-                        case 6:
-                            line_plot_name = f"Front1 #{self.index_front1}"
-                            self.index_front1 += 1
-                        case 7:
-                            line_plot_name = f"Front3 #{self.index_front3}"
-                            self.index_front3 += 1
-                        case 8:
-                            line_plot_name = f"Mid1 #{self.index_mid1}"
-                            self.index_mid1 += 1
-                        case 9:
-                            line_plot_name = f"Rear1 #{self.index_rear1}"
-                            self.index_rear1 += 1
-                        case 10:
-                            line_plot_name = f"LEM #{self.index_LEM}"
-                            self.index_LEM += 1
-                        case 23:
-                            line_plot_name = f"LEM #{self.index_LEM}"
-                            self.index_LEM += 1
-                        case 24:
-                            line_plot_name = f"LEM #{self.index_LEM}"
-                            self.index_LEM += 1
-                        case 25:
-                            line_plot_name = f"LEM #{self.index_LEM}"
-                            self.index_LEM += 1
-                        case 26:
-                            line_plot_name = f"LEM #{self.index_LEM}"
-                            self.index_LEM += 1
-                        case _:
-                            line_plot_name = f"Unknown Bus #{self.index_unknown}"
-                            self.index_unknown += 1
-                # Checks if the dataframe is a LEM file or BusLoad file.
-                if channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
-                    isLEM = True
-                else:
-                    isBL = True
+                line_plot_name, isLEM, isBL = self.check_name(channel, line_plot_name)
+
             else:
                 skip = True
             
@@ -446,6 +411,60 @@ class Menu:
                          "BL_graph":BL_graph,
                          "LEM_invert":LEM_invert}
             self._rtm.set_df(plot_info)
+
+
+    def check_name(self, channel, line_plot_name):
+        """ Checks if there was a name given and if there was none it get an automated one.
+            Checks if the dataframe is a LEM file or BusLoad file. """
+        isLEM = None
+        isBL = None
+        if line_plot_name == "":
+            match channel:
+                case 2:
+                    channel_name = f"Body #{self.index_body}"
+                    self.index_body += 1
+                    isBL = True
+                case 6:
+                    channel_name = f"Front1 #{self.index_front1}"
+                    self.index_front1 += 1
+                    isBL = True
+                case 7:
+                    channel_name = f"Front3 #{self.index_front3}"
+                    self.index_front3 += 1
+                    isBL = True
+                case 8:
+                    channel_name = f"Mid1 #{self.index_mid1}"
+                    self.index_mid1 += 1
+                    isBL = True
+                case 9:
+                    channel_name = f"Rear1 #{self.index_rear1}"
+                    self.index_rear1 += 1
+                    isBL = True
+                case 10:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
+                    isLEM = True
+                case 23:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
+                    isLEM = True
+                case 24:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
+                    isLEM = True
+                case 25:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
+                    isLEM = True
+                case 26:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
+                    isLEM = True
+                case _:
+                    channel_name = f"Unknown Bus #{self.index_unknown}"
+                    self.index_unknown += 1
+
+        return channel_name, isLEM, isBL 
 
 
     def show_warning(self, warning_text):
