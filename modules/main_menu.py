@@ -5,15 +5,15 @@ from modules.files_preperation import FilesPreparation
 from modules.time_menu import TimeMenu
 from modules.other_settings_menu import OtherSettingsMenu
 
-class Menu:
+class Menu(Tk):
     """ Handles the design and functionality of the menu. """
 
     def __init__(self):
+        super().__init__()
         """ Initializes the class. """
-        self.root = Tk()
         self._fp = FilesPreparation()
-        self._rtm = TimeMenu(self.root)
-        self._osm = OtherSettingsMenu(self.root)
+        self._rtm = TimeMenu(self)
+        self._osm = OtherSettingsMenu(self)
 
 
     def main_window(self):
@@ -27,7 +27,7 @@ class Menu:
         self._rtm.time_menu()
         self._osm.frame()
 
-        self.root.mainloop()
+        self.mainloop()
 
 
     def initialize_vars(self):
@@ -60,7 +60,7 @@ class Menu:
 
     def left_section_frames_create(self):
         """ Holds all frames in the left section of the window. """
-        self.left_section_frames = LabelFrame(self.root, text="Left Section Frames", padx=10)
+        self.left_section_frames = LabelFrame(self, text="Left Section Frames", padx=10)
         self.left_section_frames.grid(row=0, rowspan=4, column=0, padx=10, pady=10, sticky=N)
 
 
@@ -228,7 +228,7 @@ class Menu:
 
     def analyze_cancel_frame_create(self):
         """ Creates the analyze/cancel frame and all of it's contents. """
-        analyze_cancel_frame = Frame(self.root)
+        analyze_cancel_frame = Frame(self)
         analyze_cancel_frame.grid(row=3, column=1, padx=5, sticky=SE)
         self.analyze_button = Button(analyze_cancel_frame,
                                      text="Analyze",
@@ -238,7 +238,7 @@ class Menu:
         self.analyze_button.grid(row=0, column=0, pady=10)
         self.cancel_button = Button(analyze_cancel_frame,
                                     text="Cancel",
-                                    command=self.root.quit,
+                                    command=self.quit,
                                     padx=15)
         self.cancel_button.grid(row=0,column=1, padx=15, pady=10)
 
