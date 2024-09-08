@@ -19,6 +19,7 @@ class TimeMenu(LabelFrame):
         self.filename = None
         self.warning_label = None
         self.time_unit = None
+        self.time_menu()
 
 
     def time_menu(self):

@@ -4,10 +4,10 @@ from tkinter import *
 class OtherSettingsMenu(LabelFrame):
     """ Handling of the Other settings menu. """
 
-    
     def __init__(self, parent):
         super().__init__(parent)
         """ Initializes the class when called upon """
+        self.frame()
 
 
     def frame(self):

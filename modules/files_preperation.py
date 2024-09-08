@@ -12,6 +12,18 @@ class FilesPreparation:
         """ Initialises the class. """
         self.total_time_before = 0
         self.file_number = 1
+        self.initalize_and_reset_bus_channel_indexes()
+    
+
+    def initalize_and_reset_bus_channel_indexes(self):
+        self.index_body = 1
+        self.index_front1 = 1
+        self.index_front3 = 1
+        self.index_mid1 = 1
+        self.index_rear1 = 1
+        self.index_LEM = 1
+        self.index_unknown = 1
+
 
     def file_explorer(self, choice):
         """ Lets the user chose files to analyze. """
@@ -213,3 +225,110 @@ class FilesPreparation:
             dfs = dfs[:-int(remove_end_time)]
 
         return dfs
+    
+
+    def analyze_data(self):
+        """ Takes the present filepaths and analyzes the data in the blf files. """
+        self.initalize_and_reset_bus_channel_indexes()
+        LEM_graph, BL_graph = self._osm.get_choose_graph()
+        if LEM_graph == False and BL_graph == False:
+            self.show_warning("Choose a graph in settings")
+            return
+        last_dfs = False
+        dfs = None
+        line_plot_name = None
+        start_file_count = True
+        # Loops through every list of files in every line plot.
+        for i, array in enumerate(self.file_path_arrays):
+            first_dfs = False
+            skip = False
+            # Checks if the line plot path frame is empty.
+            if len(array) != 0:
+                blf_files = []
+                isLEM = False
+                isBL = False
+                for file in array:
+                    blf_files.append(file.get())
+
+                # Gets the name for the line plot.
+                line_plot_name = self.line_plot_name_entries[i].get()
+                # Gets the dataframe and the channel of the dataframe.
+                dfs, channel = self._fp.blf_to_df(blf_files, start_file_count, LEM_graph, BL_graph)
+                start_file_count = False
+                line_plot_name, isLEM, isBL = self.check_name(channel, line_plot_name)
+
+            else:
+                skip = True
+            
+            # Checks if it's the first or/and last dataframe.
+            if i == 0: first_dfs = True
+            if len(self.file_path_arrays)-1 == i: last_dfs = True
+
+            LEM_invert = self.line_plot_invert_cbs[i].get()
+            
+            # Packs up the info about the dataframe and sends it for time removal.
+            plot_info = {"Dfs":dfs,
+                         "Name":line_plot_name,
+                         "First":first_dfs,
+                         "Last":last_dfs,
+                         "LEM":isLEM,
+                         "BL":isBL,
+                         "Skip":skip,
+                         "LEM_graph":LEM_graph,
+                         "BL_graph":BL_graph,
+                         "LEM_invert":LEM_invert}
+            self._rtm.set_df(plot_info)
+
+
+    def check_name(self, channel, line_plot_name):
+        """ Checks if there was a name given and if there was none it get an automated one.
+            Checks if the dataframe is a LEM file or BusLoad file. """
+        isLEM = None
+        isBL = None
+        if line_plot_name == "":
+            match channel:
+                case 2:
+                    channel_name = f"Body #{self.index_body}"
+                    self.index_body += 1
+                    isBL = True
+                case 6:
+                    channel_name = f"Front1 #{self.index_front1}"
+                    self.index_front1 += 1
+                    isBL = True
+                case 7:
+                    channel_name = f"Front3 #{self.index_front3}"
+                    self.index_front3 += 1
+                    isBL = True
+                case 8:
+                    channel_name = f"Mid1 #{self.index_mid1}"
+                    self.index_mid1 += 1
+                    isBL = True
+                case 9:
+                    channel_name = f"Rear1 #{self.index_rear1}"
+                    self.index_rear1 += 1
+                    isBL = True
+                case 10:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
+                    isLEM = True
+                case 23:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
+                    isLEM = True
+                case 24:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
+                    isLEM = True
+                case 25:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
+                    isLEM = True
+                case 26:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
+                    isLEM = True
+                case _:
+                    channel_name = f"Unknown Bus #{self.index_unknown}"
+                    self.index_unknown += 1
+
+        return channel_name, isLEM, isBL
