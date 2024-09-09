@@ -43,16 +43,18 @@ class PlotLines(LabelFrame):
         self.line_plot_del_button.grid(row=0, column=3)
 
         # Adds line plots to list to use later in functions below.
-        self.toggling_frame_create(len_line_plots)
-        self.path_frame_create(len_line_plots, append=True)
-
-
-        # DON'T KNOW WHAT TO DO WITH THIS NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # self.toggling_frame_create(len_line_plots)
+        # self.path_frame_create(len_line_plots, append=True)
+        self.toggling_frame_create()
+        self.path_frame_create()
 
         # Checks if the dropdownbox does not have any line plots and if so destroys it to make a new one with Line plot 1 in it.
-        # if self.plot_selected == "-":
-        #     self.drop_down_box.destroy()
-        # self.text_to_set = text
+        if self.plot_selected == "-":
+            self.drop_down_box.destroy()
+        self.text_to_set = text
+
+
+        # DON'T KNOW WHAT TO DO WITH THIS NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         # Updates the dropdownbox with the new line plot.
         # self.optionsmenu_list.append(text)

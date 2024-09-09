@@ -3,8 +3,8 @@ from tkinter import messagebox
 from modules.files_preperation import FilesPreparation
 from modules.time_menu import TimeMenu
 from modules.other_settings_menu import OtherSettingsMenu
-from modules.browse_field import BrowseField
 from modules.plot_lines import PlotLines
+from modules.plot_and_graph import PlotAndGraph
 
 class Menu(Tk):
     """ Handles the design and functionality of the menu. """
@@ -13,17 +13,19 @@ class Menu(Tk):
         super().__init__()
         """ Initializes the class. """
         self.initialize_vars()
-        self._fp = FilesPreparation()
-        self._rtm = TimeMenu(self, self.line_plot_frames)
-        self._osm = OtherSettingsMenu(self)
-        self.browse_field = BrowseField(self, self.line_plot_frames)
-        plot_selected = self.browse_field.line_plot_select.get()
-        self.first_plot_line = PlotLines(self, self.line_plot_frames, plot_selected)
+        self.fp = FilesPreparation()
+        self.rtm = TimeMenu(self)
+        self.osm = OtherSettingsMenu(self)
+        self.pag = PlotAndGraph()
+        self.left_section_frames_create()
+        self.browse_frame_create()
+        self.analyze_cancel_frame_create()
+        plot_selected = self.line_plot_select.get()
+        self.first_plot_line = PlotLines(self.left_section_frame, self.line_plot_frames, plot_selected)
         self.line_plot_frames.append(self.first_plot_line)
         self.path_frames.append(self.first_plot_line.path_frame)
 
-        # DON'T KNOW ABOUT THIS ONE!!!!!!!!!!!!!!
-        # self.browse_field.line_plot_select.set(self.first_plot_line.text_to_set)
+        self.line_plot_select.set(self.first_plot_line.text_to_set)
 
 
         # Prepares the frame with lists to be filled.
@@ -33,10 +35,7 @@ class Menu(Tk):
 
 
     def main_window(self):
-        """ Menu for selecting files and adjust settings. """
-        self.left_section_frames_create()
-        self.analyze_cancel_frame_create()
-
+        """ Mainloop keeps the program running until exit. """
         self.mainloop()
 
 
@@ -53,12 +52,53 @@ class Menu(Tk):
         self.line_plot_invert_cbs = []
         self.path_frames = []
         self.toggling_frames = []
+        self.browse_field = Entry()
+        self.line_plot_select = StringVar()
+
+
+    def browse_frame_create(self):
+        """ Creates the browse frame and adds all of it's contents. """
+        self.browse_frame = LabelFrame(self.left_section_frame, text="Choose blf file(s)", padx=10, pady=5)
+        self.browse_frame.grid(row=0, column=0, pady=10, sticky=W)
+
+        # Entry and button to add a file manually by entering path to it.
+        self.browse_field = Entry(self.browse_frame, width=140, borderwidth=5)
+        self.browse_field.grid(row=0, column=0, columnspan=6, padx=(0, 10), pady=(0, 10))
+        add_button = Button(self, text="Add File", command=self.add_browse_field)
+        add_button.grid(row=0, column=6, padx=(2, 3), sticky=N)
+
+        # Buttons to add files in different ways with the file_path_setup function.
+        choose_file_button = Button(self.browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
+        choose_file_button.grid(row=1, column=0, sticky=W)
+        choose_folder_button = Button(self.browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
+        choose_folder_button.grid(row=1, column=1, padx=10)
+        extract_LEM_button = Button(self.browse_frame, text="Extract LEM(s)", command=lambda:self.file_path_setup("extract LEM"))
+        extract_LEM_button.grid(row=1, column=2,)
+
+        # Button to add a parallel plot line and a drop down box to select wanted plot line.
+        add_plot_line_button = Button(self.browse_frame, text="Add Plot Line", command=self.plot_line_create)
+        add_plot_line_button.grid(row=1, column=3, padx=(10, 30))
+        drop_down_box_text = Label(self.browse_frame, text="Select Line Plot to add files to:")
+        drop_down_box_text.grid(row=1, column=4, sticky=E)
+
+    
+    def plot_line_create(self):
+        plot_selected = self.line_plot_select.get()
+        # IS self INCORRECT HERE?!?!?!?!!?
+        PlotLines(self.left_section_frame, self.line_plot_frames, plot_selected)
+
+
+    def add_browse_field(self):
+        """ Adds path given in browse field to specified line plot frame. """
+        file = self.browse_field.get()
+        if file:
+            self.file_path_setup(file, "add")
 
 
     def left_section_frames_create(self):
         """ Holds all frames in the left section of the window. """
-        self.left_section_frames = LabelFrame(self, text="Left Section Frames", padx=10)
-        self.left_section_frames.grid(row=0, rowspan=4, column=0, padx=10, pady=10, sticky=N)
+        self.left_section_frame = Frame(self, padx=10)
+        self.left_section_frame.grid(row=0, rowspan=4, column=0, padx=10, pady=10, sticky=N)
 
 
     def analyze_cancel_frame_create(self):
@@ -68,7 +108,7 @@ class Menu(Tk):
         self.analyze_button = Button(analyze_cancel_frame,
                                      text="Analyze",
                                      state=DISABLED,
-                                     command=self.analyze_data,
+                                     command=self.fp.analyze_data,
                                      padx=15)
         self.analyze_button.grid(row=0, column=0, pady=10)
         self.cancel_button = Button(analyze_cancel_frame,
