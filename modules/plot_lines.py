@@ -18,12 +18,12 @@ class PlotLines(LabelFrame):
 
         # Gets correct line plot name and creates a line plot frame with it.
         len_line_plots = len(self.line_plot_frames)
-        text = f"Line Plot {len_line_plots+1}"
+        text = f"Plot Line {len_line_plots+1}"
         self.config(text=text, padx=10, pady=5)
         self.grid(row=len_line_plots+1, column=0, pady=10)
 
         # Entry for specified line custom name.
-        self.line_plot_name_label = Label(self, text="Line plot name:")
+        self.line_plot_name_label = Label(self, text="Plot line name:")
         self.line_plot_name_label.grid(row=0, column=0, sticky=W)
         self.line_plot_name_entry = Entry(self, width=25, borderwidth=5)
         self.line_plot_name_entry.grid(row=0, column=1)
@@ -99,20 +99,21 @@ class PlotLines(LabelFrame):
             self.path_frame.grid(row=2, column=0, columnspan=2, padx=(20, 0), pady=5, sticky=W)
 
 
-    def file_path_setup(self, choice, add=None):
+    def file_path_setup(self, files, frame_index, file_path_arrays, decide_bus, path_frames, add=None):
         """ displayes the file paths in the main window. """
+        self.file_path_arrays = file_path_arrays
+        self.decide_bus = decide_bus
+        self.path_frames = path_frames
+
         # Checks if there are any line plot frames to add file path to.
         if len(self.line_plot_frames) == 0:
             return
         self.files = []
 
-        # Gets what frame to put file(s) in.
-        frame_index = int(self.line_plot_select.get()[-1:])-1
-
         # Checks if it should add file from the browse entry.
         if add == None:
             # Calls function to get file(s) from the explorer.
-            self.files = self._fp.file_explorer(choice)
+            self.files = files
             if self.files:
                 # If there are no file_paths in the frame, reset what bus can be add to it.
                 if len(self.file_path_arrays[frame_index]) == 0:

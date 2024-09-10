@@ -20,13 +20,11 @@ class Menu(Tk):
         self.left_section_frames_create()
         self.browse_frame_create()
         self.analyze_cancel_frame_create()
-        plot_selected = self.line_plot_select.get()
-        self.first_plot_line = PlotLines(self.left_section_frame, self.line_plot_frames, plot_selected)
-        self.line_plot_frames.append(self.first_plot_line)
-        self.path_frames.append(self.first_plot_line.path_frame)
-
-        self.line_plot_select.set(self.first_plot_line.text_to_set)
-
+        plot_selected = self.plot_line_select.get()
+        plot_line = PlotLines(self.left_section_frame, self.plot_line_frames, plot_selected)
+        self.plot_line_frames.append(plot_line)
+        self.path_frames.append(plot_line.path_frame)
+        self.plot_line_select.set(plot_line.text_to_set)
 
         # Prepares the frame with lists to be filled.
         self.file_path_arrays.append([])
@@ -44,8 +42,8 @@ class Menu(Tk):
         self.file_path_arrays = []
         self.file_path_del_buttons = []
         self.x = 0
-        self.line_plot_frames = []
-        self.optionsmenu_list = []
+        self.plot_line_frames = []
+        self.optionsmenu_list = ["Plot Line 1"]
         self.line_plot_del_buttons = []
         self.line_plot_name_entries = []
         self.decide_bus = []
@@ -53,7 +51,8 @@ class Menu(Tk):
         self.path_frames = []
         self.toggling_frames = []
         self.browse_field = Entry()
-        self.line_plot_select = StringVar()
+        self.plot_line_select = StringVar()
+        self.plot_lines = []
 
 
     def browse_frame_create(self):
@@ -64,15 +63,15 @@ class Menu(Tk):
         # Entry and button to add a file manually by entering path to it.
         self.browse_field = Entry(self.browse_frame, width=140, borderwidth=5)
         self.browse_field.grid(row=0, column=0, columnspan=6, padx=(0, 10), pady=(0, 10))
-        add_button = Button(self, text="Add File", command=self.add_browse_field)
+        add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
         add_button.grid(row=0, column=6, padx=(2, 3), sticky=N)
 
         # Buttons to add files in different ways with the file_path_setup function.
-        choose_file_button = Button(self.browse_frame, text="Choose file(s)", command=lambda:self.file_path_setup("file"))
+        choose_file_button = Button(self.browse_frame, text="Choose file(s)", command=lambda:self.add_file_path("file"))
         choose_file_button.grid(row=1, column=0, sticky=W)
-        choose_folder_button = Button(self.browse_frame, text="Choose folder(s)", command=lambda:self.file_path_setup("folder"))
+        choose_folder_button = Button(self.browse_frame, text="Choose folder(s)", command=lambda:self.add_file_path("folder"))
         choose_folder_button.grid(row=1, column=1, padx=10)
-        extract_LEM_button = Button(self.browse_frame, text="Extract LEM(s)", command=lambda:self.file_path_setup("extract LEM"))
+        extract_LEM_button = Button(self.browse_frame, text="Extract LEM(s)", command=lambda:self.add_file_path("extract LEM"))
         extract_LEM_button.grid(row=1, column=2,)
 
         # Button to add a parallel plot line and a drop down box to select wanted plot line.
@@ -81,11 +80,25 @@ class Menu(Tk):
         drop_down_box_text = Label(self.browse_frame, text="Select Line Plot to add files to:")
         drop_down_box_text.grid(row=1, column=4, sticky=E)
 
+        # Updates the dropdownbox with the new line plot.
+        self.drop_down_box = OptionMenu(self.browse_frame, self.plot_line_select, *self.optionsmenu_list)
+        self.drop_down_box.grid(row=1, column=5, padx=(0, 160), sticky=W)
+
+    
+    def add_file_path(self, choice):
+        print(self.plot_line_select.get()[-1])
+        selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
+
+        files = self.fp.file_explorer(choice)
+
+        self.plot_line_frames[selected_plot_line].file_path_setup(files, selected_plot_line, self.file_path_arrays, self.decide_bus, self.path_frames)
+
     
     def plot_line_create(self):
-        plot_selected = self.line_plot_select.get()
+        plot_selected = self.plot_line_select.get()
         # IS self INCORRECT HERE?!?!?!?!!?
-        PlotLines(self.left_section_frame, self.line_plot_frames, plot_selected)
+        plot_line = PlotLines(self.left_section_frame, self.plot_line_frames, plot_selected)
+        self.plot_lines.append(plot_line)
 
 
     def add_browse_field(self):
