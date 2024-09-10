@@ -21,7 +21,7 @@ class Menu(Tk):
         self.browse_frame_create()
         self.analyze_cancel_frame_create()
         plot_selected = self.plot_line_select.get()
-        plot_line = PlotLines(self.left_section_frame, self.plot_line_frames, plot_selected)
+        plot_line = PlotLines(self.left_section_frame, self.plot_line_frames, plot_selected, self.analyze_button)
         self.plot_line_frames.append(plot_line)
         self.path_frames.append(plot_line.path_frame)
         self.plot_line_select.set(plot_line.text_to_set)
@@ -86,12 +86,13 @@ class Menu(Tk):
 
     
     def add_file_path(self, choice):
-        print(self.plot_line_select.get()[-1])
         selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
 
         files = self.fp.file_explorer(choice)
 
-        self.plot_line_frames[selected_plot_line].file_path_setup(files, selected_plot_line, self.file_path_arrays, self.decide_bus, self.path_frames)
+        self.plot_line_frames[selected_plot_line].file_path_setup(files, selected_plot_line, self.file_path_arrays, self.decide_bus, self.path_frames, self.file_path_del_buttons)
+        
+        self.update_analyze_button()
 
     
     def plot_line_create(self):
@@ -104,8 +105,11 @@ class Menu(Tk):
     def add_browse_field(self):
         """ Adds path given in browse field to specified line plot frame. """
         file = self.browse_field.get()
+        selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
         if file:
-            self.file_path_setup(file, "add")
+            self.plot_line_frames[selected_plot_line].file_path_setup(file, selected_plot_line, self.file_path_arrays, self.decide_bus, self.path_frames, self.file_path_del_buttons, add="add")
+
+        self.update_analyze_button()
 
 
     def left_section_frames_create(self):

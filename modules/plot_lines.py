@@ -5,11 +5,12 @@ class PlotLines(LabelFrame):
     """ Handles the graphic design and logic of the Plot line frames in the main menu. """
 
 
-    def __init__(self, parent, line_plot_frames, plot_selected):
+    def __init__(self, parent, line_plot_frames, plot_selected, analyze_button):
         super().__init__(parent)
 
         self.line_plot_frames = line_plot_frames
         self.plot_selected = plot_selected
+        self.analyze_button = analyze_button
         self.line_plot_frame_create()
 
 
@@ -99,15 +100,17 @@ class PlotLines(LabelFrame):
             self.path_frame.grid(row=2, column=0, columnspan=2, padx=(20, 0), pady=5, sticky=W)
 
 
-    def file_path_setup(self, files, frame_index, file_path_arrays, decide_bus, path_frames, add=None):
+    def file_path_setup(self, files, frame_index, file_path_arrays, decide_bus, path_frames, del_buttons, add=None):
         """ displayes the file paths in the main window. """
         self.file_path_arrays = file_path_arrays
         self.decide_bus = decide_bus
         self.path_frames = path_frames
+        self.file_path_del_buttons = del_buttons
 
         # Checks if there are any line plot frames to add file path to.
         if len(self.line_plot_frames) == 0:
             return
+        
         self.files = []
 
         # Checks if it should add file from the browse entry.
@@ -154,7 +157,7 @@ class PlotLines(LabelFrame):
             else:
                 return
         elif add == "add":
-            self.files.append(choice)
+            self.files.append(self.files)
 
         # Checks if there was any files selected.
         if self.files != False:
@@ -180,8 +183,6 @@ class PlotLines(LabelFrame):
                 b.grid(row=current_row, column=1, padx=(10, 0))
                 self.file_path_del_buttons[frame_index].append(b)
 
-        self.update_analyze_button()
-
 
     def del_path(self, entry, button, index, path_frame_index):
         """ Deletes the specified file path and then updates everything associated with it. """
@@ -200,6 +201,14 @@ class PlotLines(LabelFrame):
                                                                self.file_path_del_buttons[y][x],
                                                                x, y))
         self.update_analyze_button()
+
+    
+    def update_analyze_button(self):
+        """ Updates the analyze button """
+        if all(isinstance(x, list) and not x for x in self.file_path_arrays):
+            self.analyze_button["state"] = DISABLED
+        else:
+            self.analyze_button["state"] = NORMAL 
 
 
     def line_plot_del(self, x):
