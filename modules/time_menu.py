@@ -21,7 +21,7 @@ class TimeMenu(LabelFrame):
     def time_menu(self):
         """ Design and functionality for time settings frame. """
         self.config(text="Time Settings", padx=10, pady=10)
-        self.grid(row=0, rowspan=2, column=1, padx=(0, 20), pady=(10, 0), sticky=N)
+        self.grid(row=0, column=0, padx=(0, 20), pady=(10, 5))
 
         # Remove time from start part.
         start_time_label = Label(self, text="Minutes to remove from start:")

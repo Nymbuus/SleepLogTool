@@ -14,14 +14,15 @@ class Menu(Tk):
         """ Initializes the class. """
         self.initialize_vars()
         self.fp = FilesPreparation()
-        self.rtm = TimeMenu(self)
-        self.osm = OtherSettingsMenu(self)
+        self.settings_frame = Frame(self)
+        self.settings_frame.grid(row=0, column=1, sticky=N)
+        self.rtm = TimeMenu(self.settings_frame)
+        self.osm = OtherSettingsMenu(self.settings_frame)
         self.pag = PlotAndGraph()
-        self.left_section_frames_create()
         self.browse_frame_create()
         self.analyze_cancel_frame_create()
         plot_selected = self.plot_line_select.get()
-        plot_line = PlotLines(self.left_section_frame, self.plot_line_frames, plot_selected, self.analyze_button)
+        plot_line = PlotLines(self.browse_frame, self.plot_line_frames, plot_selected, self.analyze_button)
         self.plot_line_frames.append(plot_line)
         self.path_frames.append(plot_line.path_frame)
         self.plot_line_select.set(plot_line.text_to_set)
@@ -57,8 +58,8 @@ class Menu(Tk):
 
     def browse_frame_create(self):
         """ Creates the browse frame and adds all of it's contents. """
-        self.browse_frame = LabelFrame(self.left_section_frame, text="Choose blf file(s)", padx=10, pady=5)
-        self.browse_frame.grid(row=0, column=0, pady=10, sticky=W)
+        self.browse_frame = LabelFrame(self, text="Choose blf file(s)", padx=10, pady=5)
+        self.browse_frame.grid(row=0, rowspan=2, column=0, pady=10, padx=10, sticky=N)
 
         # Entry and button to add a file manually by entering path to it.
         self.browse_field = Entry(self.browse_frame, width=140, borderwidth=5)
@@ -97,9 +98,11 @@ class Menu(Tk):
     
     def plot_line_create(self):
         plot_selected = self.plot_line_select.get()
-        # IS self INCORRECT HERE?!?!?!?!!?
-        plot_line = PlotLines(self.left_section_frame, self.plot_line_frames, plot_selected)
-        self.plot_lines.append(plot_line)
+        plot_line_frame = PlotLines(self.browse_frame,
+                                    self.plot_line_frames,
+                                    plot_selected,
+                                    self.analyze_button)
+        self.plot_line_frames.append(plot_line_frame)
 
 
     def add_browse_field(self):
@@ -112,16 +115,10 @@ class Menu(Tk):
         self.update_analyze_button()
 
 
-    def left_section_frames_create(self):
-        """ Holds all frames in the left section of the window. """
-        self.left_section_frame = Frame(self, padx=10)
-        self.left_section_frame.grid(row=0, rowspan=4, column=0, padx=10, pady=10, sticky=N)
-
-
     def analyze_cancel_frame_create(self):
         """ Creates the analyze/cancel frame and all of it's contents. """
         analyze_cancel_frame = Frame(self)
-        analyze_cancel_frame.grid(row=3, column=1, padx=5, sticky=SE)
+        analyze_cancel_frame.grid(row=2, column=1, padx=5, sticky=SE)
         self.analyze_button = Button(analyze_cancel_frame,
                                      text="Analyze",
                                      state=DISABLED,

@@ -12,8 +12,8 @@ class OtherSettingsMenu(LabelFrame):
 
     def frame(self):
         """ Creates the frame for the settings """
-        self.config(text="Other settings", padx=10, pady=10)
-        self.grid(row=2, column=1, sticky=NW)
+        self.config(text="Other settings", pady=10)
+        self.grid(row=1, column=0, sticky=NW)
 
         self.choose_graph()
 
@@ -25,7 +25,8 @@ class OtherSettingsMenu(LabelFrame):
                                            text="LEM graph",
                                            variable=self.LEM_toggle,
                                            onvalue=True,
-                                           offvalue=False)
+                                           offvalue=False,
+                                           padx=10)
         self.LEM_checkbutton.grid(row=0, column=0, sticky=W)
         self.BL_toggle = BooleanVar()
         self.BL_toggle.set(True)
@@ -33,11 +34,9 @@ class OtherSettingsMenu(LabelFrame):
                                           text="BL graph",
                                           variable=self.BL_toggle,
                                           onvalue=True,
-                                          offvalue=False)
-        self.BL_checkbutton.grid(row=1, column=0, sticky=W)
-
-        empty_space = Label(self, text="")
-        empty_space.grid(row=0, column=1, padx=(81, 80), sticky=E)
+                                          offvalue=False,
+                                          padx=10)
+        self.BL_checkbutton.grid(row=1, column=0, padx=(0, 179), sticky=W)
     
 
     def get_choose_graph(self):
