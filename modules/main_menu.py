@@ -21,11 +21,8 @@ class Menu(Tk):
         self.pag = PlotAndGraph()
         self.browse_frame_create()
         self.analyze_cancel_frame_create()
-        plot_selected = self.plot_line_select.get()
-        plot_line = PlotLines(self.browse_frame, self.plot_line_frames, plot_selected, self.analyze_button)
-        self.plot_line_frames.append(plot_line)
-        self.path_frames.append(plot_line.path_frame)
-        self.plot_line_select.set(plot_line.text_to_set)
+        self.plot_line_create()
+        
 
         # Prepares the frame with lists to be filled.
         self.file_path_arrays.append([])
@@ -45,7 +42,7 @@ class Menu(Tk):
         self.x = 0
         self.plot_line_frames = []
         self.optionsmenu_list = ["Plot Line 1"]
-        self.line_plot_del_buttons = []
+        self.plot_line_del_buttons = []
         self.line_plot_name_entries = []
         self.decide_bus = []
         self.line_plot_invert_cbs = []
@@ -103,6 +100,37 @@ class Menu(Tk):
                                     plot_selected,
                                     self.analyze_button)
         self.plot_line_frames.append(plot_line_frame)
+        self.path_frames.append(plot_line_frame.path_frame)
+        self.plot_line_select.set(plot_line_frame.text_to_set)
+
+        # Delete button for specified line plot.
+        # Uses lambda function to store correct number at the time of defining the delete button.
+        plot_line_del_button = Button(self.browse_frame,
+                                           text="X",
+                                           command=lambda i=len(self.plot_line_frames)-1: self.line_plot_del(i))
+        plot_line_del_button.grid(row=len(self.plot_line_frames)+1, column=7, padx=(10, 0), pady=20, sticky=N)
+        self.plot_line_del_buttons.append(plot_line_del_button)
+
+
+    def line_plot_del(self, index):
+        self.plot_line_frames[index].line_plot_del()
+        del self.plot_line_frames[index]
+        self.plot_line_del_buttons[index].destroy()
+        del self.plot_line_del_buttons[index]
+        self.update_plot_line_frames()
+        self.update_plot_line_del_buttons()
+
+    
+    def update_plot_line_frames(self):
+        for i, frame in enumerate(self.plot_line_frames):
+            frame.config(text=f"Plot Line {i+1}")
+            frame.grid_configure(row=i+2)
+    
+
+    def update_plot_line_del_buttons(self):
+        for i, button in enumerate(self.plot_line_del_buttons):
+            button.grid_configure(row=i+2)
+            button.config(command=lambda: self.line_plot_del(i-1))
 
 
     def add_browse_field(self):

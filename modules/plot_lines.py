@@ -37,12 +37,6 @@ class PlotLines(LabelFrame):
                                           offvalue=False)
         line_plot_invert_cb.grid(row=0, column=2, padx=(40, 360))
 
-        # Delete button for specified line plot.
-        # Uses lambda function to store correct number at the time of defining the delete button.
-        self.line_plot_del_button = Button(self, text="X",
-                                           command=lambda x=len(self.line_plot_frames): self.line_plot_del(x))
-        self.line_plot_del_button.grid(row=0, column=3)
-
         # Adds line plots to list to use later in functions below.
         # self.toggling_frame_create(len_line_plots)
         # self.path_frame_create(len_line_plots, append=True)
@@ -61,6 +55,54 @@ class PlotLines(LabelFrame):
         # self.optionsmenu_list.append(text)
         # self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
         # self.drop_down_box.grid(row=1, column=5, padx=(0, 160), sticky=W)
+    
+
+    def line_plot_del(self):
+        """ Deletes the specified line_plot_frame. Deletes everything within it and updates all lists in it. """
+        self.destroy()
+        # del self.line_plot_frames
+        # del self.line_plot_del_buttons
+        # del self.path_frames
+        # del self.line_plot_name_entries
+        # del self.file_path_arrays
+        # del self.file_path_del_buttons
+        # del self.decide_bus
+        # del self.line_plot_invert_cbs
+
+        # # Updates line_plot_frames text and row in it's grid.
+        # for i, frame in enumerate(self.line_plot_frames):
+        #     text = f"Line Plot {i+1}"
+        #     frame.config(text=text)
+        #     frame.grid(row=i+1)
+        
+        # # Updates line_plot_frames delete buttons.
+        # for i, button in enumerate(self.line_plot_del_buttons):
+        #     button.config(command=lambda y=i: self.line_plot_del(y))
+        
+        # # Updates file_paths delete buttons.
+        # for i in range(len(self.file_path_arrays)):
+        #     for j in range(len(self.file_path_arrays[i])):
+        #         self.file_path_del_buttons[i][j].config(command=lambda x=j, y=i:
+        #                                             self.del_path(self.file_path_arrays[y][x],
+        #                                                         self.file_path_del_buttons[y][x],
+        #                                                         x, y))
+
+        #     # Updates the dropdownbox.
+        #     self.drop_down_box.destroy()
+        #     del self.optionsmenu_list[x]
+        #     for i in range(0, len(self.optionsmenu_list)):
+        #         self.optionsmenu_list[i] = f"Line Plot {i+1}"
+
+        #     # Checks if the dropdownbox is empty and if it is then sets the symbol "-".
+        #     # If there are plots in it, it will display Line Plot 1.
+        #     if len(self.optionsmenu_list) == 0:
+        #         self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, "")
+        #         self.drop_down_box.grid(row=1, column=5, padx=(0, 210), sticky=W)
+        #         self.line_plot_select.set("-")
+        #     else:
+        #         self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
+        #         self.drop_down_box.grid(row=1, column=5, padx=(0, 160), sticky=W)
+        #         self.line_plot_select.set(f"Line Plot 1")
     
 
     def toggling_frame_create(self):
@@ -208,52 +250,4 @@ class PlotLines(LabelFrame):
         if all(isinstance(x, list) and not x for x in self.file_path_arrays):
             self.analyze_button["state"] = DISABLED
         else:
-            self.analyze_button["state"] = NORMAL 
-
-
-    def line_plot_del(self, x):
-        """ Deletes the specified line_plot_frame. Deletes everything within it and updates all lists in it. """
-        self.line_plot_frames[x].destroy()
-        del self.line_plot_frames[x]
-        del self.line_plot_del_buttons[x]
-        del self.path_frames[x]
-        del self.line_plot_name_entries[x]
-        del self.file_path_arrays[x]
-        del self.file_path_del_buttons[x]
-        del self.decide_bus[x]
-        del self.line_plot_invert_cbs[x]
-
-        # Updates line_plot_frames text and row in it's grid.
-        for i, frame in enumerate(self.line_plot_frames):
-            text = f"Line Plot {i+1}"
-            frame.config(text=text)
-            frame.grid(row=i+1)
-        
-        # Updates line_plot_frames delete buttons.
-        for i, button in enumerate(self.line_plot_del_buttons):
-            button.config(command=lambda y=i: self.line_plot_del(y))
-        
-        # Updates file_paths delete buttons.
-        for i in range(len(self.file_path_arrays)):
-            for j in range(len(self.file_path_arrays[i])):
-                self.file_path_del_buttons[i][j].config(command=lambda x=j, y=i:
-                                                    self.del_path(self.file_path_arrays[y][x],
-                                                                self.file_path_del_buttons[y][x],
-                                                                x, y))
-
-            # Updates the dropdownbox.
-            self.drop_down_box.destroy()
-            del self.optionsmenu_list[x]
-            for i in range(0, len(self.optionsmenu_list)):
-                self.optionsmenu_list[i] = f"Line Plot {i+1}"
-
-            # Checks if the dropdownbox is empty and if it is then sets the symbol "-".
-            # If there are plots in it, it will display Line Plot 1.
-            if len(self.optionsmenu_list) == 0:
-                self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, "")
-                self.drop_down_box.grid(row=1, column=5, padx=(0, 210), sticky=W)
-                self.line_plot_select.set("-")
-            else:
-                self.drop_down_box = OptionMenu(self.browse_frame, self.line_plot_select, *self.optionsmenu_list)
-                self.drop_down_box.grid(row=1, column=5, padx=(0, 160), sticky=W)
-                self.line_plot_select.set(f"Line Plot 1")
+            self.analyze_button["state"] = NORMAL
