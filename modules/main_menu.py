@@ -118,7 +118,7 @@ class Menu(Tk):
         menu = self.drop_down_box["menu"]
         menu.delete(0, "end")
         if choice == "delete":
-            self.optionsmenu_list.remove(plot_line_frame.plot_line_name)
+            del self.optionsmenu_list[-1]
         elif plot_line_frame.text_to_set != "Plot Line 1":
             self.optionsmenu_list.append(plot_line_frame.text_to_set)
         for string in self.optionsmenu_list:
