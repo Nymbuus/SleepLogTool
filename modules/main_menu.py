@@ -103,15 +103,7 @@ class Menu(Tk):
         self.plot_line_frames.append(plot_line_frame)
         self.path_frames.append(plot_line_frame.path_frame)
 
-        menu = self.drop_down_box["menu"]
-        menu.delete(0, "end")
-        if plot_line_frame.text_to_set != "Plot Line 1":
-            self.optionsmenu_list.append(plot_line_frame.text_to_set)
-        for string in self.optionsmenu_list:
-            menu.add_command(label=string,
-                            command=lambda value=string: self.plot_line_select.set(value))
-
-        self.plot_line_select.set(plot_line_frame.text_to_set)
+        self.update_optionmenu(plot_line_frame, choice="add")
 
         # Delete button for specified line plot.
         # Uses lambda function to store correct number at the time of defining the delete button.
@@ -120,6 +112,19 @@ class Menu(Tk):
                                            command=lambda i=len(self.plot_line_frames)-1: self.line_plot_del(i))
         plot_line_del_button.grid(row=len(self.plot_line_frames)+1, column=7, padx=(10, 0), pady=20, sticky=NW)
         self.plot_line_del_buttons.append(plot_line_del_button)
+    
+
+    def update_optionmenu(self, plot_line_frame, choice):
+        menu = self.drop_down_box["menu"]
+        menu.delete(0, "end")
+        if choice == "delete":
+            self.optionsmenu_list.remove(plot_line_frame.plot_line_name)
+        elif plot_line_frame.text_to_set != "Plot Line 1":
+            self.optionsmenu_list.append(plot_line_frame.text_to_set)
+        for string in self.optionsmenu_list:
+            menu.add_command(label=string,
+                            command=lambda value=string: self.plot_line_select.set(value))
+        self.plot_line_select.set(plot_line_frame.text_to_set)
 
 
     def line_plot_del(self, index):
@@ -127,6 +132,7 @@ class Menu(Tk):
         del self.plot_line_frames[index]
         self.plot_line_del_buttons[index].destroy()
         del self.plot_line_del_buttons[index]
+        self.update_optionmenu(plot_line_frame=self.plot_line_frames[index], choice="delete")
         self.update_drop_down_box()
         self.update_plot_line_frames()
         self.update_plot_line_del_buttons()

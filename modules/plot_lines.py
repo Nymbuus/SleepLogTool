@@ -21,8 +21,8 @@ class PlotLines(LabelFrame):
 
         # Gets correct line plot name and creates a line plot frame with it.
         len_line_plots = len(self.line_plot_frames)
-        text = f"Plot Line {len_line_plots+1}"
-        self.config(text=text, padx=10, pady=5)
+        self.plot_line_name = f"Plot Line {len_line_plots+1}"
+        self.config(text=self.plot_line_name, padx=10, pady=5)
         self.grid(row=len_line_plots+2, column=0, columnspan=7, pady=10)
 
         # Entry for specified line custom name.
@@ -41,7 +41,7 @@ class PlotLines(LabelFrame):
 
         self.toggling_frame_create()
         self.path_frame_create()
-        self.text_to_set = text
+        self.text_to_set = self.plot_line_name
     
 
     def line_plot_del(self):
