@@ -5,11 +5,10 @@ class PlotLines(LabelFrame):
     """ Handles the graphic design and logic of the Plot line frames in the main menu. """
 
 
-    def __init__(self, parent, line_plot_frames, plot_selected, analyze_button, analyze_button_func):
+    def __init__(self, parent, line_plot_frames, analyze_button, analyze_button_func):
         super().__init__(parent)
 
         self.line_plot_frames = line_plot_frames
-        self.plot_selected = plot_selected
         self.analyze_button = analyze_button
         self.file_path_array = []
         self.file_path_del_buttons = []

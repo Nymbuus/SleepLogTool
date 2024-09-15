@@ -96,24 +96,20 @@ class Menu(Tk):
 
     
     def plot_line_create(self):
-        plot_selected = self.plot_line_select.get()
         plot_line_frame = PlotLines(self.browse_frame,
                                     self.plot_line_frames,
-                                    plot_selected,
                                     self.analyze_button,
                                     self.update_analyze_button)
         self.plot_line_frames.append(plot_line_frame)
         self.path_frames.append(plot_line_frame.path_frame)
-        
-        if self.skip_optionsmenu_list_update == False:
-            menu = self.drop_down_box["menu"]
-            menu.delete(0, "end")
+
+        menu = self.drop_down_box["menu"]
+        menu.delete(0, "end")
+        if plot_line_frame.text_to_set != "Plot Line 1":
             self.optionsmenu_list.append(plot_line_frame.text_to_set)
-            for string in self.optionsmenu_list:
-                menu.add_command(label=string,
-                                command=lambda value=string: self.plot_line_select.set(value))
-        else:
-            self.skip_optionsmenu_list_update = False
+        for string in self.optionsmenu_list:
+            menu.add_command(label=string,
+                            command=lambda value=string: self.plot_line_select.set(value))
 
         self.plot_line_select.set(plot_line_frame.text_to_set)
 
