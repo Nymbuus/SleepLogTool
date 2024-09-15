@@ -25,8 +25,6 @@ class Menu(Tk):
         
 
         # Prepares the frame with lists to be filled.
-        self.file_path_arrays.append([])
-        self.file_path_del_buttons.append([])
         self.decide_bus.append(None)
 
 
@@ -37,7 +35,6 @@ class Menu(Tk):
 
     def initialize_vars(self):
         self.toggle_buttons = []
-        self.file_path_arrays = []
         self.file_path_del_buttons = []
         self.x = 0
         self.plot_line_frames = []
@@ -51,6 +48,7 @@ class Menu(Tk):
         self.browse_field = Entry()
         self.plot_line_select = StringVar()
         self.plot_lines = []
+        self.skip_optionsmenu_list_update = True
 
 
     def browse_frame_create(self):
@@ -62,7 +60,7 @@ class Menu(Tk):
         self.browse_field = Entry(self.browse_frame, width=140, borderwidth=5)
         self.browse_field.grid(row=0, column=0, columnspan=6, padx=(0, 10), pady=(0, 10))
         add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
-        add_button.grid(row=0, column=6, padx=(2, 3), sticky=N)
+        add_button.grid(row=0, column=6, columnspan=2, padx=(2, 3), sticky=N)
 
         # Buttons to add files in different ways with the file_path_setup function.
         choose_file_button = Button(self.browse_frame, text="Choose file(s)", command=lambda:self.add_file_path("file"))
@@ -75,10 +73,10 @@ class Menu(Tk):
         # Button to add a parallel plot line and a drop down box to select wanted plot line.
         add_plot_line_button = Button(self.browse_frame, text="Add Plot Line", command=self.plot_line_create)
         add_plot_line_button.grid(row=1, column=3, padx=(10, 30))
-        drop_down_box_text = Label(self.browse_frame, text="Select Line Plot to add files to:")
-        drop_down_box_text.grid(row=1, column=4, sticky=E)
 
         # Updates the dropdownbox with the new line plot.
+        drop_down_box_text = Label(self.browse_frame, text="Select Line Plot to add files to:")
+        drop_down_box_text.grid(row=1, column=4, sticky=E)
         self.drop_down_box = OptionMenu(self.browse_frame, self.plot_line_select, *self.optionsmenu_list)
         self.drop_down_box.grid(row=1, column=5, padx=(0, 160), sticky=W)
 
@@ -88,7 +86,11 @@ class Menu(Tk):
 
         files = self.fp.file_explorer(choice)
 
-        self.plot_line_frames[selected_plot_line].file_path_setup(files, selected_plot_line, self.file_path_arrays, self.decide_bus, self.path_frames, self.file_path_del_buttons)
+        self.plot_line_frames[selected_plot_line].file_path_setup(files,
+                                                                  selected_plot_line,
+                                                                  self.decide_bus,
+                                                                  self.path_frames,
+                                                                  self.file_path_del_buttons)
         
         self.update_analyze_button()
 
@@ -98,9 +100,21 @@ class Menu(Tk):
         plot_line_frame = PlotLines(self.browse_frame,
                                     self.plot_line_frames,
                                     plot_selected,
-                                    self.analyze_button)
+                                    self.analyze_button,
+                                    self.update_analyze_button)
         self.plot_line_frames.append(plot_line_frame)
         self.path_frames.append(plot_line_frame.path_frame)
+        
+        if self.skip_optionsmenu_list_update == False:
+            menu = self.drop_down_box["menu"]
+            menu.delete(0, "end")
+            self.optionsmenu_list.append(plot_line_frame.text_to_set)
+            for string in self.optionsmenu_list:
+                menu.add_command(label=string,
+                                command=lambda value=string: self.plot_line_select.set(value))
+        else:
+            self.skip_optionsmenu_list_update = False
+
         self.plot_line_select.set(plot_line_frame.text_to_set)
 
         # Delete button for specified line plot.
@@ -108,7 +122,7 @@ class Menu(Tk):
         plot_line_del_button = Button(self.browse_frame,
                                            text="X",
                                            command=lambda i=len(self.plot_line_frames)-1: self.line_plot_del(i))
-        plot_line_del_button.grid(row=len(self.plot_line_frames)+1, column=7, padx=(10, 0), pady=20, sticky=N)
+        plot_line_del_button.grid(row=len(self.plot_line_frames)+1, column=7, padx=(10, 0), pady=20, sticky=NW)
         self.plot_line_del_buttons.append(plot_line_del_button)
 
 
@@ -117,10 +131,18 @@ class Menu(Tk):
         del self.plot_line_frames[index]
         self.plot_line_del_buttons[index].destroy()
         del self.plot_line_del_buttons[index]
+        self.update_drop_down_box()
         self.update_plot_line_frames()
         self.update_plot_line_del_buttons()
 
-    
+
+    def update_drop_down_box(self):
+        if self. plot_line_frames:
+            self.plot_line_select.set("Plot Line 1")
+        else:
+            self.plot_line_select.set("-")
+
+
     def update_plot_line_frames(self):
         for i, frame in enumerate(self.plot_line_frames):
             frame.config(text=f"Plot Line {i+1}")
@@ -138,7 +160,7 @@ class Menu(Tk):
         file = self.browse_field.get()
         selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
         if file:
-            self.plot_line_frames[selected_plot_line].file_path_setup(file, selected_plot_line, self.file_path_arrays, self.decide_bus, self.path_frames, self.file_path_del_buttons, add="add")
+            self.plot_line_frames[selected_plot_line].file_path_setup(file, selected_plot_line, self.decide_bus, self.path_frames, self.file_path_del_buttons, add="add")
 
         self.update_analyze_button()
 
@@ -162,10 +184,11 @@ class Menu(Tk):
 
     def update_analyze_button(self):
         """ Updates the analyze button """
-        if all(isinstance(x, list) and not x for x in self.file_path_arrays):
-            self.analyze_button["state"] = DISABLED
-        else:
-            self.analyze_button["state"] = NORMAL 
+        for array in self.plot_line_frames:
+            if array.file_path_array:
+                self.analyze_button["state"] = NORMAL
+                return
+        self.analyze_button["state"] = DISABLED
 
 
     def show_warning(self, warning_text):
