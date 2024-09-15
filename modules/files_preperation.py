@@ -227,38 +227,34 @@ class FilesPreparation:
         return dfs
     
 
-    def analyze_data(self):
+    def analyze_data(self, get_graph_toggle_func, plot_line_frames):
         """ Takes the present filepaths and analyzes the data in the blf files. """
         self.initalize_and_reset_bus_channel_indexes()
-        LEM_graph, BL_graph = self._osm.get_choose_graph()
+        LEM_graph, BL_graph = get_graph_toggle_func
         if LEM_graph == False and BL_graph == False:
             self.show_warning("Choose a graph in settings")
             return
         last_dfs = False
         dfs = None
-        line_plot_name = None
+        plot_line_name = None
         start_file_count = True
         # Loops through every list of files in every line plot.
-        for i, array in enumerate(self.file_path_arrays):
-            first_dfs = False
-            skip = False
-            # Checks if the line plot path frame is empty.
-            if len(array) != 0:
-                blf_files = []
+        for frame in plot_line_frames:
+            blf_files = []
+            for path in frame.file_path_array:
+                first_dfs = False
+                skip = False
                 isLEM = False
                 isBL = False
-                for file in array:
-                    blf_files.append(file.get())
+                blf_files.append(path.get())
 
-                # Gets the name for the line plot.
-                line_plot_name = self.line_plot_name_entries[i].get()
-                # Gets the dataframe and the channel of the dataframe.
-                dfs, channel = self._fp.blf_to_df(blf_files, start_file_count, LEM_graph, BL_graph)
-                start_file_count = False
-                line_plot_name, isLEM, isBL = self.check_name(channel, line_plot_name)
+            # Gets the name for the line plot.
+            plot_line_name = frame.plot_line_name
+            # Gets the dataframe and the channel of the dataframe.
+            dfs, channel = self.blf_to_df(blf_files, start_file_count, LEM_graph, BL_graph)
+            start_file_count = False
+            plot_line_name, isLEM, isBL = self.check_name(channel, plot_line_name)
 
-            else:
-                skip = True
             
             # Checks if it's the first or/and last dataframe.
             if i == 0: first_dfs = True
@@ -268,15 +264,15 @@ class FilesPreparation:
             
             # Packs up the info about the dataframe and sends it for time removal.
             plot_info = {"Dfs":dfs,
-                         "Name":line_plot_name,
-                         "First":first_dfs,
-                         "Last":last_dfs,
-                         "LEM":isLEM,
-                         "BL":isBL,
-                         "Skip":skip,
-                         "LEM_graph":LEM_graph,
-                         "BL_graph":BL_graph,
-                         "LEM_invert":LEM_invert}
+                        "Name":plot_line_name,
+                        "First":first_dfs,
+                        "Last":last_dfs,
+                        "LEM":isLEM,
+                        "BL":isBL,
+                        "Skip":skip,
+                        "LEM_graph":LEM_graph,
+                        "BL_graph":BL_graph,
+                        "LEM_invert":LEM_invert}
             self._rtm.set_df(plot_info)
 
 

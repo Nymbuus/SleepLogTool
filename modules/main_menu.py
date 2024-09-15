@@ -43,11 +43,9 @@ class Menu(Tk):
         self.line_plot_name_entries = []
         self.decide_bus = []
         self.line_plot_invert_cbs = []
-        self.path_frames = []
         self.toggling_frames = []
         self.browse_field = Entry()
         self.plot_line_select = StringVar()
-        self.plot_lines = []
         self.skip_optionsmenu_list_update = True
 
 
@@ -89,7 +87,6 @@ class Menu(Tk):
         self.plot_line_frames[selected_plot_line].file_path_setup(files,
                                                                   selected_plot_line,
                                                                   self.decide_bus,
-                                                                  self.path_frames,
                                                                   self.file_path_del_buttons)
         
         self.update_analyze_button()
@@ -101,7 +98,6 @@ class Menu(Tk):
                                     self.analyze_button,
                                     self.update_analyze_button)
         self.plot_line_frames.append(plot_line_frame)
-        self.path_frames.append(plot_line_frame.path_frame)
 
         self.update_optionmenu(plot_line_frame, choice="add")
 
@@ -162,7 +158,7 @@ class Menu(Tk):
         file = self.browse_field.get()
         selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
         if file:
-            self.plot_line_frames[selected_plot_line].file_path_setup(file, selected_plot_line, self.decide_bus, self.path_frames, self.file_path_del_buttons, add="add")
+            self.plot_line_frames[selected_plot_line].file_path_setup(file, selected_plot_line, self.decide_bus, self.file_path_del_buttons, add="add")
 
         self.update_analyze_button()
 
@@ -174,7 +170,8 @@ class Menu(Tk):
         self.analyze_button = Button(analyze_cancel_frame,
                                      text="Analyze",
                                      state=DISABLED,
-                                     command=self.fp.analyze_data,
+                                     command=lambda: self.fp.analyze_data(self.osm.get_choose_graph(),
+                                                                          self.plot_line_frames),
                                      padx=15)
         self.analyze_button.grid(row=0, column=0, pady=10)
         self.cancel_button = Button(analyze_cancel_frame,

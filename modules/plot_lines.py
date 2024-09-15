@@ -79,10 +79,9 @@ class PlotLines(LabelFrame):
             self.path_frame.grid(row=2, column=0, columnspan=3, padx=(20, 0), sticky=W)
 
 
-    def file_path_setup(self, files, frame_index, decide_bus, path_frames, add=None):
+    def file_path_setup(self, files, frame_index, decide_bus, add=None):
         """ displayes the file paths in the main window. """
         self.decide_bus = decide_bus
-        self.path_frames = path_frames
         self.files = files
 
         # Checks if there are any line plot frames to add file path to.
@@ -138,20 +137,20 @@ class PlotLines(LabelFrame):
         # Checks if there was any files selected.
         if self.files != False:
             # Creates new path frame in the line plot frame if there is none.
-            if self.path_frames[frame_index] == []:
+            if self.path_frame == []:
                 self.path_frame_create(append=False)
             # Goes through every file and puts it in the frame.
             for file in self.files:
                 current_row = len(self.file_path_array)
 
                 # Entry with the file path.
-                e = Entry(self.path_frames[frame_index], width=128, borderwidth=5)
+                e = Entry(self.path_frame, width=128, borderwidth=5)
                 e.grid(row=current_row, column=0, padx=(0, 10), pady=5, sticky=NW)
                 e.insert(0, file)
                 self.file_path_array.append(e)
 
                 # Delete button for the file path.
-                b = Button(self.path_frames[frame_index], text="X", padx=5,
+                b = Button(self.path_frame, text="X", padx=5,
                            command=lambda x=len(self.file_path_array)-1:
                            self.del_path(self.file_path_array[x],
                                          self.file_path_del_buttons[x],
