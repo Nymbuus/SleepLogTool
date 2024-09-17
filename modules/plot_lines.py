@@ -31,13 +31,13 @@ class PlotLines(LabelFrame):
         self.line_plot_name_entry = Entry(self, width=25, borderwidth=5)
         self.line_plot_name_entry.grid(row=0, column=1)
 
-        invert_LEM = BooleanVar()
-        line_plot_invert_cb = Checkbutton(self,
-                                          text="Do you feel inverted? (Only inverts LEM)",
-                                          variable=invert_LEM,
-                                          onvalue=True,
-                                          offvalue=False)
-        line_plot_invert_cb.grid(row=0, column=2, padx=(40, 340))
+        self.invert_LEM = BooleanVar()
+        self.line_plot_invert_cb = Checkbutton(self,
+                                               text="Do you feel inverted? (Only inverts LEM)",
+                                               variable=self.invert_LEM,
+                                               onvalue=True,
+                                               offvalue=False)
+        self.line_plot_invert_cb.grid(row=0, column=2, padx=(40, 340))
 
         self.toggling_frame_create()
         self.path_frame_create()

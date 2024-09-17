@@ -42,7 +42,6 @@ class Menu(Tk):
         self.plot_line_del_buttons = []
         self.line_plot_name_entries = []
         self.decide_bus = []
-        self.line_plot_invert_cbs = []
         self.toggling_frames = []
         self.browse_field = Entry()
         self.plot_line_select = StringVar()
@@ -170,8 +169,7 @@ class Menu(Tk):
         self.analyze_button = Button(analyze_cancel_frame,
                                      text="Analyze",
                                      state=DISABLED,
-                                     command=lambda: self.fp.analyze_data(self.osm.get_choose_graph(),
-                                                                          self.plot_line_frames),
+                                     command=self.analyze_data,
                                      padx=15)
         self.analyze_button.grid(row=0, column=0, pady=10)
         self.cancel_button = Button(analyze_cancel_frame,
@@ -179,6 +177,24 @@ class Menu(Tk):
                                     command=self.quit,
                                     padx=15)
         self.cancel_button.grid(row=0,column=1, padx=15, pady=10)
+
+
+    def analyze_data(self):
+        plots = self.fp.analyze_data(self.osm.get_choose_graph(),
+                             self.plot_line_frames)
+        
+        # Will skip set_df function if true and go to plotting directly.
+        for plot in plots:
+            if plot["Skip"] == True:
+                self.pag.plotting_graph(plots, self.rtm.time_unit_selected.get())
+                return
+            else:
+                remove_start_time, remove_end_time = self.rtm.set_df(plot)
+                
+                # Takes the dataframe and calls the function to remove the specified time, then plots the graph.
+                plot["Dfs"] = self.fp.remove_time(plot["Dfs"], remove_start_time, remove_end_time)
+                self.pag.plotting_graph(plot, self.rtm.time_unit_selected.get())
+
 
 
     def update_analyze_button(self):
