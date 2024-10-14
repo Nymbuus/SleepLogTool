@@ -176,3 +176,9 @@ class PlotLines(LabelFrame):
                                                                self.file_path_del_buttons[x],
                                                                x))
         self.analyze_button_func()
+
+        # Reconfigure rows for the filepaths and delete buttons.
+        for i, file_path in enumerate(self.file_path_array):
+            file_path.grid_configure(row=i)
+        for i, del_button in enumerate(self.file_path_del_buttons):
+            del_button.grid_configure(row=i)
