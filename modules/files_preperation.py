@@ -231,6 +231,7 @@ class FilesPreparation:
 
     def analyze_data(self, get_graph_toggle_func, plot_line_frames):
         """ Takes the present filepaths and analyzes the data in the blf files. """
+        self.plots = []
         self.initalize_and_reset_bus_channel_indexes()
         LEM_graph, BL_graph = get_graph_toggle_func
         if LEM_graph == False and BL_graph == False:
@@ -260,7 +261,9 @@ class FilesPreparation:
             
             # Checks if it's the first or/and last dataframe.
             if i == 0: first_dfs = True
-            if len(frame.file_path_array)-1 == i: last_dfs = True
+            if len(plot_line_frames)-1 == i: last_dfs = True
+
+            #if len(frame.file_path_array)-1 == i: last_dfs = True
 
             LEM_invert = frame.invert_LEM.get()
             
