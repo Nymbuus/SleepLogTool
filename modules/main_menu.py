@@ -38,7 +38,7 @@ class Menu(Tk):
         self.file_path_del_buttons = []
         self.x = 0
         self.plot_line_frames = []
-        self.optionsmenu_list = ["Plot Line 1"]
+        self.optionsmenu_list = ["-"]
         self.plot_line_del_buttons = []
         self.line_plot_name_entries = []
         self.decide_bus = []
@@ -110,11 +110,14 @@ class Menu(Tk):
     
 
     def update_optionmenu(self, plot_line_frame, choice):
+        """ Updates the optionsmenu for chosing plot. """
         menu = self.drop_down_box["menu"]
         menu.delete(0, "end")
         if choice == "delete":
             del self.optionsmenu_list[-1]
-        elif plot_line_frame.text_to_set != "Plot Line 1":
+        elif self.optionsmenu_list == ["-"]:
+            self.optionsmenu_list = ["Plot Line 1"]
+        else:
             self.optionsmenu_list.append(plot_line_frame.text_to_set)
         for string in self.optionsmenu_list:
             menu.add_command(label=string,
@@ -123,21 +126,23 @@ class Menu(Tk):
 
 
     def line_plot_del(self, index):
+        self.update_optionmenu(plot_line_frame=self.plot_line_frames[index], choice="delete")
         self.plot_line_frames[index].line_plot_del()
         del self.plot_line_frames[index]
         self.plot_line_del_buttons[index].destroy()
         del self.plot_line_del_buttons[index]
-        self.update_optionmenu(plot_line_frame=self.plot_line_frames[index], choice="delete")
         self.update_drop_down_box()
         self.update_plot_line_frames()
         self.update_plot_line_del_buttons()
 
 
     def update_drop_down_box(self):
-        if self. plot_line_frames:
+        if self.plot_line_frames:
             self.plot_line_select.set("Plot Line 1")
+            self.drop_down_box.grid_configure(padx=(0, 160))
         else:
             self.plot_line_select.set("-")
+            self.drop_down_box.grid_configure(padx=(0, 210))
 
 
     def update_plot_line_frames(self):
