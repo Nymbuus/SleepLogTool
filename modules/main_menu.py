@@ -123,6 +123,7 @@ class Menu(Tk):
             menu.add_command(label=string,
                             command=lambda value=string: self.plot_line_select.set(value))
         self.plot_line_select.set(plot_line_frame.text_to_set)
+        self.update_drop_down_box()
 
 
     def line_plot_del(self, index):
