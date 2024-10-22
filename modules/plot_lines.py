@@ -101,9 +101,13 @@ class PlotLines(LabelFrame):
                 for file in self.files:
                     if self.decide_bus[frame_index] != None:
                         with open(file, 'rb') as f:
-                            channel_get_blf = can.BLFReader(f)
-                            for msg in channel_get_blf:
-                                if msg.channel == 10 or msg.channel == 23 or msg.channel == 24 or msg.channel == 25 or msg.channel == 26:
+                            name = f.name
+                            if name.endswith(".blf"):
+                                channel_get = can.BLFReader(f)
+                            elif name.endswith(".asc"):
+                                channel_get = can.ASCReader(f)
+                            for msg in channel_get:
+                                if msg.channel == 0 or msg.channel == 10 or msg.channel == 23 or msg.channel == 24 or msg.channel == 25 or msg.channel == 26:
                                     if self.decide_bus[frame_index] == "LEM":
                                         print("same bus OK")
                                         break
@@ -121,9 +125,13 @@ class PlotLines(LabelFrame):
                         f.close()
                     else:
                         with open(self.files[0], 'rb') as f:
-                            channel_get_blf = can.BLFReader(f)
-                            for msg in channel_get_blf:
-                                if msg.channel == 10 or msg.channel == 23 or msg.channel == 24 or msg.channel == 25 or msg.channel == 26:
+                            name = f.name
+                            if name.endswith(".blf"):
+                                channel_get = can.BLFReader(f)
+                            elif name.endswith(".asc"):
+                                channel_get = can.ASCReader(f)
+                            for msg in channel_get:
+                                if msg.channel == 0 or msg.channel == 10 or msg.channel == 23 or msg.channel == 24 or msg.channel == 25 or msg.channel == 26:
                                     self.decide_bus[frame_index] = "LEM"
                                 else:
                                     self.decide_bus[frame_index] = msg.channel

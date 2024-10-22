@@ -35,19 +35,19 @@ class FilesPreparation:
             case "file":
                 # Will ask the user to chose file(s). If user cancel out it will stop.
                 while True:
-                    file_list = fd.askopenfilenames(title='Choose one or multiple BLF files')
-                    if all(file.lower().endswith('.blf') for file in file_list):
+                    file_list = fd.askopenfilenames(title='Choose one or more blf/asc files')
+                    if all(file.lower().endswith('.blf') or file.lower().endswith(".asc") for file in file_list):
                         if file_list == "":
                             return False
                         return file_list
                     else:
-                        print("One or more files is not a blf type file, try again.")
+                        print("Files are not blf or asc file, try again.")
 
             # If Choose folder(s) was chosen.
             case "folder":
                 # Will ask the user to chose folder(s). If user cancel out it will stop.
                 while True:
-                    folder_list = fd.askdirectory(title="Choose one or more folders containing BLF files")
+                    folder_list = fd.askdirectory(title="Choose one or more folders with blf/asc files")
                     file_list = []
                     for root, dirs, files in os.walk(folder_list):
                         for file in files:
@@ -56,14 +56,14 @@ class FilesPreparation:
                     if all(file.lower().endswith('.blf') for file in file_list):
                         return file_list
                     else:
-                        print("One or more files in directory is not blf file type, try again.")
+                        print("File(s) in director(ies) are not blf/asc files, try again.")
 
             # If Extract LEM(s) was chosen.
             case "extract LEM":
                 while True:
                     file_list = []
                     folder_list = []
-                    folder_list.append(fd.askdirectory(title="Choose one or more folders containing BLF files"))
+                    folder_list.append(fd.askdirectory(title="Choose one or more folders with blf/asc files"))
                     # Takes the folder(s) chosen and loops through every folder until there is no more.
                     # Will only extract LEM files on it's way.
                     while True:
@@ -75,12 +75,12 @@ class FilesPreparation:
                                 # Loops through all files and creates search path to file.
                                 for file in files:
                                     search_path = root + "/" + file
-                                    if search_path.endswith(".blf"):
+                                    if search_path.endswith(".blf") or search_path.endswith(".asc"):
                                         # Checks if the file is a LEM file and if so, adds it the the file list.
                                         with open(search_path, 'rb') as f:
                                             channel_get_blf = can.BLFReader(f)
                                             for msg in channel_get_blf:
-                                                if 10 == msg.channel or 23 == msg.channel or 24 == msg.channel or 25 == msg.channel or 26 == msg.channel:
+                                                if msg.channel == 0 or 10 == msg.channel or 23 == msg.channel or 24 == msg.channel or 25 == msg.channel or 26 == msg.channel:
                                                     file_list.append(os.path.join(search_path))
                                                     break
                                                 else:
@@ -94,8 +94,8 @@ class FilesPreparation:
         """ file_list - The blf file(s) being read from. """
         
         # Checks if there's only blf files in the list.
-        if not all(file.lower().endswith('.blf') for file in file_list):
-            raise TypeError("Only .blf files are supported to read from.")
+        if not all(file.lower().endswith('.blf') or file.lower().endswith(".asc") for file in file_list):
+            raise TypeError("Only .blf & .asc files supported.")
         
         # Prints the file that is loading.
         if start_file_count:
@@ -107,16 +107,25 @@ class FilesPreparation:
             self.file_number += 1
 
             # Gets the channel on the CANbus.
-            with open(file, 'rb') as f:
-                channel_get_blf = can.BLFReader(f)
-                for msg in channel_get_blf:
+            channel_get = None
+            file_mode = None
+            if file.endswith(".blf"):
+                file_mode = "rb"
+            elif file.endswith(".asc"):
+                file_mode = "r"
+            with open(file, file_mode) as f:
+                if file.endswith(".blf"):
+                    channel_get = can.BLFReader(f)
+                elif file.endswith(".asc"):
+                    channel_get = can.ASCReader(f)
+                for msg in channel_get:
                     channel = msg.channel
                     break
             f.close()
 
             # Checks what CANbus and calls corresponding function to prep it.
             # Second layer of if-statements check if LEM or BL-graph are selected in the settings.
-            if channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
+            if channel == 0 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
                 if LEM_graph:
                     blf_data, channel = self.LEM_prep(file, index, channel)
             else:
@@ -137,12 +146,29 @@ class FilesPreparation:
         """ If the file contains the LEM bus this will load in the data to the dataframe. """
         blf_data = {"Time": [], "Current": []}
         # Opens blf file to be read.
-        with open(file, 'rb') as e:
-            blf_return = can.BLFReader(e)
-            percent = 100 / blf_return.object_count
+        if file.endswith(".blf"):
+            file_mode = "rb"
+        elif file.endswith(".asc"):
+            file_mode = "r"
+        with open(file, file_mode) as f:
+            name = f.name
+            data_return = None
+            percent = None
+            if name.endswith(".blf"):
+                data_return = can.BLFReader(f)
+                percent = 100 / data_return.object_count
+            elif name.endswith(".asc"):
+                data_return = can.ASCReader(f)
+                # count = 0
+                # for line in f:
+                #     if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
+                #         count += 1
+                # ONLY TO SKIP FOR DEBUG!!!!!!!!!!!!!!!
+                count = 13998668
+                percent = 100 / count
             status = 0
             last_print = 0
-            for i, msg in enumerate(blf_return):
+            for msg in data_return:
                 status += percent
                 data = msg.data
 
@@ -305,6 +331,9 @@ class FilesPreparation:
                 case 9:
                     channel_name = f"Rear1 #{self.index_rear1}"
                     self.index_rear1 += 1
+                case 0:
+                    channel_name = f"LEM #{self.index_LEM}"
+                    self.index_LEM += 1
                 case 10:
                     channel_name = f"LEM #{self.index_LEM}"
                     self.index_LEM += 1
@@ -327,7 +356,7 @@ class FilesPreparation:
             channel_name = line_plot_name
 
 
-        if channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
+        if channel == 0 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
             isLEM = True
         if channel == 2 or channel == 6 or channel == 7 or channel == 8 or channel == 9:
             isBL = True
