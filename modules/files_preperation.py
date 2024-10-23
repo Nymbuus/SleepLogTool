@@ -102,6 +102,7 @@ class FilesPreparation:
             self.file_number = 1
         channel = None
         df = None
+        dfs = []
         for index, file in enumerate(file_list):
             print(f"\nFile #{self.file_number}:")
             self.file_number += 1
@@ -125,80 +126,114 @@ class FilesPreparation:
 
             # Checks what CANbus and calls corresponding function to prep it.
             # Second layer of if-statements check if LEM or BL-graph are selected in the settings.
-            if channel == 0 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
+            if channel == 0 or channel == 1 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
                 if LEM_graph:
-                    blf_data, channel = self.LEM_prep(file, index, channel)
+                    blf_datas, channel = self.LEM_prep(file, index, channel)
             else:
                 if BL_graph:
-                    blf_data, channel = self.BL_prep(file, index, channel)
+                    blf_datas, channel = self.BL_prep(file, index, channel)
             
             # Loads data into pandas dataframe.
-            temp = pd.DataFrame(blf_data)
-            if index == 0:
-                df = temp
-            else:
-                df = pd.concat([df, temp], axis=0)
-            
-        return df, channel
+            for j, blf_data in enumerate(blf_datas):
+                temp = pd.DataFrame(blf_data)
+                if index == 0:
+                    df = temp
+                    dfs.append(df)
+                else:
+                    dfs[j] = pd.concat([dfs[j], temp], axis=0)
+        # HOPEFULLY THIS RETURNS MULTIPLE DFS WHEN IT'S ASCII. ASLO HOPE IT CONCATS TO CORRECT DF IN DFS!!!!!!!!    
+        return dfs, channel
     
+
+    def file_mode_chooser(self, file):
+        if file.endswith(".blf"):
+            return "rb"
+        elif file.endswith(".asc"):
+            return "r"
+
+
+    def get_percent_and_data(self, file):
+        name = file.name
+        if name.endswith(".blf"):
+            data_return = can.BLFReader(file)
+            percent = 100 / data_return.object_count
+        elif name.endswith(".asc"):
+            data_return = can.ASCReader(file)
+            # count = 0
+            # for line in f:
+            #     if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
+            #         count += 1
+            # ONLY TO SKIP FOR DEBUG!!!!!!!!!!!!!!!
+            count = 13998668
+            percent = 100 / count
+        return percent, data_return
+    
+
+    def get_dec_value(self, data):
+        hex1 = hex(data[1])[2:]
+        if len(hex1) == 1:
+            hex1 = "0"+hex1
+        hex2 = hex(data[2])[2:]
+        if len(hex2) == 1:
+            hex2 = "0"+hex2
+        hex3 = hex(data[3])[2:]
+        if len(hex3) == 1:
+            hex3 = "0"+hex3
+        current_dec = int(hex1+hex2+hex3,16)
+
+        # If byte 0 is less then 128, the number is negative.
+        if data[0] < 128:
+            current_dec -= 16777216
+        return current_dec
+
+
+    def create_new_directory_for_new_channel(self):
+        blf_asc_data = {"Time": [], "Current": []}
+        return blf_asc_data
 
     def LEM_prep(self, file, index, channel):
         """ If the file contains the LEM bus this will load in the data to the dataframe. """
-        blf_data = {"Time": [], "Current": []}
+        blf_asc_datas = []
         # Opens blf file to be read.
-        if file.endswith(".blf"):
-            file_mode = "rb"
-        elif file.endswith(".asc"):
-            file_mode = "r"
+        file_mode = self.file_mode_chooser(file)
+
         with open(file, file_mode) as f:
-            name = f.name
             data_return = None
             percent = None
-            if name.endswith(".blf"):
-                data_return = can.BLFReader(f)
-                percent = 100 / data_return.object_count
-            elif name.endswith(".asc"):
-                data_return = can.ASCReader(f)
-                # count = 0
-                # for line in f:
-                #     if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
-                #         count += 1
-                # ONLY TO SKIP FOR DEBUG!!!!!!!!!!!!!!!
-                count = 13998668
-                percent = 100 / count
-            status = 0
+            progress = 0
             last_print = 0
-            for msg in data_return:
-                status += percent
+            known_channels = []
+
+            percent, data_return = self.get_percent_and_data(f)
+            for i, msg in enumerate(data_return):
+                msg_channel = msg.channel
+
+                if msg_channel not in known_channels:
+                    blf_asc_datas.append(self.create_new_directory_for_new_channel())
+                    known_channels.append(msg_channel)
+
+                progress += percent
                 data = msg.data
 
                 # Preps and reads out the current value.
-                hex1 = hex(data[1])[2:]
-                if len(hex1) == 1:
-                    hex1 = "0"+hex1
-                hex2 = hex(data[2])[2:]
-                if len(hex2) == 1:
-                    hex2 = "0"+hex2
-                hex3 = hex(data[3])[2:]
-                if len(hex3) == 1:
-                    hex3 = "0"+hex3
-                current_dec = int(hex1+hex2+hex3,16)
-
-                # If byte 0 is less then 128, the number is negative.
-                if data[0] < 128:
-                    current_dec -= 16777216
+                current_dec = self.get_dec_value(data)
                 
                 # Stores wanted data.
-                blf_data["Time"].append(msg.timestamp)
-                blf_data["Current"].append(current_dec)
+                blf_asc_datas[msg_channel]["Time"].append(msg.timestamp)
+                blf_asc_datas[msg_channel]["Current"].append(current_dec)
 
                 # Prints the loading status in percentage.
-                rounded_status = round(status)
-                if rounded_status != last_print and rounded_status > last_print + 9:
-                    print(f"{rounded_status}%")
-                    last_print = rounded_status
+                last_print = self.progress_print(progress, last_print)
 
-        return blf_data, channel
+        return blf_asc_datas, channel
+    
+
+    def progress_print(self, progress, last_print):
+        rounded_progress = round(progress)
+        if rounded_progress != last_print and rounded_progress > last_print + 9:
+            print(f"{rounded_progress}%")
+            last_print = rounded_progress
+        return last_print
 
 
     def BL_prep(self, file, index, channel):
