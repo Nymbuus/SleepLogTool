@@ -14,6 +14,7 @@ class FilesPreparation:
         self.total_time_before = 0
         self.file_number = 1
         self.plots = []
+        self.dfs = None
         self.initalize_and_reset_bus_channel_indexes()
     
 
@@ -104,7 +105,8 @@ class FilesPreparation:
         df = None
         dfs = []
         for index, file in enumerate(file_list):
-            print(f"\nFile #{self.file_number}:")
+            print(f"\nLoding File #{self.file_number}:",
+                   "\n0%", end="\r")
             self.file_number += 1
 
             # Gets the channel on the CANbus.
@@ -128,21 +130,23 @@ class FilesPreparation:
             # Second layer of if-statements check if LEM or BL-graph are selected in the settings.
             if channel == 0 or channel == 1 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
                 if LEM_graph:
-                    blf_datas, channel = self.LEM_prep(file, index, channel)
+                    blf_asc_datas = self.LEM_prep(file)
             else:
                 if BL_graph:
-                    blf_datas, channel = self.BL_prep(file, index, channel)
+                    blf_asc_datas, channel = self.BL_prep(file, index, channel)
             
             # Loads data into pandas dataframe.
-            for j, blf_data in enumerate(blf_datas):
-                temp = pd.DataFrame(blf_data)
+            for j, blf_asc_data in enumerate(blf_asc_datas):
+                data = blf_asc_data["Data"]
+                temp = pd.DataFrame(data)
                 if index == 0:
                     df = temp
+                    df = {"df": df, "Info": blf_asc_data["Info"]}
                     dfs.append(df)
                 else:
-                    dfs[j] = pd.concat([dfs[j], temp], axis=0)
+                    dfs[j]["df"] = pd.concat([dfs[j]["df"], temp], axis=0)
         # HOPEFULLY THIS RETURNS MULTIPLE DFS WHEN IT'S ASCII. ASLO HOPE IT CONCATS TO CORRECT DF IN DFS!!!!!!!!    
-        return dfs, channel
+        return dfs
     
 
     def file_mode_chooser(self, file):
@@ -158,15 +162,14 @@ class FilesPreparation:
             data_return = can.BLFReader(file)
             percent = 100 / data_return.object_count
         elif name.endswith(".asc"):
-            data_return = can.ASCReader(file)
-            # count = 0
-            # for line in f:
-            #     if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
-            #         count += 1
+            count = 0
+            for line in file:
+                if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
+                    count += 1
             # ONLY TO SKIP FOR DEBUG!!!!!!!!!!!!!!!
-            count = 13998668
+            # count = 13998668
             percent = 100 / count
-        return percent, data_return
+        return percent
     
 
     def get_dec_value(self, data):
@@ -187,11 +190,12 @@ class FilesPreparation:
         return current_dec
 
 
-    def create_new_directory_for_new_channel(self):
-        blf_asc_data = {"Time": [], "Current": []}
+    def create_new_directory_for_new_channel(self, channel):
+        blf_asc_data = {"Data": {"Time": [], "Current": []},
+                        "Info": {"Channel": channel}}
         return blf_asc_data
 
-    def LEM_prep(self, file, index, channel):
+    def LEM_prep(self, file):
         """ If the file contains the LEM bus this will load in the data to the dataframe. """
         blf_asc_datas = []
         # Opens blf file to be read.
@@ -203,13 +207,14 @@ class FilesPreparation:
             progress = 0
             last_print = 0
             known_channels = []
+            percent = self.get_percent_and_data(f)
+            data_return = can.ASCReader(file)
 
-            percent, data_return = self.get_percent_and_data(f)
             for i, msg in enumerate(data_return):
                 msg_channel = msg.channel
 
                 if msg_channel not in known_channels:
-                    blf_asc_datas.append(self.create_new_directory_for_new_channel())
+                    blf_asc_datas.append(self.create_new_directory_for_new_channel(msg_channel))
                     known_channels.append(msg_channel)
 
                 progress += percent
@@ -219,19 +224,25 @@ class FilesPreparation:
                 current_dec = self.get_dec_value(data)
                 
                 # Stores wanted data.
-                blf_asc_datas[msg_channel]["Time"].append(msg.timestamp)
-                blf_asc_datas[msg_channel]["Current"].append(current_dec)
+                blf_asc_datas[msg_channel]["Data"]["Time"].append(msg.timestamp)
+                blf_asc_datas[msg_channel]["Data"]["Current"].append(current_dec)
 
                 # Prints the loading status in percentage.
                 last_print = self.progress_print(progress, last_print)
 
-        return blf_asc_datas, channel
+                # ONLY FOR DEBUGGING!!!!
+                if i > 2000:
+                    break
+
+            print("Done ✔")
+
+        return blf_asc_datas
     
 
     def progress_print(self, progress, last_print):
         rounded_progress = round(progress)
         if rounded_progress != last_print and rounded_progress > last_print + 9:
-            print(f"{rounded_progress}%")
+            print(f"{rounded_progress}%", end="\r")
             last_print = rounded_progress
         return last_print
 
@@ -273,7 +284,7 @@ class FilesPreparation:
         return blf_data, channel
 
 
-    def remove_time(self, dfs, remove_start_time, remove_end_time):
+    def remove_time(self, df, remove_start_time, remove_end_time):
         """ Loads pandas dataframe to a local variable.
             With this we remove the start and end elements provided in minutes.
             If the if cases is'nt used the program will crash. """
@@ -283,11 +294,11 @@ class FilesPreparation:
             raise TypeError("remove_end_time variable was not a integer or float!")
         
         if remove_start_time != 0:
-            dfs = dfs[int(remove_start_time):]
+            df = df["df"][int(remove_start_time):]
         if remove_end_time != 0:
-            dfs = dfs[:-int(remove_end_time)]
+            df = df["df"][:-int(remove_end_time)]
 
-        return dfs
+        return df
     
 
     def analyze_data(self, get_graph_toggle_func, plot_line_frames):
@@ -298,102 +309,107 @@ class FilesPreparation:
         if LEM_graph == False and BL_graph == False:
             self.show_warning("Choose a graph in settings")
             return
-        last_dfs = False
-        dfs = None
         self.plot_line_name = None
         start_file_count = True
         # Loops through every list of files in every line plot.
         for i, frame in enumerate(plot_line_frames):
             blf_files = []
             for path in frame.file_path_array:
-                first_dfs = False
-                skip = False
-                isLEM = False
-                isBL = False
                 blf_files.append(path.get())
 
             # Gets the name for the line plot.
             self.plot_line_name = frame.line_plot_name_entry.get()
             # Gets the dataframe and the channel of the dataframe.
-            dfs, channel = self.blf_to_df(blf_files, start_file_count, LEM_graph, BL_graph)
+            self.dfs = self.blf_to_df(blf_files, start_file_count, LEM_graph, BL_graph)
             start_file_count = False
-            self.plot_line_name, isLEM, isBL = self.check_name(channel, self.plot_line_name)
-
+            self.dfs = self.check_name(self.dfs, self.plot_line_name)
             
+            for df in self.dfs:
+                df["Info"]["First_df"] = False
+                df["Info"]["Last_df"] = False
+                df["Info"]["Skip"] = False
+                df["Info"]["LEM_graph"] = LEM_graph
+                df["Info"]["BL_graph"] = BL_graph
+                df["Info"]["LEM_invert"] = frame.invert_LEM.get()
+
             # Checks if it's the first or/and last dataframe.
-            if i == 0: first_dfs = True
-            if len(plot_line_frames)-1 == i: last_dfs = True
-
-            #if len(frame.file_path_array)-1 == i: last_dfs = True
-
-            LEM_invert = frame.invert_LEM.get()
+            # OSÄKER PÅ DEM HÄR!!!!
+            if i == 0:
+                self.dfs[0]["Info"]["First_df"] = True
+            if len(plot_line_frames)-1 == i:
+                self.dfs[-1]["Info"]["Last_df"] = True
             
             # Packs up the info about the dataframe and sends it for time removal.
-            plot_info = {"Dfs":dfs,
-                        "Name":self.plot_line_name,
-                        "First":first_dfs,
-                        "Last":last_dfs,
-                        "LEM":isLEM,
-                        "BL":isBL,
-                        "Skip":skip,
-                        "LEM_graph":LEM_graph,
-                        "BL_graph":BL_graph,
-                        "LEM_invert":LEM_invert}
-            self.plots.append(plot_info)
-        return self.plots
+            # plot_info = {"Dfs":dfs,
+            #             "Name":self.plot_line_name,
+            #             "First":first_dfs,
+            #             "Last":last_dfs,
+            #             "LEM":isLEM,
+            #             "BL":isBL,
+            #             "Skip":skip,
+            #             "LEM_graph":LEM_graph,
+            #             "BL_graph":BL_graph,
+            #             "LEM_invert":LEM_invert}
+            # self.plots.append(plot_info)
+        return self.dfs
 
 
-    def check_name(self, channel, line_plot_name):
+    def check_name(self, dfs, line_plot_name):
         """ Checks if there was a name given and if there was none it get an automated one.
             Checks if the dataframe is a LEM file or BusLoad file. """
-        isLEM = None
-        isBL = None
-        channel_name = None
-        if line_plot_name == "":
-            match channel:
-                case 2:
-                    channel_name = f"Body #{self.index_body}"
-                    self.index_body += 1
-                case 6:
-                    channel_name = f"Front1 #{self.index_front1}"
-                    self.index_front1 += 1
-                case 7:
-                    channel_name = f"Front3 #{self.index_front3}"
-                    self.index_front3 += 1
-                case 8:
-                    channel_name = f"Mid1 #{self.index_mid1}"
-                    self.index_mid1 += 1
-                case 9:
-                    channel_name = f"Rear1 #{self.index_rear1}"
-                    self.index_rear1 += 1
-                case 0:
-                    channel_name = f"LEM #{self.index_LEM}"
-                    self.index_LEM += 1
-                case 10:
-                    channel_name = f"LEM #{self.index_LEM}"
-                    self.index_LEM += 1
-                case 23:
-                    channel_name = f"LEM #{self.index_LEM}"
-                    self.index_LEM += 1
-                case 24:
-                    channel_name = f"LEM #{self.index_LEM}"
-                    self.index_LEM += 1
-                case 25:
-                    channel_name = f"LEM #{self.index_LEM}"
-                    self.index_LEM += 1
-                case 26:
-                    channel_name = f"LEM #{self.index_LEM}"
-                    self.index_LEM += 1
-                case _:
-                    channel_name = f"Unknown Bus #{self.index_unknown}"
-                    self.index_unknown += 1
-        else:
-            channel_name = line_plot_name
+        for df in dfs:
+            channel = df["Info"]["Channel"]
+            if line_plot_name == "":
+                match channel:
+                    case 2:
+                        df["Info"]["Name"] = f"Body #{self.index_body}"
+                        self.index_body += 1
+                    case 6:
+                        df["Info"]["Name"] = f"Front1 #{self.index_front1}"
+                        self.index_front1 += 1
+                    case 7:
+                        df["Info"]["Name"] = f"Front3 #{self.index_front3}"
+                        self.index_front3 += 1
+                    case 8:
+                        df["Info"]["Name"] = f"Mid1 #{self.index_mid1}"
+                        self.index_mid1 += 1
+                    case 9:
+                        df["Info"]["Name"] = f"Rear1 #{self.index_rear1}"
+                        self.index_rear1 += 1
+                    case 0:
+                        df["Info"]["Name"] = f"LEM #{self.index_LEM}"
+                        self.index_LEM += 1
+                    case 1:
+                        df["Info"]["Name"] = f"LEM #{self.index_LEM}"
+                        self.index_LEM += 1
+                    case 10:
+                        df["Info"]["Name"] = f"LEM #{self.index_LEM}"
+                        self.index_LEM += 1
+                    case 23:
+                        df["Info"]["Name"] = f"LEM #{self.index_LEM}"
+                        self.index_LEM += 1
+                    case 24:
+                        df["Info"]["Name"] = f"LEM #{self.index_LEM}"
+                        self.index_LEM += 1
+                    case 25:
+                        df["Info"]["Name"] = f"LEM #{self.index_LEM}"
+                        self.index_LEM += 1
+                    case 26:
+                        df["Info"]["Name"] = f"LEM #{self.index_LEM}"
+                        self.index_LEM += 1
+                    case _:
+                        df["Info"]["Name"] = f"Unknown Bus #{self.index_unknown}"
+                        self.index_unknown += 1
+            else:
+                 df["Info"]["Name"] = line_plot_name
 
+            if channel == 0 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
+                df["Info"]["isLEM"] = True
+            else:
+                df["Info"]["isLEM"] = False
+            if channel == 2 or channel == 6 or channel == 7 or channel == 8 or channel == 9:
+                df["Info"]["isBL"] = True
+            else:
+                df["Info"]["isBL"] = False
 
-        if channel == 0 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
-            isLEM = True
-        if channel == 2 or channel == 6 or channel == 7 or channel == 8 or channel == 9:
-            isBL = True
-
-        return channel_name, isLEM, isBL
+        return dfs

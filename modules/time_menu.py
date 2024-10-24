@@ -53,7 +53,7 @@ class TimeMenu(LabelFrame):
         self.warning_label.grid(row=6, column=0, pady=(0, 10))
 
     
-    def set_df(self, plot):
+    def set_df(self, df):
         """ Removes time from start and end of graph. """
         """ This will not remove time from every file in the graph, just the ones in the start and end. """
         # If either remove start or end time entry is empty, remove time is set to 0 for that variable.
@@ -68,16 +68,16 @@ class TimeMenu(LabelFrame):
 
         try:
             # Will convert time given in minutes to correct time unit depending on the file.
-            if plot["LEM"]:
+            if df["Info"]["isLEM"]:
                 remove_start_time = remove_start_time * TENTH_SECOND
                 remove_end_time = remove_end_time  * TENTH_SECOND
-            elif plot["BL"]:
+            elif df["Info"]["isBL"]:
                 remove_start_time = remove_start_time * SECOND
                 remove_end_time = remove_end_time  * SECOND
 
             # Checks if the numbers given in the time entries are too small (negative) or too big compared to the dataframe time.
-            if 0 <= remove_start_time < len(plot["Dfs"])+12:
-                if 0 <= remove_end_time < len(plot["Dfs"])+12-remove_start_time:
+            if 0 <= remove_start_time < len(df["df"])+12:
+                if 0 <= remove_end_time < len(df["df"])+12-remove_start_time:
 
                     # If the number are accected the warning label is deleted if there was one displayed.
                     if self.warning_label:
@@ -85,11 +85,11 @@ class TimeMenu(LabelFrame):
                     return remove_start_time, remove_end_time
                 elif remove_end_time < 0:
                     self.warning("End time too low value. Try again.")
-                elif remove_start_time >= len(plot["Dfs"])+12-remove_start_time:
+                elif remove_start_time >= len(df["Data"])+12-remove_start_time:
                     self.warning("End time too high value. Try again.")
             elif remove_start_time < 0:
                 self.warning("Start time too low value. Try again.")
-            elif remove_start_time >= len(plot["Dfs"])+12:
+            elif remove_start_time >= len(df["Data"])+12:
                 self.warning("Start time too high value. Try again.")
         except ValueError as err:
             print(f"ValueError: {err}. Try again.")

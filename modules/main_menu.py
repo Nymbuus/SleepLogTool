@@ -186,20 +186,21 @@ class Menu(Tk):
 
 
     def analyze_data(self):
-        plots = self.fp.analyze_data(self.osm.get_choose_graph(),
+        dfs = self.fp.analyze_data(self.osm.get_choose_graph(),
                              self.plot_line_frames)
         
         # Will skip set_df function if true and go to plotting directly.
-        for plot in plots:
-            if plot["Skip"] == True:
-                self.pag.plotting_graph(plots, self.rtm.time_unit_selected.get())
+        for df in dfs:
+            if df["Info"]["Skip"] == True:
+                # MÅSTE FIXA PLOTTING_GRAPH, PLOTS HAR BYTTS MOT DFS!!!!
+                self.pag.plotting_graph(dfs, self.rtm.time_unit_selected.get())
                 return
             else:
-                remove_start_time, remove_end_time = self.rtm.set_df(plot)
+                remove_start_time, remove_end_time = self.rtm.set_df(df)
                 
                 # Takes the dataframe and calls the function to remove the specified time, then plots the graph.
-                plot["Dfs"] = self.fp.remove_time(plot["Dfs"], remove_start_time, remove_end_time)
-                self.pag.plotting_graph(plot, self.rtm.time_unit_selected.get())
+                df = self.fp.remove_time(df, remove_start_time, remove_end_time)
+        self.pag.plotting_graph(dfs, self.rtm.time_unit_selected.get())
 
 
 
