@@ -14,7 +14,7 @@ class FilesPreparation:
         self.total_time_before = 0
         self.file_number = 1
         self.plots = []
-        self.dfs = None
+        self.dfs = []
         self.initalize_and_reset_bus_channel_indexes()
     
 
@@ -162,14 +162,15 @@ class FilesPreparation:
             data_return = can.BLFReader(file)
             percent = 100 / data_return.object_count
         elif name.endswith(".asc"):
-            count = 0
-            for line in file:
-                if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
-                    count += 1
+            # count = 0
+            # for line in file:
+            #     if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
+            #         count += 1
             # ONLY TO SKIP FOR DEBUG!!!!!!!!!!!!!!!
-            # count = 13998668
+            count = 13998668
             percent = 100 / count
-        return percent
+            data_return = can.ASCReader(file)
+        return percent, data_return
     
 
     def get_dec_value(self, data):
@@ -207,10 +208,9 @@ class FilesPreparation:
             progress = 0
             last_print = 0
             known_channels = []
-            percent = self.get_percent_and_data(f)
-            data_return = can.ASCReader(file)
+            percent, data_return = self.get_percent_and_data(f)
 
-            for i, msg in enumerate(data_return):
+            for msg in data_return:
                 msg_channel = msg.channel
 
                 if msg_channel not in known_channels:
@@ -224,15 +224,13 @@ class FilesPreparation:
                 current_dec = self.get_dec_value(data)
                 
                 # Stores wanted data.
-                blf_asc_datas[msg_channel]["Data"]["Time"].append(msg.timestamp)
-                blf_asc_datas[msg_channel]["Data"]["Current"].append(current_dec)
+                for blf_asc_data in blf_asc_datas:
+                    if blf_asc_data["Info"]["Channel"] == msg.channel:
+                        blf_asc_data["Data"]["Time"].append(msg.timestamp)
+                        blf_asc_data["Data"]["Current"].append(current_dec)
 
                 # Prints the loading status in percentage.
                 last_print = self.progress_print(progress, last_print)
-
-                # ONLY FOR DEBUGGING!!!!
-                if i > 2000:
-                    break
 
             print("Done ✔")
 
@@ -320,37 +318,24 @@ class FilesPreparation:
             # Gets the name for the line plot.
             self.plot_line_name = frame.line_plot_name_entry.get()
             # Gets the dataframe and the channel of the dataframe.
-            self.dfs = self.blf_to_df(blf_files, start_file_count, LEM_graph, BL_graph)
-            start_file_count = False
-            self.dfs = self.check_name(self.dfs, self.plot_line_name)
-            
-            for df in self.dfs:
-                df["Info"]["First_df"] = False
-                df["Info"]["Last_df"] = False
-                df["Info"]["Skip"] = False
-                df["Info"]["LEM_graph"] = LEM_graph
-                df["Info"]["BL_graph"] = BL_graph
-                df["Info"]["LEM_invert"] = frame.invert_LEM.get()
+            temp_dfs = self.blf_to_df(blf_files, start_file_count, LEM_graph, BL_graph)
+            for temp_df in temp_dfs:
+                self.dfs.append(temp_df)
 
-            # Checks if it's the first or/and last dataframe.
-            # OSÄKER PÅ DEM HÄR!!!!
-            if i == 0:
-                self.dfs[0]["Info"]["First_df"] = True
-            if len(plot_line_frames)-1 == i:
-                self.dfs[-1]["Info"]["Last_df"] = True
-            
-            # Packs up the info about the dataframe and sends it for time removal.
-            # plot_info = {"Dfs":dfs,
-            #             "Name":self.plot_line_name,
-            #             "First":first_dfs,
-            #             "Last":last_dfs,
-            #             "LEM":isLEM,
-            #             "BL":isBL,
-            #             "Skip":skip,
-            #             "LEM_graph":LEM_graph,
-            #             "BL_graph":BL_graph,
-            #             "LEM_invert":LEM_invert}
-            # self.plots.append(plot_info)
+        start_file_count = False
+        self.dfs = self.check_name(self.dfs, self.plot_line_name)
+        
+        for df in self.dfs:
+            df["Info"]["First_df"] = False
+            df["Info"]["Last_df"] = False
+            df["Info"]["Skip"] = False
+            df["Info"]["LEM_graph"] = LEM_graph
+            df["Info"]["BL_graph"] = BL_graph
+            df["Info"]["LEM_invert"] = frame.invert_LEM.get()
+
+        # Checks if it's the first or/and last dataframe.
+        self.dfs[0]["Info"]["First_df"] = True
+        self.dfs[-1]["Info"]["Last_df"] = True
         return self.dfs
 
 
@@ -403,7 +388,7 @@ class FilesPreparation:
             else:
                  df["Info"]["Name"] = line_plot_name
 
-            if channel == 0 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
+            if channel == 0 or channel == 1 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
                 df["Info"]["isLEM"] = True
             else:
                 df["Info"]["isLEM"] = False
