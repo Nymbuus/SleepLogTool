@@ -13,7 +13,7 @@ class Menu(Tk):
         super().__init__()
         """ Initializes the class. """
         self.initialize_vars()
-        self.fp = FilesPreparation()
+        self.fp = FilesPreparation(self.show_warning)
         self.settings_frame = Frame(self)
         self.settings_frame.grid(row=0, column=1, sticky=N)
         self.rtm = TimeMenu(self.settings_frame)

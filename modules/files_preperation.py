@@ -9,8 +9,9 @@ import numpy as np
 class FilesPreparation:
     """ Preps the files before displaying them. """
 
-    def __init__(self):
+    def __init__(self, show_warning_func):
         """ Initialises the class. """
+        self.show_warning = show_warning_func
         self.total_time_before = 0
         self.file_number = 1
         self.initalize_and_reset_bus_channel_indexes()
@@ -92,7 +93,7 @@ class FilesPreparation:
         """ Write to df from blf. """
         """ file_list - The blf file(s) being read from. """
         
-        # Checks if there's only blf files in the list.
+        # Checks if there's only blf/asc files in the list.
         if not all(file.lower().endswith('.blf') or file.lower().endswith(".asc") for file in file_list):
             raise TypeError("Only .blf & .asc files supported.")
 
@@ -104,31 +105,27 @@ class FilesPreparation:
                    "\n0%", end="\r")
             self.file_number += 1
 
-            # Gets the channel on the CANbus.
-            channel_get = None
-            file_mode = None
-            if file.endswith(".blf"):
-                file_mode = "rb"
-            elif file.endswith(".asc"):
-                file_mode = "r"
-            with open(file, file_mode) as f:
-                if file.endswith(".blf"):
-                    channel_get = can.BLFReader(f)
-                elif file.endswith(".asc"):
-                    channel_get = can.ASCReader(f)
+            # Gets the can bus channel.
+            mode = "rb" if file.endswith(".blf") else "r"
+            with open(file, mode) as f:
+                channel_get = can.BLFReader(f) if file.endswith(".blf") else can.ASCReader(f)
                 for msg in channel_get:
                     channel = msg.channel
                     break
-            f.close()
 
             # Checks what CANbus and calls corresponding function to prep it.
-            # Second layer of if-statements check if LEM or BL-graph are selected in the settings.
-            if channel == 0 or channel == 1 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
-                if LEM_graph:
-                    blf_asc_datas = self.LEM_prep(file)
-            else:
-                if BL_graph:
-                    blf_asc_datas = self.BL_prep(file)
+            # Also checks if LEM or BL-graph are selected in the settings.
+            if ((channel == 0 or
+                 channel == 1 or
+                 channel == 10 or
+                 channel == 23 or 
+                 channel == 24 or 
+                 channel == 25 or 
+                 channel == 26)
+                 and LEM_graph):
+                blf_asc_datas = self.LEM_prep(file, mode)
+            elif BL_graph:
+                blf_asc_datas = self.BL_prep(file, mode)
             
             # Loads data into pandas dataframe.
             for j, blf_asc_data in enumerate(blf_asc_datas):
@@ -140,8 +137,7 @@ class FilesPreparation:
                     df = {"df": df, "Info": blf_asc_data["Info"]}
                     dfs.append(df)
                 else:
-                    dfs[j]["df"] = pd.concat([dfs[j]["df"], temp], axis=0)
-        # HOPEFULLY THIS RETURNS MULTIPLE DFS WHEN IT'S ASCII. ASLO HOPE IT CONCATS TO CORRECT DF IN DFS!!!!!!!!    
+                    dfs[j]["df"] = pd.concat([dfs[j]["df"], temp], axis=0)   
         return dfs
     
 
@@ -196,13 +192,12 @@ class FilesPreparation:
                             "Info": {"Channel": channel}}
         return blf_asc_data
 
-    def LEM_prep(self, file):
+    def LEM_prep(self, file, mode):
         """ If the file contains the LEM bus this will load in the data to the dataframe. """
         blf_asc_datas = []
         # Opens blf file to be read.
-        file_mode = self.file_mode_chooser(file)
 
-        with open(file, file_mode) as f:
+        with open(file, mode) as f:
             data_return = None
             percent = None
             progress = 0
@@ -245,12 +240,11 @@ class FilesPreparation:
         return last_print
 
 
-    def BL_prep(self, file):
+    def BL_prep(self, file, mode):
         """ If the file don't contain the LEM bus this will load in the data to the dataframe. """
         blf_asc_datas = []
-        file_mode = self.file_mode_chooser(file)
         # Opens blf file to be read.
-        with open(file, file_mode) as f:
+        with open(file, mode) as f:
             progress = 0
             last_print = 0
             count = 0
@@ -318,7 +312,6 @@ class FilesPreparation:
     def analyze_data(self, get_graph_toggle_func, plot_line_frames):
         """ Takes the present filepaths and analyzes the data in the blf files. """
         self.dfs = []
-        self.plot_line_name = None
         self.file_number = 1
         self.initalize_and_reset_bus_channel_indexes()
         LEM_graph, BL_graph = get_graph_toggle_func
@@ -327,19 +320,17 @@ class FilesPreparation:
             return
 
         # Loops through every list of files in every line plot.
-        for i, frame in enumerate(plot_line_frames):
+        for frame in plot_line_frames:
             blf_files = []
             for path in frame.file_path_array:
                 blf_files.append(path.get())
 
-            # Gets the name for the line plot.
-            self.plot_line_name = frame.line_plot_name_entry.get()
             # Gets the dataframe and the channel of the dataframe.
             temp_dfs = self.blf_to_df(blf_files, LEM_graph, BL_graph)
             for temp_df in temp_dfs:
                 self.dfs.append(temp_df)
 
-        self.dfs = self.check_name(self.dfs, self.plot_line_name)
+        self.dfs = self.check_name(self.dfs, plot_line_frames)
         
         for df in self.dfs:
             df["Info"]["First_df"] = False
@@ -355,12 +346,13 @@ class FilesPreparation:
         return self.dfs
 
 
-    def check_name(self, dfs, line_plot_name):
+    def check_name(self, dfs, plot_line_frames):
         """ Checks if there was a name given and if there was none it get an automated one.
             Checks if the dataframe is a LEM file or BusLoad file. """
-        for df in dfs:
+        for i, df in enumerate(dfs):
+            plot_name = plot_line_frames[i].line_plot_name_entry.get()
             channel = df["Info"]["Channel"]
-            if line_plot_name == "":
+            if plot_name == "":
                 match channel:
                     case 2:
                         df["Info"]["Name"] = f"Body #{self.index_body}"
@@ -402,7 +394,7 @@ class FilesPreparation:
                         df["Info"]["Name"] = f"Unknown Bus #{self.index_unknown}"
                         self.index_unknown += 1
             else:
-                 df["Info"]["Name"] = line_plot_name
+                 df["Info"]["Name"] = plot_name
 
             if channel == 0 or channel == 1 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
                 df["Info"]["isLEM"] = True
