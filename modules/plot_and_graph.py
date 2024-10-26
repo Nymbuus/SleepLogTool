@@ -61,7 +61,7 @@ class PlotAndGraph():
 
     def BL_plot(self, df, time_unit):
         """ Plots one line for BusLoad """
-        first_time = self.dfs["df"]["Time"].min()
+        first_time = df["df"]["Time"].min()
         data = df["df"]
         y = data.Busload.to_numpy()
         x = data.Time.to_numpy()

@@ -13,8 +13,6 @@ class FilesPreparation:
         """ Initialises the class. """
         self.total_time_before = 0
         self.file_number = 1
-        self.plots = []
-        self.dfs = []
         self.initalize_and_reset_bus_channel_indexes()
     
 
@@ -133,11 +131,12 @@ class FilesPreparation:
                     blf_asc_datas = self.LEM_prep(file)
             else:
                 if BL_graph:
-                    blf_asc_datas, channel = self.BL_prep(file, index, channel)
+                    blf_asc_datas = self.BL_prep(file)
             
             # Loads data into pandas dataframe.
             for j, blf_asc_data in enumerate(blf_asc_datas):
                 data = blf_asc_data["Data"]
+
                 temp = pd.DataFrame(data)
                 if index == 0:
                     df = temp
@@ -191,9 +190,13 @@ class FilesPreparation:
         return current_dec
 
 
-    def create_new_directory_for_new_channel(self, channel):
-        blf_asc_data = {"Data": {"Time": [], "Current": []},
-                        "Info": {"Channel": channel}}
+    def create_new_directory_for_new_channel(self, channel, lem_or_bl, timestamps=None):
+        if lem_or_bl == "lem":
+            blf_asc_data = {"Data": {"Time": [], "Current": []},
+                            "Info": {"Channel": channel}}
+        elif lem_or_bl == "bl":
+            blf_asc_data = {"Data": {"Time": timestamps, "Busload": [0]},
+                            "Info": {"Channel": channel}}
         return blf_asc_data
 
     def LEM_prep(self, file):
@@ -214,7 +217,7 @@ class FilesPreparation:
                 msg_channel = msg.channel
 
                 if msg_channel not in known_channels:
-                    blf_asc_datas.append(self.create_new_directory_for_new_channel(msg_channel))
+                    blf_asc_datas.append(self.create_new_directory_for_new_channel(msg_channel, "lem"))
                     known_channels.append(msg_channel)
 
                 progress += percent
@@ -245,41 +248,57 @@ class FilesPreparation:
         return last_print
 
 
-    def BL_prep(self, file, index, channel):
+    def BL_prep(self, file):
         """ If the file don't contain the LEM bus this will load in the data to the dataframe. """
-        blf_data = {"Time": [], "Busload": []}
+        blf_asc_datas = []
+        file_mode = self.file_mode_chooser(file)
         # Opens blf file to be read.
-        with open(file, 'rb') as e:
-            blf_return = can.BLFReader(e)
-
-            blf_data["Busload"].append(0)
-
-            total_time = round(blf_return.stop_timestamp - blf_return.start_timestamp)+1
-            blf_data["Time"] = np.arange(self.total_time_before, self.total_time_before + total_time)
-            self.total_time_before += total_time-1
-
-            percent = 100 / blf_return.object_count
-            status = 0
+        with open(file, file_mode) as f:
+            progress = 0
             last_print = 0
             count = 0
             sample_count = 1
-            for i, msg in enumerate(blf_return):
-                status += percent
+            zeros = 0
+            zero_event = 0
+            known_channels = []
+            percent, data_return = self.get_percent_and_data(f)
 
-                # Get the busload every second in percentage. It's not totaly accurate but the margin of error is about 1%.
-                if msg.timestamp >= blf_return.start_timestamp + sample_count or i == blf_return.object_count-1:
-                    blf_data["Busload"].append((count/4219)*100)
+            total_time = round(data_return.stop_timestamp - data_return.start_timestamp)+1
+            timestamps = np.arange(self.total_time_before, self.total_time_before + total_time)
+            self.total_time_before += total_time-1
+
+            for i, msg in enumerate(data_return):
+                msg_channel = msg.channel
+
+                if msg_channel not in known_channels:
+                    blf_asc_datas.append(self.create_new_directory_for_new_channel(msg_channel, "bl", timestamps))
+                    known_channels.append(msg_channel)
+                progress += percent
+
+                # Get the busload every second in percentage. It's not totaly accurate but the margin of error is around 1%.
+                if msg.timestamp >= data_return.start_timestamp + sample_count:
+                    # MÅSTE HITTA ETT SÄTT ATT HITTA RÄTT ELEMENT I LISTAN NÄR FLER LÄGGS TILL!!!!!
+                    # If there hasn't been a single message over a second then this part will fill in the data points up until the timestamp with zeros.
+                    # Else it will add the datapoints every second with the busload percentage.
+                    if msg.timestamp - (data_return.start_timestamp + sample_count) > 1:
+                        zero_event += 1
+                        zeros = round(msg.timestamp - data_return.start_timestamp) - (len(blf_asc_datas[0]["Data"]["Busload"])-1)
+                        sample_count += zeros
+                        for _ in range(zeros):
+                            blf_asc_datas[0]["Data"]["Busload"].append(0)
+                            progress += percent
+                    else:
+                        blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
+                        sample_count += 1
                     count = 0
-                    sample_count += 1
                 count += 1
 
                 # Prints the loading status in percentage.
-                rounded_status = round(status)
-                if rounded_status != last_print and rounded_status > last_print + 9:
-                    print(f"{rounded_status}%")
-                    last_print = rounded_status
+                last_print = self.progress_print(progress, last_print)
+            # Adds the last data point.
+            blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
 
-        return blf_data, channel
+        return blf_asc_datas
 
 
     def remove_time(self, df, remove_start_time, remove_end_time):
@@ -301,7 +320,7 @@ class FilesPreparation:
 
     def analyze_data(self, get_graph_toggle_func, plot_line_frames):
         """ Takes the present filepaths and analyzes the data in the blf files. """
-        self.plots = []
+        self.dfs = []
         self.initalize_and_reset_bus_channel_indexes()
         LEM_graph, BL_graph = get_graph_toggle_func
         if LEM_graph == False and BL_graph == False:
