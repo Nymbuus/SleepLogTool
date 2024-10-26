@@ -92,12 +92,13 @@ class PlotAndGraph():
         
         # Plots all labels in graph.
         plt.xlabel(f"Time[{time_unit_character}]", fontsize=15)
-        if (dfs[0]["Info"]["LEM_graph"] and dfs[0]["Info"]["BL_graph"]) or dfs[0]["Info"]["LEM_graph"]:
+        if dfs[0]["Info"]["LEM_graph"]:
             self.axLEM.set_ylabel("Current[mA]", fontsize=15)
             self.axLEM.set_title("CAN Bus Analysis", fontsize=24)
-        else:
+        if dfs[0]["Info"]["BL_graph"]:
             self.axBL.set_ylabel("BusLoad[%]", fontsize=15)
-            self.axBL.set_title("CAN Bus Analysis", fontsize=24)
+            if not dfs[0]["Info"]["LEM_graph"]:
+                self.axBL.set_title("CAN Bus Analysis", fontsize=24)
 
         # Adjusts the graph frames.
         if dfs[0]["Info"]["LEM_graph"] and dfs[0]["Info"]["BL_graph"]:

@@ -88,17 +88,14 @@ class FilesPreparation:
                         return file_list
         
 
-    def blf_to_df(self, file_list, start_file_count, LEM_graph, BL_graph):
+    def blf_to_df(self, file_list, LEM_graph, BL_graph):
         """ Write to df from blf. """
         """ file_list - The blf file(s) being read from. """
         
         # Checks if there's only blf files in the list.
         if not all(file.lower().endswith('.blf') or file.lower().endswith(".asc") for file in file_list):
             raise TypeError("Only .blf & .asc files supported.")
-        
-        # Prints the file that is loading.
-        if start_file_count:
-            self.file_number = 1
+
         channel = None
         df = None
         dfs = []
@@ -286,7 +283,6 @@ class FilesPreparation:
                         sample_count += zeros
                         for _ in range(zeros):
                             blf_asc_datas[0]["Data"]["Busload"].append(0)
-                            progress += percent
                     else:
                         blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
                         sample_count += 1
@@ -297,6 +293,7 @@ class FilesPreparation:
                 last_print = self.progress_print(progress, last_print)
             # Adds the last data point.
             blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
+            print("Done ✔")
 
         return blf_asc_datas
 
@@ -321,13 +318,14 @@ class FilesPreparation:
     def analyze_data(self, get_graph_toggle_func, plot_line_frames):
         """ Takes the present filepaths and analyzes the data in the blf files. """
         self.dfs = []
+        self.plot_line_name = None
+        self.file_number = 1
         self.initalize_and_reset_bus_channel_indexes()
         LEM_graph, BL_graph = get_graph_toggle_func
         if LEM_graph == False and BL_graph == False:
             self.show_warning("Choose a graph in settings")
             return
-        self.plot_line_name = None
-        start_file_count = True
+
         # Loops through every list of files in every line plot.
         for i, frame in enumerate(plot_line_frames):
             blf_files = []
@@ -337,11 +335,10 @@ class FilesPreparation:
             # Gets the name for the line plot.
             self.plot_line_name = frame.line_plot_name_entry.get()
             # Gets the dataframe and the channel of the dataframe.
-            temp_dfs = self.blf_to_df(blf_files, start_file_count, LEM_graph, BL_graph)
+            temp_dfs = self.blf_to_df(blf_files, LEM_graph, BL_graph)
             for temp_df in temp_dfs:
                 self.dfs.append(temp_df)
 
-        start_file_count = False
         self.dfs = self.check_name(self.dfs, self.plot_line_name)
         
         for df in self.dfs:
