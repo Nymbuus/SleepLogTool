@@ -100,6 +100,7 @@ class FilesPreparation:
         channel = None
         df = None
         dfs = []
+        time_add = 0
         for index, file in enumerate(file_list):
             print(f"\nLoding File #{self.file_number}:",
                    "\n0%", end="\r")
@@ -123,7 +124,7 @@ class FilesPreparation:
                  channel == 25 or 
                  channel == 26)
                  and LEM_graph):
-                blf_asc_datas = self.LEM_prep(file, mode)
+                blf_asc_datas = self.LEM_prep(file, mode, time_add)
             elif BL_graph:
                 blf_asc_datas = self.BL_prep(file, mode)
             
@@ -137,7 +138,8 @@ class FilesPreparation:
                     df = {"df": df, "Info": blf_asc_data["Info"]}
                     dfs.append(df)
                 else:
-                    dfs[j]["df"] = pd.concat([dfs[j]["df"], temp], axis=0)   
+                    dfs[j]["df"] = pd.concat([dfs[j]["df"], temp], axis=0)
+            time_add = dfs[0]["df"]["Time"].iloc[-1]
         return dfs
     
 
@@ -154,12 +156,14 @@ class FilesPreparation:
             data_return = can.BLFReader(file)
             percent = 100 / data_return.object_count
         elif name.endswith(".asc"):
-            # count = 0
-            # for line in file:
-            #     if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
-            #         count += 1
+            count = 0
+            for line in file:
+                if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
+                    count += 1
+
             # ONLY TO SKIP FOR DEBUG!!!!!!!!!!!!!!!
-            count = 13998668
+            # count = 13998668
+
             percent = 100 / count
             data_return = can.ASCReader(file)
         return percent, data_return
@@ -192,7 +196,7 @@ class FilesPreparation:
                             "Info": {"Channel": channel}}
         return blf_asc_data
 
-    def LEM_prep(self, file, mode):
+    def LEM_prep(self, file, mode, time_add):
         """ If the file contains the LEM bus this will load in the data to the dataframe. """
         blf_asc_datas = []
         # Opens blf file to be read.
@@ -221,7 +225,7 @@ class FilesPreparation:
                 # Stores wanted data.
                 for blf_asc_data in blf_asc_datas:
                     if blf_asc_data["Info"]["Channel"] == msg.channel:
-                        blf_asc_data["Data"]["Time"].append(msg.timestamp)
+                        blf_asc_data["Data"]["Time"].append(msg.timestamp+time_add)
                         blf_asc_data["Data"]["Current"].append(current_dec)
 
                 # Prints the loading status in percentage.
