@@ -158,7 +158,7 @@ class Menu(Tk):
     def update_plot_line_del_buttons(self):
         for i, button in enumerate(self.plot_line_del_buttons):
             button.grid_configure(row=i+2)
-            button.config(command=lambda: self.line_plot_del(i-1))
+            button.config(command=lambda x=i: self.line_plot_del(x))
 
 
     def add_browse_field(self):
