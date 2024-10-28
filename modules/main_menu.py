@@ -113,16 +113,20 @@ class Menu(Tk):
         """ Updates the optionsmenu for chosing plot. """
         menu = self.drop_down_box["menu"]
         menu.delete(0, "end")
+        text_to_set = None
         if choice == "delete":
             del self.optionsmenu_list[-1]
+            text_to_set = "Plot Line 1"
         elif self.optionsmenu_list == ["-"]:
             self.optionsmenu_list = ["Plot Line 1"]
+            text_to_set = plot_line_frame.text_to_set
         else:
             self.optionsmenu_list.append(plot_line_frame.text_to_set)
+            text_to_set = plot_line_frame.text_to_set
         for string in self.optionsmenu_list:
             menu.add_command(label=string,
                             command=lambda value=string: self.plot_line_select.set(value))
-        self.plot_line_select.set(plot_line_frame.text_to_set)
+        self.plot_line_select.set(text_to_set)                                 # Line that sets the text in drop down box!!
         self.update_drop_down_box()
 
 
@@ -139,7 +143,6 @@ class Menu(Tk):
 
     def update_drop_down_box(self):
         if self.plot_line_frames:
-            self.plot_line_select.set("Plot Line 1")
             self.drop_down_box.grid_configure(padx=(0, 160))
         else:
             self.plot_line_select.set("-")
