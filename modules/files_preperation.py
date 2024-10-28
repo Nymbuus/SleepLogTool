@@ -268,7 +268,6 @@ class FilesPreparation:
 
                 # Get the busload every second in percentage. It's not totaly accurate but the margin of error is around 1%.
                 if msg.timestamp >= data_return.start_timestamp + sample_count:
-                    # MÅSTE HITTA ETT SÄTT ATT HITTA RÄTT ELEMENT I LISTAN NÄR FLER LÄGGS TILL!!!!!
                     # If there hasn't been a single message over a second then this part will fill in the data points up until the timestamp with zeros.
                     # Else it will add the datapoints every second with the busload percentage.
                     if msg.timestamp - (data_return.start_timestamp + sample_count) > 1:
@@ -285,8 +284,9 @@ class FilesPreparation:
 
                 # Prints the loading status in percentage.
                 last_print = self.progress_print(progress, last_print)
-            # Adds the last data point.
-            blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
+            # Checks if it needs to add one more data point or not.
+            if len(blf_asc_datas[0]["Data"]["Time"]) > len(blf_asc_datas[0]["Data"]["Busload"]):
+                blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
             print("Done ✔")
 
         return blf_asc_datas
