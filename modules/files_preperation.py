@@ -326,11 +326,10 @@ class FilesPreparation:
                 blf_files.append(path.get())
 
             # Gets the dataframe and the channel of the dataframe.
-            temp_dfs = self.blf_to_df(blf_files, LEM_graph, BL_graph)
-            for temp_df in temp_dfs:
-                self.dfs.append(temp_df)
-
-        self.dfs = self.check_name(self.dfs, plot_line_frames)
+            dfs = self.blf_to_df(blf_files, LEM_graph, BL_graph)
+            dfs = self.check_name(dfs, frame)
+            for df in dfs:
+                self.dfs.append(df)
         
         for df in self.dfs:
             df["Info"]["First_df"] = False
@@ -346,11 +345,11 @@ class FilesPreparation:
         return self.dfs
 
 
-    def check_name(self, dfs, plot_line_frames):
+    def check_name(self, dfs, plot_line_frame):
         """ Checks if there was a name given and if there was none it get an automated one.
             Checks if the dataframe is a LEM file or BusLoad file. """
         for i, df in enumerate(dfs):
-            plot_name = plot_line_frames[i].line_plot_name_entry.get()
+            plot_name = plot_line_frame.line_plot_name_entry.get()
             channel = df["Info"]["Channel"]
             if plot_name == "":
                 match channel:
