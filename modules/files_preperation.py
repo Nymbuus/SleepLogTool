@@ -152,6 +152,8 @@ class FilesPreparation:
 
     def get_percent_and_data(self, file):
         name = file.name
+        data_return = None
+        percent = None
         if name.endswith(".blf"):
             data_return = can.BLFReader(file)
             percent = 100 / data_return.object_count
@@ -160,11 +162,12 @@ class FilesPreparation:
             for line in file:
                 if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
                     count += 1
+            percent = 100 / count
 
             # ONLY TO SKIP FOR DEBUG!!!!!!!!!!!!!!!
             # count = 13998668
 
-            percent = 100 / count
+            file.seek(0)
             data_return = can.ASCReader(file)
         return percent, data_return
     
@@ -209,6 +212,7 @@ class FilesPreparation:
             known_channels = []
             percent, data_return = self.get_percent_and_data(f)
 
+            # Vill inte läsa filen av någon anledning!!!!!!!!!!!!!!!
             for msg in data_return:
                 msg_channel = msg.channel
 
