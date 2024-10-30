@@ -50,7 +50,7 @@ class Menu(Tk):
 
     def browse_frame_create(self):
         """ Creates the browse frame and adds all of it's contents. """
-        self.browse_frame = LabelFrame(self, text="Choose blf file(s)", padx=10, pady=5)
+        self.browse_frame = LabelFrame(self, text="Choose blf/asc file(s)", padx=10, pady=5)
         self.browse_frame.grid(row=0, rowspan=2, column=0, pady=10, padx=10, sticky=N)
 
         # Entry and button to add a file manually by entering path to it.

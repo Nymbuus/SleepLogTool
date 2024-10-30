@@ -62,8 +62,7 @@ class PlotLines(LabelFrame):
         self.toggle_line.grid(row=0, column=1)
 
 
-    # def path_frame_create(self, frame_index, append):
-    def path_frame_create(self, append=True):
+    def path_frame_create(self):
         """ Creates a frame for the paths that will be used in the plot. """
         self.path_frame = LabelFrame(self, text="Filepath(s)", padx=10, pady=5)
         self.path_frame.grid(row=2, column=0, columnspan=3, padx=(20, 0), sticky=W)

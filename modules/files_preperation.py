@@ -41,7 +41,7 @@ class FilesPreparation:
                             return False
                         return file_list
                     else:
-                        print("Files are not blf or asc file, try again.")
+                        print("Files are not blf/asc file, try again.")
 
             # If Choose folder(s) was chosen.
             case "folder":
@@ -53,7 +53,7 @@ class FilesPreparation:
                         for file in files:
                             file_list.append(os.path.join(root,file))
 
-                    if all(file.lower().endswith('.blf') for file in file_list):
+                    if all(file.lower().endswith('.blf') or file.lower().endswith(".asc") for file in file_list):
                         return file_list
                     else:
                         print("File(s) in director(ies) are not blf/asc files, try again.")
@@ -75,23 +75,23 @@ class FilesPreparation:
                                 # Loops through all files and creates search path to file.
                                 for file in files:
                                     search_path = root + "/" + file
-                                    if search_path.endswith(".blf") or search_path.endswith(".asc"):
-                                        # Checks if the file is a LEM file and if so, adds it the the file list.
-                                        with open(search_path, 'rb') as f:
-                                            channel_get_blf = can.BLFReader(f)
-                                            for msg in channel_get_blf:
-                                                if msg.channel == 0 or 10 == msg.channel or 23 == msg.channel or 24 == msg.channel or 25 == msg.channel or 26 == msg.channel:
-                                                    file_list.append(os.path.join(search_path))
-                                                    break
-                                                else:
-                                                    break
-                                        f.close()
+                                    # Checks if the file is a LEM file and if so, adds it the the file list.
+                                    mode = "rb" if search_path.endswith(".blf") else "r"
+                                    with open(search_path, search_path) as f:
+                                        channel_get = can.BLFReader(f) if file.endswith(".blf") else can.ASCReader(f)
+                                        for msg in channel_get:
+                                            if msg.channel == 0 or 10 == msg.channel or 23 == msg.channel or 24 == msg.channel or 25 == msg.channel or 26 == msg.channel:
+                                                file_list.append(os.path.join(search_path))
+                                                break
+                                            else:
+                                                break
+                                    f.close()
                         return file_list
         
 
-    def blf_to_df(self, file_list, LEM_graph, BL_graph):
-        """ Write to df from blf. """
-        """ file_list - The blf file(s) being read from. """
+    def convert_to_df(self, file_list, LEM_graph, BL_graph):
+        """ Write to df from blf/asc. """
+        """ file_list - The blf/asc file(s) being read from. """
         
         # Checks if there's only blf/asc files in the list.
         if not all(file.lower().endswith('.blf') or file.lower().endswith(".asc") for file in file_list):
@@ -202,7 +202,7 @@ class FilesPreparation:
     def LEM_prep(self, file, mode, time_add):
         """ If the file contains the LEM bus this will load in the data to the dataframe. """
         blf_asc_datas = []
-        # Opens blf file to be read.
+        # Opens blf/asc file to be read.
 
         with open(file, mode) as f:
             data_return = None
@@ -212,7 +212,6 @@ class FilesPreparation:
             known_channels = []
             percent, data_return = self.get_percent_and_data(f)
 
-            # Vill inte läsa filen av någon anledning!!!!!!!!!!!!!!!
             for msg in data_return:
                 msg_channel = msg.channel
 
@@ -251,7 +250,7 @@ class FilesPreparation:
     def BL_prep(self, file, mode):
         """ If the file don't contain the LEM bus this will load in the data to the dataframe. """
         blf_asc_datas = []
-        # Opens blf file to be read.
+        # Opens blf/asc file to be read.
         with open(file, mode) as f:
             progress = 0
             last_print = 0
@@ -318,7 +317,7 @@ class FilesPreparation:
     
 
     def analyze_data(self, get_graph_toggle_func, plot_line_frames):
-        """ Takes the present filepaths and analyzes the data in the blf files. """
+        """ Takes the present filepaths and analyzes the data in the files. """
         self.dfs = []
         self.file_number = 1
         self.initalize_and_reset_bus_channel_indexes()
@@ -329,12 +328,12 @@ class FilesPreparation:
 
         # Loops through every list of files in every line plot.
         for frame in plot_line_frames:
-            blf_files = []
+            blf_asc_files = []
             for path in frame.file_path_array:
-                blf_files.append(path.get())
+                blf_asc_files.append(path.get())
 
             # Gets the dataframe and the channel of the dataframe.
-            dfs = self.blf_to_df(blf_files, LEM_graph, BL_graph)
+            dfs = self.convert_to_df(blf_asc_files, LEM_graph, BL_graph)
             dfs = self.check_name(dfs, frame)
             for df in dfs:
                 self.dfs.append(df)
@@ -356,7 +355,7 @@ class FilesPreparation:
     def check_name(self, dfs, plot_line_frame):
         """ Checks if there was a name given and if there was none it get an automated one.
             Checks if the dataframe is a LEM file or BusLoad file. """
-        for i, df in enumerate(dfs):
+        for df in dfs:
             plot_name = plot_line_frame.line_plot_name_entry.get()
             channel = df["Info"]["Channel"]
             if plot_name == "":

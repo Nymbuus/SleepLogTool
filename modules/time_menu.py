@@ -5,7 +5,7 @@ SECOND = 60
 
 class TimeMenu(LabelFrame):
     """ Menu for time settings. """
-    """ How much time to remove from start and end of the blf file. """
+    """ How much time to remove from start and end of the file. """
     """ What time unit to choose (seconds, minutes, hours). """
 
     def __init__(self, parent):
