@@ -76,17 +76,36 @@ class FilesPreparation:
                                 for file in files:
                                     search_path = root + "/" + file
                                     # Checks if the file is a LEM file and if so, adds it the the file list.
-                                    mode = "rb" if search_path.endswith(".blf") else "r"
-                                    with open(search_path, search_path) as f:
-                                        channel_get = can.BLFReader(f) if file.endswith(".blf") else can.ASCReader(f)
-                                        for msg in channel_get:
-                                            if msg.channel == 0 or 10 == msg.channel or 23 == msg.channel or 24 == msg.channel or 25 == msg.channel or 26 == msg.channel:
-                                                file_list.append(os.path.join(search_path))
-                                                break
-                                            else:
-                                                break
-                                    f.close()
+                                    channel = self.get_attribute(file, "channel")
+                                    if channel == 0 or 10 == channel or 23 == channel or 24 == channel or 25 == channel or 26 == channel:
+                                        file_list.append(os.path.join(search_path))
+                                        break
+                                    else:
+                                        break
                         return file_list
+
+
+    def open_file(self, file):
+        mode = "rb" if file.endswith(".blf") else "r"
+        with open(file, mode) as f:
+            open_file = can.BLFReader(f) if file.endswith(".blf") else can.ASCReader(f)
+            for message in open_file:
+                yield message
+
+
+    def yeild_message(self, file):
+        mode = "rb" if file.endswith(".blf") else "r"
+        with open(file, mode) as f:
+            open_file = can.BLFReader(f) if file.endswith(".blf") else can.ASCReader(f)
+            for message in open_file:
+                yield message
+
+
+    def get_attribute(self, file, attribute):
+        mode = "rb" if file.endswith(".blf") else "r"
+        with open(file, mode) as f:
+            open_file = can.BLFReader(f) if file.endswith(".blf") else can.ASCReader(f)
+            return getattr(open_file, attribute)
         
 
     def convert_to_df(self, file_list, LEM_graph, BL_graph):
@@ -107,12 +126,8 @@ class FilesPreparation:
             self.file_number += 1
 
             # Gets the can bus channel.
-            mode = "rb" if file.endswith(".blf") else "r"
-            with open(file, mode) as f:
-                channel_get = can.BLFReader(f) if file.endswith(".blf") else can.ASCReader(f)
-                for msg in channel_get:
-                    channel = msg.channel
-                    break
+            msg = self.open_file(file)
+            channel = next(msg).channel
 
             # Checks what CANbus and calls corresponding function to prep it.
             # Also checks if LEM or BL-graph are selected in the settings.
@@ -124,9 +139,9 @@ class FilesPreparation:
                  channel == 25 or 
                  channel == 26)
                  and LEM_graph):
-                blf_asc_datas = self.LEM_prep(file, mode, time_add)
+                blf_asc_datas = self.LEM_prep(file, time_add)
             elif BL_graph:
-                blf_asc_datas = self.BL_prep(file, mode)
+                blf_asc_datas = self.BL_prep(file)
             
             # Loads data into pandas dataframe.
             for j, blf_asc_data in enumerate(blf_asc_datas):
@@ -141,35 +156,23 @@ class FilesPreparation:
                     dfs[j]["df"] = pd.concat([dfs[j]["df"], temp], axis=0)
             time_add = dfs[0]["df"]["Time"].iloc[-1]
         return dfs
-    
-
-    def file_mode_chooser(self, file):
-        if file.endswith(".blf"):
-            return "rb"
-        elif file.endswith(".asc"):
-            return "r"
 
 
-    def get_percent_and_data(self, file):
-        name = file.name
-        data_return = None
+    def get_percent(self, file):
         percent = None
-        if name.endswith(".blf"):
-            data_return = can.BLFReader(file)
-            percent = 100 / data_return.object_count
-        elif name.endswith(".asc"):
+        if file.endswith(".blf"):
+            percent = 100 / self.get_attribute(file, "object_count")
+        elif file.endswith(".asc"):
             count = 0
-            for line in file:
-                if line.strip() and not line.startswith(';'):  # Ignore empty lines or comments
-                    count += 1
+            file_gen = self.yeild_message(file)
+            for _ in file_gen:
+                count += 1
             percent = 100 / count
 
             # ONLY TO SKIP FOR DEBUG!!!!!!!!!!!!!!!
             # count = 13998668
 
-            file.seek(0)
-            data_return = can.ASCReader(file)
-        return percent, data_return
+        return percent
     
 
     def get_dec_value(self, data):
@@ -199,42 +202,38 @@ class FilesPreparation:
                             "Info": {"Channel": channel}}
         return blf_asc_data
 
-    def LEM_prep(self, file, mode, time_add):
+    def LEM_prep(self, file, time_add):
         """ If the file contains the LEM bus this will load in the data to the dataframe. """
+        progress = 0
+        last_print = 0
+        known_channels = []
         blf_asc_datas = []
-        # Opens blf/asc file to be read.
+        percent = self.get_percent(file)
 
-        with open(file, mode) as f:
-            data_return = None
-            percent = None
-            progress = 0
-            last_print = 0
-            known_channels = []
-            percent, data_return = self.get_percent_and_data(f)
+        file_gen = self.open_file(file)
+        for msg in file_gen:
+            channel = msg.channel
 
-            for msg in data_return:
-                msg_channel = msg.channel
+            if channel not in known_channels:
+                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel, "lem"))
+                known_channels.append(channel)
 
-                if msg_channel not in known_channels:
-                    blf_asc_datas.append(self.create_new_directory_for_new_channel(msg_channel, "lem"))
-                    known_channels.append(msg_channel)
+            progress += percent
+            data = msg.data
 
-                progress += percent
-                data = msg.data
+            # Preps and reads out the current value.
+            current_dec = self.get_dec_value(data)
+            
+            # Stores wanted data.
+            for blf_asc_data in blf_asc_datas:
+                if blf_asc_data["Info"]["Channel"] == msg.channel:
+                    blf_asc_data["Data"]["Time"].append(msg.timestamp+time_add)
+                    blf_asc_data["Data"]["Current"].append(current_dec)
 
-                # Preps and reads out the current value.
-                current_dec = self.get_dec_value(data)
-                
-                # Stores wanted data.
-                for blf_asc_data in blf_asc_datas:
-                    if blf_asc_data["Info"]["Channel"] == msg.channel:
-                        blf_asc_data["Data"]["Time"].append(msg.timestamp+time_add)
-                        blf_asc_data["Data"]["Current"].append(current_dec)
+            # Prints the loading status in percentage.
+            last_print = self.progress_print(progress, last_print)
 
-                # Prints the loading status in percentage.
-                last_print = self.progress_print(progress, last_print)
-
-            print("Done ✔")
+        print("Done ✔")
 
         return blf_asc_datas
     
@@ -247,54 +246,57 @@ class FilesPreparation:
         return last_print
 
 
-    def BL_prep(self, file, mode):
+    def BL_prep(self, file):
         """ If the file don't contain the LEM bus this will load in the data to the dataframe. """
+        progress = 0
+        last_print = 0
+        count = 0
+        sample_count = 1
+        zeros = 0
+        zero_event = 0
+        known_channels = []
         blf_asc_datas = []
-        # Opens blf/asc file to be read.
-        with open(file, mode) as f:
-            progress = 0
-            last_print = 0
-            count = 0
-            sample_count = 1
-            zeros = 0
-            zero_event = 0
-            known_channels = []
-            percent, data_return = self.get_percent_and_data(f)
+        percent = self.get_percent(file)
 
-            total_time = round(data_return.stop_timestamp - data_return.start_timestamp)+1
-            timestamps = np.arange(self.total_time_before, self.total_time_before + total_time)
-            self.total_time_before += total_time-1
+        start_time = self.get_attribute(file, "start_timestamp")
+        stop_time = self.get_attribute(file, "stop_timestamp")
+        total_time = round(stop_time - start_time+1)
+        timestamps = np.arange(self.total_time_before, self.total_time_before + total_time)
+        self.total_time_before += total_time-1
 
-            for i, msg in enumerate(data_return):
-                msg_channel = msg.channel
+        file_gen = self.open_file(file)
+        for msg in file_gen:
+            msg_channel = msg.channel
 
-                if msg_channel not in known_channels:
-                    blf_asc_datas.append(self.create_new_directory_for_new_channel(msg_channel, "bl", timestamps))
-                    known_channels.append(msg_channel)
-                progress += percent
+            if msg_channel not in known_channels:
+                blf_asc_datas.append(self.create_new_directory_for_new_channel(msg_channel, "bl", timestamps))
+                known_channels.append(msg_channel)
+            progress += percent
 
-                # Get the busload every second in percentage. It's not totaly accurate but the margin of error is around 1%.
-                if msg.timestamp >= data_return.start_timestamp + sample_count:
-                    # If there hasn't been a single message over a second then this part will fill in the data points up until the timestamp with zeros.
-                    # Else it will add the datapoints every second with the busload percentage.
-                    if msg.timestamp - (data_return.start_timestamp + sample_count) > 1:
-                        zero_event += 1
-                        zeros = round(msg.timestamp - data_return.start_timestamp) - (len(blf_asc_datas[0]["Data"]["Busload"])-1)
-                        sample_count += zeros
-                        for _ in range(zeros):
-                            blf_asc_datas[0]["Data"]["Busload"].append(0)
-                    else:
-                        blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
-                        sample_count += 1
-                    count = 0
-                count += 1
+            # Gets the busload every second in percentage.
+            # It's not totaly accurate but the margin of error is around 1%.
+            if msg.timestamp >= start_time + sample_count:
+                # If there hasn't been a single message over a second then this part will
+                # fill in the data points up until the timestamp with zeros.
+                # Else it will add the datapoints every second with the busload percentage.
+                if msg.timestamp - (start_time + sample_count) > 1:
+                    zero_event += 1
+                    zeros = round(msg.timestamp - start_time) - (len(blf_asc_datas[0]["Data"]["Busload"])-1)
+                    sample_count += zeros
+                    for _ in range(zeros):
+                        blf_asc_datas[0]["Data"]["Busload"].append(0)
+                else:
+                    blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
+                    sample_count += 1
+                count = 0
+            count += 1
 
-                # Prints the loading status in percentage.
-                last_print = self.progress_print(progress, last_print)
-            # Checks if it needs to add one more data point or not.
-            if len(blf_asc_datas[0]["Data"]["Time"]) > len(blf_asc_datas[0]["Data"]["Busload"]):
-                blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
-            print("Done ✔")
+            # Prints the loading status in percentage.
+            last_print = self.progress_print(progress, last_print)
+        # Checks if it needs to add one more data point or not.
+        if len(blf_asc_datas[0]["Data"]["Time"]) > len(blf_asc_datas[0]["Data"]["Busload"]):
+            blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
+        print("Done ✔")
 
         return blf_asc_datas
 
