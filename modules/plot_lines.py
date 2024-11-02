@@ -145,7 +145,7 @@ class PlotLines(LabelFrame):
         if self.files != False:
             # Creates new path frame in the line plot frame if there is none.
             if self.path_frame == []:
-                self.path_frame_create(append=False)
+                self.path_frame_create()
             # Goes through every file and puts it in the frame.
             for file in self.files:
                 current_row = len(self.file_path_array)
