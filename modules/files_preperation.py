@@ -339,7 +339,7 @@ class FilesPreparation:
             dfs = self.check_name(dfs, frame)
             for df in dfs:
                 self.dfs.append(df)
-        
+
         for df in self.dfs:
             df["Info"]["First_df"] = False
             df["Info"]["Last_df"] = False
@@ -402,13 +402,13 @@ class FilesPreparation:
                         df["Info"]["Name"] = f"Unknown Bus #{self.index_unknown}"
                         self.index_unknown += 1
             else:
-                 df["Info"]["Name"] = plot_name
+                df["Info"]["Name"] = plot_name
 
-            if channel == 0 or channel == 1 or channel == 10 or channel == 23 or channel == 24 or channel == 25 or channel == 26:
+            if channel in (0, 1, 10, 23, 24, 25, 26):
                 df["Info"]["isLEM"] = True
             else:
                 df["Info"]["isLEM"] = False
-            if channel == 2 or channel == 6 or channel == 7 or channel == 8 or channel == 9:
+            if channel in (2, 6, 7, 8, 9):
                 df["Info"]["isBL"] = True
             else:
                 df["Info"]["isBL"] = False

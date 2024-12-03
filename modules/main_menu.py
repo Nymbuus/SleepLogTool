@@ -27,9 +27,6 @@ class MainMenu(Tk):
         self.analyze_cancel_frame_create()
         self.plot_line_create()
 
-        # Prepares the frame with lists to be filled.
-        self.decide_bus.append(None)
-
 
     def main_window(self):
         """ Mainloop keeps the program running until exit. """
@@ -100,8 +97,7 @@ class MainMenu(Tk):
 
         self.plot_line_frames[selected_plot_line].file_path_setup(files,
                                                                   selected_plot_line,
-                                                                  self.decide_bus,
-                                                                  self.file_path_del_buttons)
+                                                                  self.decide_bus)
 
         self.update_analyze_button()
 
@@ -111,7 +107,8 @@ class MainMenu(Tk):
         plot_line_frame = PlotLines(self.browse_frame,
                                     self.plot_line_frames,
                                     self.analyze_button,
-                                    self.update_analyze_button)
+                                    self.update_analyze_button,
+                                    self.show_warning)
         self.plot_line_frames.append(plot_line_frame)
 
         self.update_optionmenu(plot_line_frame, choice="add")
@@ -193,7 +190,6 @@ class MainMenu(Tk):
             self.plot_line_frames[selected_plot_line].file_path_setup(file,
                                                                       selected_plot_line,
                                                                       self.decide_bus,
-                                                                      self.file_path_del_buttons,
                                                                       add="add")
 
         self.update_analyze_button()
