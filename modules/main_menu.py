@@ -16,7 +16,19 @@ class MainMenu(Tk):
     def __init__(self):
         """ Initializes the class. """
         super().__init__()
-        self.initialize_vars()
+        self.toggle_buttons = []
+        self.file_path_del_buttons = []
+        self.x = 0
+        self.plot_line_frames = []
+        self.optionsmenu_list = ["-"]
+        self.plot_line_del_buttons = []
+        self.line_plot_name_entries = []
+        self.decide_bus = []
+        self.toggling_frames = []
+        self.browse_field = Entry()
+        self.plot_line_select = StringVar()
+        self.skip_optionsmenu_list_update = True
+
         self.settings_frame = Frame(self)
         self.settings_frame.grid(row=0, column=1, sticky=tk.N)
         self.rtm = TimeMenu(self.settings_frame)
@@ -31,22 +43,6 @@ class MainMenu(Tk):
     def main_window(self):
         """ Mainloop keeps the program running until exit. """
         self.mainloop()
-
-
-    def initialize_vars(self):
-        """ Initializes the variables for the class. """
-        self.toggle_buttons = []
-        self.file_path_del_buttons = []
-        self.x = 0
-        self.plot_line_frames = []
-        self.optionsmenu_list = ["-"]
-        self.plot_line_del_buttons = []
-        self.line_plot_name_entries = []
-        self.decide_bus = []
-        self.toggling_frames = []
-        self.browse_field = Entry()
-        self.plot_line_select = StringVar()
-        self.skip_optionsmenu_list_update = True
 
 
     def browse_frame_create(self):
