@@ -35,7 +35,7 @@ class PlotLines(LabelFrame):
         len_line_plots = len(self.line_plot_frames)
         self.plot_line_name = f"Plot Line {len_line_plots+1}"
         self.config(text=self.plot_line_name, padx=10, pady=5)
-        self.grid(row=len_line_plots+2, column=0, columnspan=7, pady=10, sticky="w")
+        self.grid(row=len_line_plots+2, column=0, columnspan=6, pady=10, sticky="w")
 
         # Entry for specified line custom name.
         self.line_plot_name_label = Label(self, text="Plot line name:")

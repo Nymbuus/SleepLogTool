@@ -48,41 +48,41 @@ class MainMenu(Tk):
     def browse_frame_create(self):
         """ Creates the browse frame and adds all of it's contents. """
         self.browse_frame = LabelFrame(self, text="Choose blf/asc file(s)", padx=10, pady=5)
-        self.browse_frame.grid(row=0, rowspan=2, column=0, pady=10, padx=10, sticky=tk.N)
+        self.browse_frame.grid(row=0, rowspan=2, column=0, pady=10, padx=10, sticky="n")
 
         # Entry and button to add a file manually by entering path to it.
-        self.browse_field = Entry(self.browse_frame, width=140, borderwidth=5)
+        self.browse_field = Entry(self.browse_frame, width=130, borderwidth=5)
         self.browse_field.grid(row=0, column=0, columnspan=6, padx=(0, 10), pady=(0, 10))
         add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
-        add_button.grid(row=0, column=6, columnspan=2, padx=(2, 3), sticky=tk.N)
+        add_button.grid(row=0, column=6, columnspan=2, padx=(2, 3), sticky="n")
 
         # Buttons to add files in different ways with the file_path_setup function.
         choose_file_button = Button(self.browse_frame,
                                     text="Choose file(s)",
                                     command=lambda:self.add_file_path("file"))
-        choose_file_button.grid(row=1, column=0, sticky=tk.W)
+        choose_file_button.grid(row=1, column=0, sticky="w")
         choose_folder_button = Button(self.browse_frame,
                                       text="Choose folder(s)",
                                       command=lambda:self.add_file_path("folder"))
-        choose_folder_button.grid(row=1, column=1, padx=10)
+        choose_folder_button.grid(row=1, column=1, sticky="w")
         extract_lem_button = Button(self.browse_frame,
                                     text="Extract LEM(s)",
                                     command=lambda:self.add_file_path("extract LEM"))
-        extract_lem_button.grid(row=1, column=2,)
+        extract_lem_button.grid(row=1, column=2, sticky="w")
 
         # Button to add a parallel plot line and a drop down box to select wanted plot line.
         add_plot_line_button = Button(self.browse_frame,
                                       text="Add Plot Line",
                                       command=self.plot_line_create)
-        add_plot_line_button.grid(row=1, column=3, padx=(10, 30))
+        add_plot_line_button.grid(row=1, column=3, sticky="w")
 
         # Updates the dropdownbox with the new line plot.
         drop_down_box_text = Label(self.browse_frame, text="Select Line Plot to add files to:")
-        drop_down_box_text.grid(row=1, column=4, sticky=tk.E)
+        drop_down_box_text.grid(row=1, column=4, sticky="e")
         self.drop_down_box = OptionMenu(self.browse_frame,
                                         self.plot_line_select,
                                         *self.optionsmenu_list)
-        self.drop_down_box.grid(row=1, column=5, padx=(0, 160), sticky=tk.W)
+        self.drop_down_box.grid(row=1, column=5, sticky="w")
 
 
     def add_file_path(self, choice):
@@ -115,10 +115,10 @@ class MainMenu(Tk):
                                text="X",
                                command=lambda i=len(self.plot_line_frames)-1:self.line_plot_del(i))
         plot_line_del_b.grid(row=len(self.plot_line_frames)+1,
-                                  column=7,
+                                  column=6,
                                   padx=(10, 0),
                                   pady=20,
-                                  sticky=tk.NW)
+                                  sticky="nw")
         self.plot_line_del_buttons.append(plot_line_del_b)
 
 
