@@ -1,16 +1,16 @@
-from tkinter import *
+""" For GUI """
+from tkinter import LabelFrame, Label, Entry, IntVar, Radiobutton
 
 TENTH_SECOND = 6000
 SECOND = 60
 
 class TimeMenu(LabelFrame):
-    """ Menu for time settings. """
-    """ How much time to remove from start and end of the file. """
-    """ What time unit to choose (seconds, minutes, hours). """
+    """ Menu for time settings.
+        How much time to remove from start and end of the file.
+        What time unit to choose (seconds, minutes, hours). """
 
     def __init__(self, parent):
         super().__init__(parent)
-        """ Initializes the class. """
         self.dfs = None
         self.filename = None
         self.warning_label = None
@@ -25,25 +25,31 @@ class TimeMenu(LabelFrame):
 
         # Remove time from start part.
         start_time_label = Label(self, text="Minutes to remove from start:")
-        start_time_label.grid(row=0, column=0, columnspan=3, sticky=W)
+        start_time_label.grid(row=0, column=0, columnspan=3, sticky="w")
         self.start_time_entry = Entry(self, width=40, borderwidth=5)
         self.start_time_entry.grid(row=1, column=0, columnspan=3)
 
         # Remove time from end part.
         end_time_label = Label(self, text="Minutes to remove from end:")
-        end_time_label.grid(row=2, column=0, columnspan=3, sticky=W)
+        end_time_label.grid(row=2, column=0, columnspan=3, sticky="w")
         self.end_time_entry = Entry(self, width=40, borderwidth=5)
         self.end_time_entry.grid(row=3, column=0, columnspan=3)
 
         # Selection of time unit part.
         self.time_unit_selected = IntVar(value=60)
         self.time_unit_label = Label(self, text="Choose time unit for graph:")
-        self.time_unit_label.grid(row=4, column=0, columnspan=3, sticky=W)
-        self.time_unit_radiobutton1 = Radiobutton(self, text="Seconds", variable=self.time_unit_selected, value=1)
+        self.time_unit_label.grid(row=4, column=0, columnspan=3, sticky="w")
+        self.time_unit_radiobutton1 = Radiobutton(self,
+                                                  text="Seconds",
+                                                  variable=self.time_unit_selected, value=1)
         self.time_unit_radiobutton1.grid(row=5, column=0)
-        self.time_unit_radiobutton2 = Radiobutton(self, text="Minutes", variable=self.time_unit_selected, value=60)
+        self.time_unit_radiobutton2 = Radiobutton(self,
+                                                  text="Minutes",
+                                                  variable=self.time_unit_selected, value=60)
         self.time_unit_radiobutton2.grid(row=5, column=1)
-        self.time_unit_radiobutton3 = Radiobutton(self, text="Hours", variable=self.time_unit_selected, value=3600)
+        self.time_unit_radiobutton3 = Radiobutton(self,
+                                                  text="Hours",
+                                                  variable=self.time_unit_selected, value=3600)
         self.time_unit_radiobutton3.grid(row=5, column=2)
 
 
@@ -52,11 +58,13 @@ class TimeMenu(LabelFrame):
         self.warning_label = Label(self, text=warning_text)
         self.warning_label.grid(row=6, column=0, pady=(0, 10))
 
-    
+
     def set_df(self, df):
-        """ Removes time from start and end of graph. """
-        """ This will not remove time from every file in the graph, just the ones in the start and end. """
-        # If either remove start or end time entry is empty, remove time is set to 0 for that variable.
+        """ Removes time from start and end of graph.
+            This will not remove time from every file in the graph,
+            just the ones in the start and end. """
+        # If either remove start or end time entry is empty,
+        # remove time is set to 0 for that variable.
         if self.start_time_entry.get() == "":
             remove_start_time = 0
         else:
@@ -75,21 +83,22 @@ class TimeMenu(LabelFrame):
                 remove_start_time = remove_start_time * SECOND
                 remove_end_time = remove_end_time  * SECOND
 
-            # Checks if the numbers given in the time entries are too small (negative) or too big compared to the dataframe time.
+            # Checks if the numbers given in the time entries are too small (negative)
+            # or too big compared to the dataframe time.
             if 0 <= remove_start_time < len(df["df"])+12:
                 if 0 <= remove_end_time < len(df["df"])+12-remove_start_time:
 
-                    # If the number are accected the warning label is deleted if there was one displayed.
+                    # If the number is accepted the warning label is deleted if one was displayed.
                     if self.warning_label:
                         self.warning_label.destroy()
                     return remove_start_time, remove_end_time
-                elif remove_end_time < 0:
+                if remove_end_time < 0:
                     self.warning("End time too low value. Try again.")
-                elif remove_start_time >= len(df["Data"])+12-remove_start_time:
+                if remove_start_time >= len(df["Data"])+12-remove_start_time:
                     self.warning("End time too high value. Try again.")
-            elif remove_start_time < 0:
+            if remove_start_time < 0:
                 self.warning("Start time too low value. Try again.")
-            elif remove_start_time >= len(df["Data"])+12:
+            if remove_start_time >= len(df["Data"])+12:
                 self.warning("Start time too high value. Try again.")
         except ValueError as err:
             print(f"ValueError: {err}. Try again.")

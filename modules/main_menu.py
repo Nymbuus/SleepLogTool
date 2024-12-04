@@ -17,7 +17,6 @@ class MainMenu(Tk):
         """ Initializes the class. """
         super().__init__()
         self.initialize_vars()
-        self.fp = FilesPreparation(self.show_warning)
         self.settings_frame = Frame(self)
         self.settings_frame.grid(row=0, column=1, sticky=tk.N)
         self.rtm = TimeMenu(self.settings_frame)
@@ -26,6 +25,7 @@ class MainMenu(Tk):
         self.browse_frame_create()
         self.analyze_cancel_frame_create()
         self.plot_line_create()
+        self.fp = FilesPreparation(self.show_warning, self.plot_line_frames)
 
 
     def main_window(self):
