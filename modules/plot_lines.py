@@ -93,6 +93,7 @@ class PlotLines(LabelFrame):
 
     def check_bus(self, file, frame_index, channel_get):
         """ Checks if the file is of the same bus as the other(s) in the path_frame. """
+        file_match = False
         with open(file, 'rb') as f:
             name = f.name
             if name.endswith(".blf"):
@@ -101,21 +102,23 @@ class PlotLines(LabelFrame):
                 channel_get = can.ASCReader(f)
             for msg in channel_get:
                 if msg.channel in (0, 10, 23, 24, 25, 26):
-                    self.bus_ok(frame_index, "LEM")
+                    file_match = self.bus_ok(frame_index, "LEM")
                 else:
-                    self.bus_ok(frame_index, msg.channel)
+                    file_match = self.bus_ok(frame_index, msg.channel)
+                break
         f.close()
 
-    # NOT TESTED THESE LINES!!!!!!!!!!!
+        return file_match
+
     def bus_ok(self, frame_index, channel):
-        """ Prints ok bus or not depending channel and decide bus matches. """
+        """ Prints ok bus or not depending channel and decide bus matches.
+            Will also return True or False for the file loop in file_path_setup func. """
         if self.decide_bus[frame_index] == channel:
             print("same bus OK")
-            return
-        else:
-            print("Not same bus Not OK")
-            self.show_warning_func("Not the same bus-type as in the line plot")
-            return
+            return True
+        print("Not same bus Not OK")
+        self.show_warning_func("Not the same bus-type as in the line plot")
+        return False
 
 
 
@@ -148,7 +151,6 @@ class PlotLines(LabelFrame):
 
         # Checks if it should add file from the browse entry.
         if add is None:
-            # Calls function to get file(s) from the explorer.
             if self.files:
                 # If there are no file_paths in the frame, reset what bus can be add to it.
                 if len(self.file_path_array) == 0:
@@ -159,7 +161,9 @@ class PlotLines(LabelFrame):
                 # Have to iterate the messages because there is no other way to get the bus info.
                 for file in self.files:
                     if self.decide_bus[frame_index] is not None:
-                        self.check_bus(file, frame_index, channel_get)
+                        file_match = self.check_bus(file, frame_index, channel_get)
+                        if file_match is False:
+                            return
                     else:
                         self.set_bus_plot_line(frame_index, channel_get)
             else:
