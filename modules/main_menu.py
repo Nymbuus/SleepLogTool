@@ -38,6 +38,7 @@ class MainMenu(Tk):
         self.analyze_cancel_frame_create()
         self.plot_line_create()
         self.fp = FilesPreparation(self.show_warning, self.plot_line_frames)
+        self.resizable(width=False, height=False)
 
 
     def main_window(self):

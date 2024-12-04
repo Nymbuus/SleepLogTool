@@ -301,6 +301,7 @@ class FilesPreparation:
 
             # Prints the loading status in percentage.
             last_print = self.progress_print(progress, last_print)
+
         # Checks if it needs to add one more data point or not.
         if len(blf_asc_datas[0]["Data"]["Time"]) > len(blf_asc_datas[0]["Data"]["Busload"]):
             blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
