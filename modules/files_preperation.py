@@ -320,9 +320,9 @@ class FilesPreparation:
             raise TypeError("remove_end_time variable was not a integer or float!")
 
         if remove_start_time != 0:
-            df = df["df"][int(remove_start_time):]
+            df["df"] = df["df"][int(remove_start_time):]
         if remove_end_time != 0:
-            df = df["df"][:-int(remove_end_time)]
+            df["df"] = df["df"][:-int(remove_end_time)]
 
         return df
 
