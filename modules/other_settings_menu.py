@@ -38,7 +38,7 @@ class OtherSettingsMenu(LabelFrame):
                                           onvalue=True,
                                           offvalue=False,
                                           padx=10)
-        self.bl_checkbutton.grid(row=1, column=0, padx=(0, 179), sticky="w")
+        self.bl_checkbutton.grid(row=1, column=0, padx=(0, 250), sticky="w")
 
 
     def get_choose_graph(self):
