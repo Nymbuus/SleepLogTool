@@ -53,7 +53,7 @@ class MainMenu(Tk):
 
         # Entry and button to add a file manually by entering path to it.
         self.browse_field = Entry(self.browse_frame, width=130, borderwidth=5)
-        self.browse_field.grid(row=0, column=0, columnspan=6, padx=(0, 10), pady=(0, 10))
+        self.browse_field.grid(row=0, column=0, columnspan=6, padx=(0, 10), pady=(0, 10), sticky="w")
         add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
         add_button.grid(row=0, column=6, columnspan=2, padx=(2, 3), sticky="n")
 

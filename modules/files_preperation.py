@@ -6,6 +6,7 @@ import can
 import pandas as pd
 import numpy as np
 
+LEM_CHANNELS = (0, 1, 10, 23, 24, 25, 26)
 
 class FilesPreparation:
     """ Preps the files before displaying them. """
@@ -137,10 +138,12 @@ class FilesPreparation:
             # Checks what CANbus and calls corresponding function to prep it.
             # Also checks if LEM or BL-graph are selected in the settings.
             blf_asc_datas = None
-            if channel in (0, 1, 10, 23, 24, 25, 26) and lem_graph:
+            if channel in LEM_CHANNELS and lem_graph:
                 blf_asc_datas = self.lem_prep(file, time_add)
-            elif bl_graph:
+            elif channel not in LEM_CHANNELS and bl_graph:
                 blf_asc_datas = self.bl_prep(file)
+            else:
+                continue
 
             # Loads data into pandas dataframe.
             for j, blf_asc_data in enumerate(blf_asc_datas):

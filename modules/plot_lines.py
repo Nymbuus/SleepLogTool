@@ -2,6 +2,8 @@
 from tkinter import LabelFrame, Label, Entry, BooleanVar, Checkbutton, Frame, Button
 import can
 
+LEM_CHANNELS = (0, 1, 10, 23, 24, 25, 26)
+
 class PlotLines(LabelFrame):
     """ Handles the graphic design and logic of the Plot line frames in the main menu. """
 
@@ -101,7 +103,7 @@ class PlotLines(LabelFrame):
             elif name.endswith(".asc"):
                 channel_get = can.ASCReader(f)
             for msg in channel_get:
-                if msg.channel in (0, 10, 23, 24, 25, 26):
+                if msg.channel in LEM_CHANNELS:
                     file_match = self.bus_ok(frame_index, "LEM")
                 else:
                     file_match = self.bus_ok(frame_index, msg.channel)
@@ -132,7 +134,7 @@ class PlotLines(LabelFrame):
             elif name.endswith(".asc"):
                 channel_get = can.ASCReader(f)
             for msg in channel_get:
-                if msg.channel in (0, 10, 23, 24, 25, 26):
+                if msg.channel in LEM_CHANNELS:
                     self.decide_bus[frame_index] = "LEM"
                 else:
                     self.decide_bus[frame_index] = msg.channel
@@ -153,8 +155,13 @@ class PlotLines(LabelFrame):
         if add is None:
             if self.files:
                 # If there are no file_paths in the frame, reset what bus can be add to it.
-                if len(self.file_path_array) == 0:
+                if frame_index + 1 > len(self.decide_bus):
                     self.decide_bus.append(None)
+
+                # if len(self.file_path_array) == 0 and self.decide_bus[frame_index]:
+                #         self.decide_bus.append(None)
+                # else:
+                #     self.decide_bus.append(None)
 
                 channel_get = None
                 # Gets the bus from the first file and that decides what buses goes into the frame
@@ -181,22 +188,22 @@ class PlotLines(LabelFrame):
                 current_row = len(self.file_path_array)
 
                 # Entry with the file path.
-                e = Entry(self.path_frame, width=128, borderwidth=5)
+                e = Entry(self.path_frame, width=117, borderwidth=5)
                 e.grid(row=current_row, column=0, padx=(0, 10), pady=5, sticky="nw")
                 e.insert(0, file)
                 self.file_path_array.append(e)
 
                 # Delete button for the file path.
                 b = Button(self.path_frame, text="X", padx=5,
-                           command=lambda x=len(self.file_path_array)-1:
+                           command=lambda x=len(self.file_path_array)-1, y=frame_index:
                            self.del_path(self.file_path_array[x],
                                          self.file_path_del_buttons[x],
-                                         x))
+                                         x, y))
                 b.grid(row=current_row, column=1)
                 self.file_path_del_buttons.append(b)
 
 
-    def del_path(self, entry, button, index):
+    def del_path(self, entry, button, index, frame_index):
         """ Deletes the specified file path and then updates everything associated with it. """
         entry.destroy()
         button.destroy()
@@ -205,13 +212,13 @@ class PlotLines(LabelFrame):
         if len(self.file_path_array) == 0:
             self.path_frame.destroy()
             self.path_frame = []
-            self.decide_bus = None
+            self.decide_bus[frame_index] = None
 
         for i in range(len(self.file_path_array)):
-            self.file_path_del_buttons[i].config(command=lambda x=i:
+            self.file_path_del_buttons[i].config(command=lambda x=i, y=frame_index:
                                                  self.del_path(self.file_path_array[x],
                                                                self.file_path_del_buttons[x],
-                                                               x))
+                                                               x, y))
         self.analyze_button_func()
 
         # Reconfigure rows for the filepaths and delete buttons.
