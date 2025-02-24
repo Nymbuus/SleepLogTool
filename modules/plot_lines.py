@@ -93,22 +93,31 @@ class PlotLines(LabelFrame):
             self.path_frame.grid(row=2, column=0, columnspan=3, padx=(20, 0), sticky="w")
 
 
-    def check_bus(self, file, frame_index, channel_get):
+    def yeild_message(self, file):
+        """ Creates a file generator to yield the messages in it. """
+        mode = "rb" if file.endswith(".blf") else "r"
+        with open(file, mode) as f:
+            open_file = can.BLFReader(f) if file.endswith(".blf") else can.ASCReader(f)
+            yield from open_file
+
+
+    def get_channel(self, search_path):
+        """ Gets the channel from the file. """
+        file_gen = self.yeild_message(search_path)
+        for msg in file_gen:
+            return msg.channel
+
+
+    def check_bus(self, file, frame_index):
         """ Checks if the file is of the same bus as the other(s) in the path_frame. """
         file_match = False
-        with open(file, 'rb') as f:
-            name = f.name
-            if name.endswith(".blf"):
-                channel_get = can.BLFReader(f)
-            elif name.endswith(".asc"):
-                channel_get = can.ASCReader(f)
-            for msg in channel_get:
-                if msg.channel in LEM_CHANNELS:
-                    file_match = self.bus_ok(frame_index, "LEM")
-                else:
-                    file_match = self.bus_ok(frame_index, msg.channel)
-                break
-        f.close()
+
+        channel = self.get_channel(file)
+
+        if channel in LEM_CHANNELS:
+            file_match = self.bus_ok(frame_index, "LEM")
+        else:
+            file_match = self.bus_ok(frame_index, channel)
 
         return file_match
 
@@ -123,23 +132,16 @@ class PlotLines(LabelFrame):
         return False
 
 
-
-    def set_bus_plot_line(self, frame_index, channel_get):
+    def set_bus_plot_line(self, frame_index):
         """ Takes the first file in self.files and get the channel from it
             and sets it as the decided bus for the plot line. """
-        with open(self.files[0], 'rb') as f:
-            name = f.name
-            if name.endswith(".blf"):
-                channel_get = can.BLFReader(f)
-            elif name.endswith(".asc"):
-                channel_get = can.ASCReader(f)
-            for msg in channel_get:
-                if msg.channel in LEM_CHANNELS:
-                    self.decide_bus[frame_index] = "LEM"
-                else:
-                    self.decide_bus[frame_index] = msg.channel
-                break
-        f.close()
+
+        channel = self.get_channel(self.files[0])
+
+        if channel in LEM_CHANNELS:
+            self.decide_bus[frame_index] = "LEM"
+        else:
+            self.decide_bus[frame_index] = channel
 
 
     def file_path_setup(self, files, frame_index, decide_bus, add=None):
@@ -158,21 +160,15 @@ class PlotLines(LabelFrame):
                 if frame_index + 1 > len(self.decide_bus):
                     self.decide_bus.append(None)
 
-                # if len(self.file_path_array) == 0 and self.decide_bus[frame_index]:
-                #         self.decide_bus.append(None)
-                # else:
-                #     self.decide_bus.append(None)
-
-                channel_get = None
                 # Gets the bus from the first file and that decides what buses goes into the frame
                 # Have to iterate the messages because there is no other way to get the bus info.
                 for file in self.files:
                     if self.decide_bus[frame_index] is not None:
-                        file_match = self.check_bus(file, frame_index, channel_get)
+                        file_match = self.check_bus(file, frame_index)
                         if file_match is False:
                             return
                     else:
-                        self.set_bus_plot_line(frame_index, channel_get)
+                        self.set_bus_plot_line(frame_index)
             else:
                 return
         elif add == "add":

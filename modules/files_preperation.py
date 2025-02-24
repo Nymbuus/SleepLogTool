@@ -352,6 +352,9 @@ class FilesPreparation:
             for df in dfs:
                 self.dfs.append(df)
 
+        # When reading ASCII files and it contains 2 or more files self.plot_line_frames[i]
+        # will look in the next frame for invert lem which it shouldn't!
+        # It should look in the same frame in that case!
         for i, df in enumerate(self.dfs):
             df["Info"]["First_df"] = False
             df["Info"]["Last_df"] = False
