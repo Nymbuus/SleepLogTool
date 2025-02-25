@@ -350,18 +350,13 @@ class FilesPreparation:
             dfs = self.convert_to_df(blf_asc_files, lem_graph, bl_graph)
             dfs = self.check_name(dfs, frame)
             for df in dfs:
+                df["Info"]["First_df"] = False
+                df["Info"]["Last_df"] = False
+                df["Info"]["Skip"] = False
+                df["Info"]["LEM_graph"] = lem_graph
+                df["Info"]["BL_graph"] = bl_graph
+                df["Info"]["LEM_invert"] = frame.invert_lem.get()
                 self.dfs.append(df)
-
-        # When reading ASCII files and it contains 2 or more files self.plot_line_frames[i]
-        # will look in the next frame for invert lem which it shouldn't!
-        # It should look in the same frame in that case!
-        for i, df in enumerate(self.dfs):
-            df["Info"]["First_df"] = False
-            df["Info"]["Last_df"] = False
-            df["Info"]["Skip"] = False
-            df["Info"]["LEM_graph"] = lem_graph
-            df["Info"]["BL_graph"] = bl_graph
-            df["Info"]["LEM_invert"] = self.plot_line_frames[i].invert_lem.get()
 
         # Checks if it's the first or/and last dataframe.
         self.dfs[0]["Info"]["First_df"] = True
