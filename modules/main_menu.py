@@ -31,7 +31,7 @@ class MainMenu(Tk):
 
         self.settings_frame = Frame(self)
         self.settings_frame.grid(row=0, column=1, sticky=tk.N)
-        self.rtm = TimeMenu(self.settings_frame)
+        self.rtm = TimeMenu(self.settings_frame, self.show_warning)
         self.osm = OtherSettingsMenu(self.settings_frame)
         self.pag = PlotAndGraph()
         self.browse_frame_create()
@@ -221,6 +221,8 @@ class MainMenu(Tk):
                 self.pag.plotting_graph(dfs, self.rtm.time_unit_selected.get())
                 return
             remove_start_time, remove_end_time = self.rtm.set_df(df)
+            if remove_start_time is None and remove_end_time is None:
+                return
 
             # Takes the dataframe and calls the function to remove the specified time,
             # then plots the graph.

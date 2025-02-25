@@ -9,8 +9,9 @@ class TimeMenu(LabelFrame):
         How much time to remove from start and end of the file.
         What time unit to choose (seconds, minutes, hours). """
 
-    def __init__(self, parent):
+    def __init__(self, parent, show_warning_func):
         super().__init__(parent)
+        self.show_warning = show_warning_func
         self.dfs = None
         self.filename = None
         self.warning_label = None
@@ -53,12 +54,6 @@ class TimeMenu(LabelFrame):
         self.time_unit_radiobutton3.grid(row=5, column=2)
 
 
-    def warning(self, warning_text):
-        """ Displays the warning text when you put in wrong type of value. """
-        self.warning_label = Label(self, text=warning_text)
-        self.warning_label.grid(row=6, column=0, pady=(0, 10))
-
-
     def set_df(self, df):
         """ Removes time from start and end of graph.
             This will not remove time from every file in the graph,
@@ -93,12 +88,13 @@ class TimeMenu(LabelFrame):
                         self.warning_label.destroy()
                     return remove_start_time, remove_end_time
                 if remove_end_time < 0:
-                    self.warning("End time too low value. Try again.")
-                if remove_start_time >= len(df["Data"])+12-remove_start_time:
-                    self.warning("End time too high value. Try again.")
+                    self.show_warning("End time too low value. Try again.")
+                if remove_start_time >= len(df["df"])+12-remove_start_time:
+                    self.show_warning("End time too high value. Try again.")
             if remove_start_time < 0:
-                self.warning("Start time too low value. Try again.")
-            if remove_start_time >= len(df["Data"])+12:
-                self.warning("Start time too high value. Try again.")
+                self.show_warning("Start time too low value. Try again.")
+            if remove_start_time >= len(df["df"])+12:
+                self.show_warning("Start time too high value. Try again.")
         except ValueError as err:
             print(f"ValueError: {err}. Try again.")
+        return None, None
