@@ -9,6 +9,7 @@ from modules.time_menu import TimeMenu
 from modules.other_settings_menu import OtherSettingsMenu
 from modules.plot_lines import PlotLines
 from modules.plot_and_graph import PlotAndGraph
+from modules.bus_selection_menu import BusSelectionMenu
 
 class MainMenu(Tk):
     """ Handles the design and functionality of the menu. """
@@ -62,28 +63,29 @@ class MainMenu(Tk):
                                     text="Choose file(s)",
                                     command=lambda:self.add_file_path("file"))
         choose_file_button.grid(row=1, column=0, sticky="w")
-        choose_folder_button = Button(self.browse_frame,
-                                      text="Choose folder(s)",
-                                      command=lambda:self.add_file_path("folder"))
-        choose_folder_button.grid(row=1, column=1, sticky="w")
         extract_lem_button = Button(self.browse_frame,
-                                    text="Extract LEM(s)",
-                                    command=lambda:self.add_file_path("extract LEM"))
-        extract_lem_button.grid(row=1, column=2, sticky="w")
+                                    text="Extract Bus",
+                                    command=self.bus_selection)
+        extract_lem_button.grid(row=1, column=1, sticky="w")
 
         # Button to add a parallel plot line and a drop down box to select wanted plot line.
         add_plot_line_button = Button(self.browse_frame,
                                       text="Add Plot Line",
                                       command=self.plot_line_create)
-        add_plot_line_button.grid(row=1, column=3, sticky="w")
+        add_plot_line_button.grid(row=1, column=2, sticky="w")
 
         # Updates the dropdownbox with the new line plot.
         drop_down_box_text = Label(self.browse_frame, text="Select Line Plot to add files to:")
-        drop_down_box_text.grid(row=1, column=4, sticky="e")
+        drop_down_box_text.grid(row=1, column=3, sticky="e")
         self.drop_down_box = OptionMenu(self.browse_frame,
                                         self.plot_line_select,
                                         *self.optionsmenu_list)
-        self.drop_down_box.grid(row=1, column=5, sticky="w")
+        self.drop_down_box.grid(row=1, column=4, sticky="w")
+
+
+    def bus_selection(self):
+        self.bsm = BusSelectionMenu(self)
+        self.add_file_path("extract bus")
 
 
     def add_file_path(self, choice):
@@ -159,10 +161,10 @@ class MainMenu(Tk):
     def update_drop_down_box(self):
         """ Updates the drop down box containing the plot lines. """
         if self.plot_line_frames:
-            self.drop_down_box.grid_configure(padx=(0, 160))
+            self.drop_down_box.grid_configure(padx=(0, 240))
         else:
             self.plot_line_select.set("-")
-            self.drop_down_box.grid_configure(padx=(0, 210))
+            self.drop_down_box.grid_configure(padx=(0, 290))
 
 
     def update_plot_line_frames(self):

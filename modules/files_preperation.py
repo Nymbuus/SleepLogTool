@@ -49,44 +49,34 @@ class FilesPreparation:
                         return file_list
                     print("Files are not blf/asc file, try again.")
 
-            # If Choose folder(s) was chosen.
-            case "folder":
-                # Will ask the user to chose folder(s). If user cancel out it will stop.
-                while True:
-                    folder_list = fd.askdirectory(title="Choose folder(s) with blf/asc files")
-                    file_list = []
-                    for root, _, files in os.walk(folder_list):
+            # If Extract Bus was chosen.
+            case "extract bus":
+                file_list = self.extract_bus()
+                return file_list
+    
+
+    def extract_bus(self):
+        while True:
+            file_list = []
+            folder_list = []
+            folder_list.append(fd.askdirectory(title="Choose folder(s) with blf/asc files"))
+            # Takes the folder(s) chosen and loops through every folder.
+            # Will only extract LEM files on it's way.
+            while True:
+                # Loops through folder(s) chosen by user.
+                for directory in folder_list:
+                    # Loops through the folder and looks up root path and files.
+                    for root, _, files in os.walk(directory):
+                        root = root.replace("\\", "/")
+                        # Loops through all files and creates search path to file.
                         for file in files:
-                            file_list.append(os.path.join(root,file))
+                            search_path = root + "/" + file
+                            # Checks if it's a LEM file and adds it to the file list.
+                            channel = self.get_channel(search_path)
+                            if channel in (0, 10, 23, 24, 25, 26):
+                                file_list.append(os.path.join(search_path))
+                return file_list
 
-                    if all(file.lower().endswith('.blf') or
-                           file.lower().endswith(".asc")
-                           for file in file_list):
-                        return file_list
-                    print("File(s) in director(ies) are not blf/asc files, try again.")
-
-            # If Extract LEM(s) was chosen.
-            case "extract LEM":
-                while True:
-                    file_list = []
-                    folder_list = []
-                    folder_list.append(fd.askdirectory(title="Choose folder(s) with blf/asc files"))
-                    # Takes the folder(s) chosen and loops through every folder.
-                    # Will only extract LEM files on it's way.
-                    while True:
-                        # Loops through folder(s) chosen by user.
-                        for directory in folder_list:
-                            # Loops through the folder and looks up root path and files.
-                            for root, _, files in os.walk(directory):
-                                root = root.replace("\\", "/")
-                                # Loops through all files and creates search path to file.
-                                for file in files:
-                                    search_path = root + "/" + file
-                                    # Checks if it's a LEM file and adds it to the file list.
-                                    channel = self.get_channel(search_path)
-                                    if channel in (0, 10, 23, 24, 25, 26):
-                                        file_list.append(os.path.join(search_path))
-                        return file_list
 
 
     def yeild_message(self, file):
