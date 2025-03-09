@@ -95,12 +95,16 @@ class MainMenu(Tk):
             self.plot_line_frames[selected_plot_line].file_path_setup(files)
         elif choice == "extract bus":
             busses = self.fp.file_explorer(choice, chosen_busses)
+            frame_counter = 0
             for files in busses.values():
                 if files:
-                    self.plot_line_create()
-                    selected_plot_line = len(self.plot_line_frames)-1
-                    self.plot_line_frames[-1].file_path_setup(files)
-
+                    try:
+                        if self.plot_line_frames[frame_counter].file_path_array == []:
+                            self.plot_line_frames[frame_counter].file_path_setup(files)
+                    except:
+                        self.plot_line_create()
+                        self.plot_line_frames[frame_counter].file_path_setup(files)
+                    frame_counter += 1
 
         self.update_analyze_button()
 

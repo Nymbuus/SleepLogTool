@@ -10,3 +10,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# SCREENSHOT PÅ GRAF ATT TIDEN ÄR FEL PÅ STRÖMEN!!!!!!!

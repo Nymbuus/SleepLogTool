@@ -61,3 +61,4 @@ class BusSelectionMenu(Toplevel):
                 self.buses_checked.append(bus)
         
         self.add_file_path("extract bus", self.buses_checked)
+        self.destroy()
