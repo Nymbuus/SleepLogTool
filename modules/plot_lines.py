@@ -55,6 +55,7 @@ class PlotLines(LabelFrame):
 
         self.toggling_frame_create()
         self.path_frame_create()
+        self.set_bus_plot_line()
         self.text_to_set = self.plot_line_name
 
 
@@ -108,23 +109,23 @@ class PlotLines(LabelFrame):
             return msg.channel
 
 
-    def check_bus(self, file, frame_index):
+    def check_bus(self, file):
         """ Checks if the file is of the same bus as the other(s) in the path_frame. """
         file_match = False
 
         channel = self.get_channel(file)
 
         if channel in LEM_CHANNELS:
-            file_match = self.bus_ok(frame_index, "LEM")
+            file_match = self.bus_ok("LEM")
         else:
-            file_match = self.bus_ok(frame_index, channel)
+            file_match = self.bus_ok(channel)
 
         return file_match
 
-    def bus_ok(self, frame_index, channel):
+    def bus_ok(self, channel):
         """ Prints ok bus or not depending channel and decide bus matches.
             Will also return True or False for the file loop in file_path_setup func. """
-        if self.decide_bus[frame_index] == channel:
+        if self.decide_bus == channel:
             print("same bus OK")
             return True
         print("Not same bus Not OK")
@@ -132,43 +133,35 @@ class PlotLines(LabelFrame):
         return False
 
 
-    def set_bus_plot_line(self, frame_index):
+    def set_bus_plot_line(self):
         """ Takes the first file in self.files and get the channel from it
             and sets it as the decided bus for the plot line. """
-
-        channel = self.get_channel(self.files[0])
-
-        if channel in LEM_CHANNELS:
-            self.decide_bus[frame_index] = "LEM"
+        if self.files:
+            channel = self.get_channel(self.files[0])
+            if channel in LEM_CHANNELS:
+                self.decide_bus = "LEM"
+            else:
+                self.decide_bus = channel
         else:
-            self.decide_bus[frame_index] = channel
+            self.decide_bus = None
 
 
-    def file_path_setup(self, files, frame_index, decide_bus, add=None):
+    def file_path_setup(self, files, add=None):
         """ displayes the file paths in the main window. """
-        self.decide_bus = decide_bus
         self.files = files
-
-        # Checks if there are any line plot frames to add file path to.
-        if len(self.line_plot_frames) == 0:
-            return
 
         # Checks if it should add file from the browse entry.
         if add is None:
             if self.files:
-                # If there are no file_paths in the frame, reset what bus can be add to it.
-                if frame_index + 1 > len(self.decide_bus):
-                    self.decide_bus.append(None)
-
                 # Gets the bus from the first file and that decides what buses goes into the frame
                 # Have to iterate the messages because there is no other way to get the bus info.
                 for file in self.files:
-                    if self.decide_bus[frame_index] is not None:
-                        file_match = self.check_bus(file, frame_index)
+                    if self.decide_bus is not None:
+                        file_match = self.check_bus(file)
                         if file_match is False:
                             return
                     else:
-                        self.set_bus_plot_line(frame_index)
+                        self.set_bus_plot_line()
             else:
                 return
         elif add == "add":
@@ -176,9 +169,6 @@ class PlotLines(LabelFrame):
 
         # Checks if there was any files selected.
         if self.files is not False:
-            # Creates new path frame in the line plot frame if there is none.
-            if self.path_frame == []:
-                self.path_frame_create()
             # Goes through every file and puts it in the frame.
             for file in self.files:
                 current_row = len(self.file_path_array)
@@ -191,15 +181,15 @@ class PlotLines(LabelFrame):
 
                 # Delete button for the file path.
                 b = Button(self.path_frame, text="X", padx=5,
-                           command=lambda x=len(self.file_path_array)-1, y=frame_index:
+                           command=lambda x=len(self.file_path_array)-1:
                            self.del_path(self.file_path_array[x],
                                          self.file_path_del_buttons[x],
-                                         x, y))
+                                         x))
                 b.grid(row=current_row, column=1)
                 self.file_path_del_buttons.append(b)
 
 
-    def del_path(self, entry, button, index, frame_index):
+    def del_path(self, entry, button, index):
         """ Deletes the specified file path and then updates everything associated with it. """
         entry.destroy()
         button.destroy()
@@ -208,13 +198,13 @@ class PlotLines(LabelFrame):
         if len(self.file_path_array) == 0:
             self.path_frame.destroy()
             self.path_frame = []
-            self.decide_bus[frame_index] = None
+            self.set_bus_plot_line()
 
         for i in range(len(self.file_path_array)):
-            self.file_path_del_buttons[i].config(command=lambda x=i, y=frame_index:
+            self.file_path_del_buttons[i].config(command=lambda x=i:
                                                  self.del_path(self.file_path_array[x],
                                                                self.file_path_del_buttons[x],
-                                                               x, y))
+                                                               x))
         self.analyze_button_func()
 
         # Reconfigure rows for the filepaths and delete buttons.

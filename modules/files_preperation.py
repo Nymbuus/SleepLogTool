@@ -32,7 +32,7 @@ class FilesPreparation:
         self.index_unknown = 1
 
 
-    def file_explorer(self, choice):
+    def file_explorer(self, choice, buses=None):
         """ Lets the user chose files to analyze. """
         # Checks what button the user pressed to act accordingly.
         match choice:
@@ -51,30 +51,54 @@ class FilesPreparation:
 
             # If Extract Bus was chosen.
             case "extract bus":
-                file_list = self.extract_bus()
+                file_list = self.extract_bus(buses)
                 return file_list
     
 
-    def extract_bus(self):
+    def extract_bus(self, buses):
         while True:
-            file_list = []
-            folder_list = []
-            folder_list.append(fd.askdirectory(title="Choose folder(s) with blf/asc files"))
+            file_list = {"Lem":[],
+                         "Body":[],
+                         "Front1":[],
+                         "Front3":[],
+                         "Mid1":[],
+                         "Rear1":[]}
+            dir_list = []
+            dir_list.append(fd.askdirectory(title="Choose folder(s) with blf/asc files"))
             # Takes the folder(s) chosen and loops through every folder.
-            # Will only extract LEM files on it's way.
+            # Will extract chosen bus files on it's way.
             while True:
                 # Loops through folder(s) chosen by user.
-                for directory in folder_list:
+                for dir_ in dir_list:
                     # Loops through the folder and looks up root path and files.
-                    for root, _, files in os.walk(directory):
+                    for root, _, files in os.walk(dir_):
                         root = root.replace("\\", "/")
                         # Loops through all files and creates search path to file.
                         for file in files:
                             search_path = root + "/" + file
-                            # Checks if it's a LEM file and adds it to the file list.
-                            channel = self.get_channel(search_path)
-                            if channel in (0, 10, 23, 24, 25, 26):
-                                file_list.append(os.path.join(search_path))
+                            if search_path.endswith(".blf") or search_path.endswith(".asc"):
+                                # Checks if it's a LEM file and adds it to the file list.
+                                channel = self.get_channel(search_path)
+                                match channel:
+                                    case 0 | 10 | 23 | 24 | 25 | 26:
+                                        if "Lem" in buses:
+                                            file_list["Lem"].append(os.path.join(search_path))
+                                    case 2:
+                                        if "Body" in buses:
+                                            file_list["Body"].append(os.path.join(search_path))
+                                    case 6:
+                                        if "Front1" in buses:
+                                            file_list["Front1"].append(os.path.join(search_path))
+                                    case 7:
+                                        if "Front3" in buses:
+                                            file_list["Front3"].append(os.path.join(search_path))
+                                    case 8:
+                                        if "Mid1" in buses:
+                                            file_list["Mid1"].append(os.path.join(search_path))
+                                    case 9:
+                                        if "Rear1" in buses:
+                                            file_list["Rear1"].append(os.path.join(search_path))
+                                
                 return file_list
 
 

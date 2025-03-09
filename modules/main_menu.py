@@ -63,10 +63,10 @@ class MainMenu(Tk):
                                     text="Choose file(s)",
                                     command=lambda:self.add_file_path("file"))
         choose_file_button.grid(row=1, column=0, sticky="w")
-        extract_lem_button = Button(self.browse_frame,
+        extract_bus_button = Button(self.browse_frame,
                                     text="Extract Bus",
                                     command=self.bus_selection)
-        extract_lem_button.grid(row=1, column=1, sticky="w")
+        extract_bus_button.grid(row=1, column=1, sticky="w")
 
         # Button to add a parallel plot line and a drop down box to select wanted plot line.
         add_plot_line_button = Button(self.browse_frame,
@@ -84,19 +84,23 @@ class MainMenu(Tk):
 
 
     def bus_selection(self):
-        self.bsm = BusSelectionMenu(self)
-        self.add_file_path("extract bus")
+        self.bsm = BusSelectionMenu(self, self.add_file_path)
 
 
-    def add_file_path(self, choice):
+    def add_file_path(self, choice, chosen_busses=None):
         """ Adds a filepath to the plot line. """
-        selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
+        if choice == "file":
+            selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
+            files = self.fp.file_explorer(choice)
+            self.plot_line_frames[selected_plot_line].file_path_setup(files)
+        elif choice == "extract bus":
+            busses = self.fp.file_explorer(choice, chosen_busses)
+            for files in busses.values():
+                if files:
+                    self.plot_line_create()
+                    selected_plot_line = len(self.plot_line_frames)-1
+                    self.plot_line_frames[-1].file_path_setup(files)
 
-        files = self.fp.file_explorer(choice)
-
-        self.plot_line_frames[selected_plot_line].file_path_setup(files,
-                                                                  selected_plot_line,
-                                                                  self.decide_bus)
 
         self.update_analyze_button()
 
