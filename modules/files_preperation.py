@@ -159,7 +159,7 @@ class FilesPreparation:
             else:
                 continue
 
-            # Loads data into pandas dataframe.
+            # Loads data into pandas dataframe. It's a loop since asc files can have multiple channels.
             for j, blf_asc_data in enumerate(blf_asc_datas):
                 data = blf_asc_data["Data"]
 
@@ -246,7 +246,11 @@ class FilesPreparation:
             # Stores wanted data.
             for blf_asc_data in blf_asc_datas:
                 if blf_asc_data["Info"]["Channel"] == msg.channel:
-                    blf_asc_data["Data"]["Time"].append(msg.timestamp+time_add)
+                    if file.lower().endswith(".blf"):
+                        blf_asc_data["Data"]["Time"].append(msg.timestamp)
+                    # Only need time_add for asc files.
+                    if file.lower().endswith(".asc"):
+                        blf_asc_data["Data"]["Time"].append(msg.timestamp+time_add)
                     blf_asc_data["Data"]["Current"].append(current_dec)
 
             # Prints the loading status in percentage.

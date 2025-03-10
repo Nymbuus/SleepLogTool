@@ -11,4 +11,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-# SCREENSHOT PÅ GRAF ATT TIDEN ÄR FEL PÅ STRÖMEN!!!!!!!
+# BL syncar inte sluttiden med LEM. Måste lägga till tid i slutet av BL för att matcha LEM!!!!
