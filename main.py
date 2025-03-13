@@ -12,3 +12,4 @@ if __name__ == '__main__':
     main()
 
 # BL syncar inte sluttiden med LEM. Måste lägga till tid i slutet av BL för att matcha LEM!!!!
+# Får inte tillåta Front2 och Backbone eftersom dem är flexray som jag inte vet hur man läser ifrån!!!

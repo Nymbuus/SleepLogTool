@@ -101,6 +101,10 @@ class MainMenu(Tk):
                     try:
                         if self.plot_line_frames[frame_counter].file_path_array == []:
                             self.plot_line_frames[frame_counter].file_path_setup(files)
+                        else:
+                            self.plot_line_create()
+                            frame_counter += 1
+                            self.plot_line_frames[frame_counter].file_path_setup(files)
                     except:
                         self.plot_line_create()
                         self.plot_line_frames[frame_counter].file_path_setup(files)
