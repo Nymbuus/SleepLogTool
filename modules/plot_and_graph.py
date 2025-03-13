@@ -152,7 +152,7 @@ class PlotAndGraph():
 
         # axLEM is graph for the LEM files, axBL is for the BusLoad files.
         if df["Info"]["LEM_graph"] and df["Info"]["BL_graph"]:
-            self.fig, (self.ax_lem, self.ax_bl) = plt.subplots(2, 1)
+            self.fig, (self.ax_lem, self.ax_bl) = plt.subplots(2, 1, sharex=True)
         elif df["Info"]["LEM_graph"]:
             self.fig, self.ax_lem = plt.subplots()
         elif df["Info"]["BL_graph"]:
