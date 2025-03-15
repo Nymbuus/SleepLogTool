@@ -13,4 +13,4 @@ if __name__ == '__main__':
 
 # Behöver fortfarande fixa ADD funktionen i browse field!!!
 # Fixa hur programmet ser ut på olika datorer!!!
-# Programmet ska inte start om, om man kryssar eller cancelar när filer ska väljas!!!
+# Borde vara en varning istället för en varning när ingen plotline finns!!!

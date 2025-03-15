@@ -147,29 +147,22 @@ class PlotLines(LabelFrame):
             self.decide_bus = channel
 
 
-    def file_path_setup(self, files, add=None):
+    def file_path_setup(self, files):
         """ displayes the file paths in the main window. """
-
-        # Checks if it should add file from the browse entry.
-        if add is None:
-            if files:
-                # Gets the bus from the first file and that decides what buses goes into the frame
-                # Have to iterate the messages because there is no other way to get the bus info.
-                for file in files:
-                    if self.decide_bus:
-                        file_match = self.check_bus(file)
-                        if file_match is False:
-                            return
-                    else:
-                        self.set_bus_plot_line(file)
-            else:
-                return
-
-        # BEHÖVER FIXA DENNA!!!!!!!
-        # HAR MED ATT LÄGGA TILL FRÅN BROWSE FIELD!
-        elif add == "add":
-            pass
-            # files.append(files)
+        if isinstance(files, str):
+            files = [files]
+        if files:
+            # Gets the bus from the first file and that decides what buses goes into the frame
+            # Have to iterate the messages because there is no other way to get the bus info.
+            for file in files:
+                if self.decide_bus:
+                    file_match = self.check_bus(file)
+                    if file_match is False:
+                        return
+                else:
+                    self.set_bus_plot_line(file)
+        else:
+            return
 
         # Checks if there was any files selected.
         if files is not False:

@@ -26,7 +26,7 @@ class MainMenu(Tk):
         self.line_plot_name_entries = []
         self.decide_bus = []
         self.toggling_frames = []
-        self.browse_field = Entry()
+        self.browse_entry = Entry()
         self.plot_line_select = StringVar()
         self.skip_optionsmenu_list_update = True
 
@@ -53,8 +53,8 @@ class MainMenu(Tk):
         self.browse_frame.grid(row=0, rowspan=2, column=0, pady=10, padx=10, sticky="n")
 
         # Entry and button to add a file manually by entering path to it.
-        self.browse_field = Entry(self.browse_frame, width=130, borderwidth=5)
-        self.browse_field.grid(row=0, column=0, columnspan=6, padx=(0, 10), pady=(0, 10), sticky="w")
+        self.browse_entry = Entry(self.browse_frame, width=130, borderwidth=5)
+        self.browse_entry.grid(row=0, column=0, columnspan=6, padx=(0, 10), pady=(0, 10), sticky="w")
         add_button = Button(self.browse_frame, text="Add File", command=self.add_browse_field)
         add_button.grid(row=0, column=6, columnspan=2, padx=(2, 3), sticky="n")
 
@@ -193,13 +193,10 @@ class MainMenu(Tk):
 
     def add_browse_field(self):
         """ Adds path given in browse field to specified line plot frame. """
-        file = self.browse_field.get()
+        file = self.browse_entry.get()
         selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
         if file:
-            self.plot_line_frames[selected_plot_line].file_path_setup(file,
-                                                                      selected_plot_line,
-                                                                      self.decide_bus,
-                                                                      add="add")
+            self.plot_line_frames[selected_plot_line].file_path_setup(file)
 
         self.update_analyze_button()
 
