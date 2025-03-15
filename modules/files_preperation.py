@@ -159,47 +159,45 @@ class FilesPreparation:
             file_list - The blf/asc file(s) being read from. """
 
         # Checks if there's only blf/asc files in the list.
-        if not all(file.lower().endswith('.blf') or
-                   file.lower().endswith(".asc")
-                   for file in file_list):
-            raise TypeError("Only .blf & .asc files supported.")
+        if self.check_accepted_files(file_list):
+            channel = None
+            df = None
+            dfs = []
+            time_add = 0
+            for index, file in enumerate(file_list):
+                print(f"\nLoding File #{self.file_number}:",
+                    "\n0%", end="\r")
+                self.file_number += 1
 
-        channel = None
-        df = None
-        dfs = []
-        time_add = 0
-        for index, file in enumerate(file_list):
-            print(f"\nLoding File #{self.file_number}:",
-                   "\n0%", end="\r")
-            self.file_number += 1
+                # Gets the can bus channel.
+                msg = self.yeild_message(file)
+                channel = next(msg).channel
 
-            # Gets the can bus channel.
-            msg = self.yeild_message(file)
-            channel = next(msg).channel
-
-            # Checks what CANbus and calls corresponding function to prep it.
-            # Also checks if LEM or BL-graph are selected in the settings.
-            blf_asc_datas = None
-            if channel in LEM_CHANNELS and lem_graph:
-                blf_asc_datas = self.lem_prep(file, time_add)
-            elif channel not in LEM_CHANNELS and bl_graph:
-                blf_asc_datas = self.bl_prep(file)
-            else:
-                continue
-
-            # Loads data into pandas dataframe. It's a loop since asc files can have multiple channels.
-            for j, blf_asc_data in enumerate(blf_asc_datas):
-                data = blf_asc_data["Data"]
-
-                temp = pd.DataFrame(data)
-                if index == 0:
-                    df = temp
-                    df = {"df": df, "Info": blf_asc_data["Info"]}
-                    dfs.append(df)
+                # Checks what CANbus and calls corresponding function to prep it.
+                # Also checks if LEM or BL-graph are selected in the settings.
+                blf_asc_datas = None
+                if channel in LEM_CHANNELS and lem_graph:
+                    blf_asc_datas = self.lem_prep(file, time_add)
+                elif channel not in LEM_CHANNELS and bl_graph:
+                    blf_asc_datas = self.bl_prep(file)
                 else:
-                    dfs[j]["df"] = pd.concat([dfs[j]["df"], temp], axis=0)
-            time_add = dfs[0]["df"]["Time"].iloc[-1]
-        return dfs
+                    continue
+
+                # Loads data into pandas dataframe. It's a loop since asc files can have multiple channels.
+                for j, blf_asc_data in enumerate(blf_asc_datas):
+                    data = blf_asc_data["Data"]
+
+                    temp = pd.DataFrame(data)
+                    if index == 0:
+                        df = temp
+                        df = {"df": df, "Info": blf_asc_data["Info"]}
+                        dfs.append(df)
+                    else:
+                        dfs[j]["df"] = pd.concat([dfs[j]["df"], temp], axis=0)
+                time_add = dfs[0]["df"]["Time"].iloc[-1]
+            return dfs
+        else:
+            return
 
 
     def get_percent(self, file):

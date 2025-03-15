@@ -98,17 +98,15 @@ class MainMenu(Tk):
             frame_counter = 0
             for files in busses.values():
                 if files:
-                    try:
-                        if self.plot_line_frames[frame_counter].file_path_array == []:
-                            self.plot_line_frames[frame_counter].file_path_setup(files)
-                        else:
+                    while True:
+                        try:
+                            if self.plot_line_frames[frame_counter].file_path_array == []:
+                                self.plot_line_frames[frame_counter].file_path_setup(files)
+                                break
+                            else:
+                                frame_counter += 1
+                        except:
                             self.plot_line_create()
-                            frame_counter += 1
-                            self.plot_line_frames[frame_counter].file_path_setup(files)
-                    except:
-                        self.plot_line_create()
-                        self.plot_line_frames[frame_counter].file_path_setup(files)
-                    frame_counter += 1
 
         self.update_analyze_button()
 

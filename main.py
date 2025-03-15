@@ -12,5 +12,5 @@ if __name__ == '__main__':
     main()
 
 # Behöver fortfarande fixa ADD funktionen i browse field!!!
-# Får inte tillåta Front2 och Backbone eftersom dem är flexray som jag inte vet hur man läser ifrån!!!
-# Extract 2 times with different buses will get not same bus error!!!
+# Fixa hur programmet ser ut på olika datorer!!!
+# Programmet ska inte start om, om man kryssar eller cancelar när filer ska väljas!!!
