@@ -90,9 +90,12 @@ class MainMenu(Tk):
     def add_file_path(self, choice, chosen_busses=None):
         """ Adds a filepath to the plot line. """
         if choice == "file":
-            selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
-            files = self.fp.file_explorer(choice)
-            self.plot_line_frames[selected_plot_line].file_path_setup(files)
+            selected_plot_line = self.get_selected_plotline()
+            if selected_plot_line == None:
+                return
+            else:
+                files = self.fp.file_explorer(choice)
+                self.plot_line_frames[selected_plot_line].file_path_setup(files)
         elif choice == "extract bus":
             busses = self.fp.file_explorer(choice, chosen_busses)
             frame_counter = 0
@@ -109,6 +112,15 @@ class MainMenu(Tk):
                             self.plot_line_create()
 
         self.update_analyze_button()
+    
+
+    def get_selected_plotline(self):
+        try:
+            selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
+        except:
+            self.show_warning("No plot line present, please add one")
+            return
+        return selected_plot_line
 
 
     def plot_line_create(self):
@@ -194,9 +206,12 @@ class MainMenu(Tk):
     def add_browse_field(self):
         """ Adds path given in browse field to specified line plot frame. """
         file = self.browse_entry.get()
-        selected_plot_line = int(self.plot_line_select.get()[-1]) - 1
-        if file:
-            self.plot_line_frames[selected_plot_line].file_path_setup(file)
+        selected_plot_line = self.get_selected_plotline()
+        if selected_plot_line == None:
+            return
+        else:
+            if file:
+                self.plot_line_frames[selected_plot_line].file_path_setup(file)
 
         self.update_analyze_button()
 
