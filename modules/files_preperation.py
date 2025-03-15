@@ -392,20 +392,21 @@ class FilesPreparation:
         # Loops through every list of files in every line plot.
         for frame in plot_line_frames:
             blf_asc_files = []
-            for path in frame.file_path_array:
-                blf_asc_files.append(path.get())
+            if frame.file_path_array:
+                for path in frame.file_path_array:
+                    blf_asc_files.append(path.get())
 
-            # Gets the dataframe and the channel of the dataframe.
-            dfs = self.convert_to_df(blf_asc_files, lem_graph, bl_graph)
-            dfs = self.check_name(dfs, frame)
-            for df in dfs:
-                df["Info"]["First_df"] = False
-                df["Info"]["Last_df"] = False
-                df["Info"]["Skip"] = False
-                df["Info"]["LEM_graph"] = lem_graph
-                df["Info"]["BL_graph"] = bl_graph
-                df["Info"]["LEM_invert"] = frame.invert_lem.get()
-                self.dfs.append(df)
+                # Gets the dataframe and the channel of the dataframe.
+                dfs = self.convert_to_df(blf_asc_files, lem_graph, bl_graph)
+                dfs = self.check_name(dfs, frame)
+                for df in dfs:
+                    df["Info"]["First_df"] = False
+                    df["Info"]["Last_df"] = False
+                    df["Info"]["Skip"] = False
+                    df["Info"]["LEM_graph"] = lem_graph
+                    df["Info"]["BL_graph"] = bl_graph
+                    df["Info"]["LEM_invert"] = frame.invert_lem.get()
+                    self.dfs.append(df)
 
         # Checks if it's the first or/and last dataframe.
         self.dfs[0]["Info"]["First_df"] = True

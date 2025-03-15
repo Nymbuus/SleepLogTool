@@ -8,7 +8,6 @@ class BusSelectionMenu(Toplevel):
     def __init__(self, parent, add_file_path_func):
         super().__init__(parent)
         self.title("Bus Selection")
-        self.geometry("200x140")
         self.bus_cbs = []
         self.cbs_checked = []
         self.buses_checked = []

@@ -149,13 +149,12 @@ class PlotAndGraph():
 
     def chosen_graphs(self, df):
         """ Decides which graphs are used. """
-
         # axLEM is graph for the LEM files, axBL is for the BusLoad files.
         if df["Info"]["LEM_graph"] and df["Info"]["BL_graph"]:
             self.fig, (self.ax_lem, self.ax_bl) = plt.subplots(2, 1, sharex=True)
         elif df["Info"]["LEM_graph"]:
-            self.fig, self.ax_lem = plt.subplots()
+            self.fig, self.ax_lem = plt.subplots(dpi=100)
         elif df["Info"]["BL_graph"]:
-            self.fig, self.ax_bl = plt.subplots()
+            self.fig, self.ax_bl = plt.subplots(dpi=100)
         else:
             raise NameError

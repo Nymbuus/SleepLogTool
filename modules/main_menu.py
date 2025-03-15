@@ -252,6 +252,7 @@ class MainMenu(Tk):
             # Takes the dataframe and calls the function to remove the specified time,
             # then plots the graph.
             df = self.fp.remove_time(df, remove_start_time, remove_end_time)
+        self.tk.call("tk", "scaling", 1.3)
         self.pag.plotting_graph(dfs, self.rtm.time_unit_selected.get())
 
 
