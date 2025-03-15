@@ -35,72 +35,100 @@ class FilesPreparation:
     def file_explorer(self, choice, buses=None):
         """ Lets the user chose files to analyze. """
         # Checks what button the user pressed to act accordingly.
-        match choice:
-            # If Choose file(s) was chosen.
-            case "file":
+        file_list = None
+        while True:
+            if choice == "file":
                 # Will ask the user to chose file(s). If user cancel out it will stop.
-                while True:
-                    file_list = fd.askopenfilenames(title='Choose one or more blf/asc files')
-                    if all(file.lower().endswith('.blf') or
-                           file.lower().endswith(".asc")
-                           for file in file_list):
-                        if file_list == "":
-                            return False
-                        return file_list
-                    print("Files are not blf/asc file, try again.")
+                file_list = self.open_file_source("Choose one or more blf/asc files")
 
             # If Extract Bus was chosen.
-            case "extract bus":
-                file_list = self.extract_bus(buses)
-                return file_list
-    
+            elif choice == "extract bus":
+                file_list = self.open_file_source("Choose folder(s) with blf/asc files", buses)
 
-    def extract_bus(self, buses):
-        while True:
-            file_list = {"Lem":[],
+            if file_list:
+                return file_list
+            
+
+    def open_file_source(self, text, buses=None):
+        if text == "Choose one or more blf/asc files":
+            file_list = fd.askopenfilenames(title=text)
+            if self.check_accepted_files(file_list):
+                return file_list
+            else:
+                return False
+        elif text == "Choose folder(s) with blf/asc files":
+            dir_list = []
+            dir_list.append(fd.askdirectory(title=text))
+            file_list = self.get_files(dir_list)
+            if self.check_accepted_files(file_list):
+                file_list = self.bus_sorter(file_list, buses)
+                return file_list
+            else:
+                return False
+
+
+    def check_accepted_files(self, file_list):
+        if all(file.lower().endswith((".blf", ".asc")) and
+              ("Front2" not in file and "Backbone" not in file)
+              for file in file_list):
+                    if file_list == "":
+                        print("No files/folders were selected.")
+                        return False
+                    return file_list
+        else:
+            print("Files not blf/asc, contain Front2 or Backbone bus, try again.")
+            return False
+
+
+    def get_files(self, dir_list):
+        file_list = []
+        for dir_ in list(dir_list):
+            # Loops through the folder and looks up root path and files.
+            for root, _, files in os.walk(dir_):
+                root = root.replace("\\", "/")
+                # Loops through all files and creates search path to file.
+                for file in files:
+                    file = root + "/" + file
+                    if (file.lower().endswith((".blf", ".asc")) and
+                       ("Front2" not in file and "Backbone" not in file)):
+                            file_list.append(file)
+        return file_list
+
+
+    def bus_sorter(self, file_list, buses):
+        # Takes the folder(s) chosen and loops through every folder.
+        # Will extract chosen bus files on it's way.
+        # Loops through folder(s) chosen by user.
+        bus_sort_list = {"Lem":[],
                          "Body":[],
                          "Front1":[],
                          "Front3":[],
                          "Mid1":[],
                          "Rear1":[]}
-            dir_list = []
-            dir_list.append(fd.askdirectory(title="Choose folder(s) with blf/asc files"))
-            # Takes the folder(s) chosen and loops through every folder.
-            # Will extract chosen bus files on it's way.
-            while True:
-                # Loops through folder(s) chosen by user.
-                for dir_ in dir_list:
-                    # Loops through the folder and looks up root path and files.
-                    for root, _, files in os.walk(dir_):
-                        root = root.replace("\\", "/")
-                        # Loops through all files and creates search path to file.
-                        for file in files:
-                            search_path = root + "/" + file
-                            if search_path.endswith(".blf") or search_path.endswith(".asc"):
-                                # Checks if it's a LEM file and adds it to the file list.
-                                channel = self.get_channel(search_path)
-                                match channel:
-                                    case 0 | 10 | 23 | 24 | 25 | 26:
-                                        if "Lem" in buses:
-                                            file_list["Lem"].append(os.path.join(search_path))
-                                    case 2:
-                                        if "Body" in buses:
-                                            file_list["Body"].append(os.path.join(search_path))
-                                    case 6:
-                                        if "Front1" in buses:
-                                            file_list["Front1"].append(os.path.join(search_path))
-                                    case 7:
-                                        if "Front3" in buses:
-                                            file_list["Front3"].append(os.path.join(search_path))
-                                    case 8:
-                                        if "Mid1" in buses:
-                                            file_list["Mid1"].append(os.path.join(search_path))
-                                    case 9:
-                                        if "Rear1" in buses:
-                                            file_list["Rear1"].append(os.path.join(search_path))
-                                
-                return file_list
 
+        for file in file_list:
+            # Checks if it's a LEM file and adds it to the file list.
+            channel = self.get_channel(file)
+            match channel:
+                case 0 | 10 | 23 | 24 | 25 | 26:
+                    if "Lem" in buses:
+                        bus_sort_list["Lem"].append(os.path.join(file))
+                case 2:
+                    if "Body" in buses:
+                        bus_sort_list["Body"].append(os.path.join(file))
+                case 6:
+                    if "Front1" in buses:
+                        bus_sort_list["Front1"].append(os.path.join(file))
+                case 7:
+                    if "Front3" in buses:
+                        bus_sort_list["Front3"].append(os.path.join(file))
+                case 8:
+                    if "Mid1" in buses:
+                        bus_sort_list["Mid1"].append(os.path.join(file))
+                case 9:
+                    if "Rear1" in buses:
+                        bus_sort_list["Rear1"].append(os.path.join(file))
+        return bus_sort_list
 
 
     def yeild_message(self, file):
