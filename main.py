@@ -11,5 +11,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-# Behöver fortfarande fixa ADD funktionen i browse field!!!
-# Fixa hur programmet ser ut på olika datorer!!!
+# Fixar Extract asc filer?

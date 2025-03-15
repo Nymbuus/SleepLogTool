@@ -17,6 +17,7 @@ class MainMenu(Tk):
     def __init__(self):
         """ Initializes the class. """
         super().__init__()
+        self.call("tk", "scaling", 1.51)
         self.toggle_buttons = []
         self.file_path_del_buttons = []
         self.x = 0
