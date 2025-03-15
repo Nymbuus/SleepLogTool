@@ -45,20 +45,28 @@ class FilesPreparation:
             elif choice == "extract bus":
                 file_list = self.open_file_source("Choose folder(s) with blf/asc files", buses)
 
-            if file_list:
+            if file_list == None:
+                return
+            elif file_list:
                 return file_list
             
 
     def open_file_source(self, text, buses=None):
         if text == "Choose one or more blf/asc files":
             file_list = fd.askopenfilenames(title=text)
-            if self.check_accepted_files(file_list):
+            if file_list == "":
+                print("No files were selected.")
+                return
+            elif self.check_accepted_files(file_list):
                 return file_list
             else:
                 return False
         elif text == "Choose folder(s) with blf/asc files":
             dir_list = []
             dir_list.append(fd.askdirectory(title=text))
+            if dir_list == "":
+                print("No folders were selected.")
+                return
             file_list = self.get_files(dir_list)
             if self.check_accepted_files(file_list):
                 file_list = self.bus_sorter(file_list, buses)
@@ -71,9 +79,6 @@ class FilesPreparation:
         if all(file.lower().endswith((".blf", ".asc")) and
               ("Front2" not in file and "Backbone" not in file)
               for file in file_list):
-                    if file_list == "":
-                        print("No files/folders were selected.")
-                        return False
                     return file_list
         else:
             print("Files not blf/asc, contain Front2 or Backbone bus, try again.")
