@@ -23,9 +23,11 @@ class BusSelectionMenu(Toplevel):
     def bus_checkbuttons(self):
         checkbuttons_frame = Frame(self)
         checkbuttons_frame.grid(row=0, column=0, pady=10)
+        top_text_label = Label(checkbuttons_frame, text="Choose buses to extract")
+        top_text_label.grid(row=0, column=0, columnspan=2, pady=(0, 15))
 
         can_bus_counter = 0
-        for i in range(3):
+        for i in range(1,4):
             for j in range(2):
                 cb_checked = BooleanVar()
                 bus_cb = Checkbutton(checkbuttons_frame,
@@ -33,7 +35,7 @@ class BusSelectionMenu(Toplevel):
                                     variable=cb_checked,
                                     onvalue=True,
                                     offvalue=False)
-                bus_cb.grid(row=i, column=j, sticky="w")
+                bus_cb.grid(row=i, column=j, padx=5, sticky="w")
                 self.cbs_checked.append(cb_checked)
                 self.bus_cbs.append(bus_cb)
                 can_bus_counter += 1

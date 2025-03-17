@@ -10,3 +10,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# Om bara LEM bussar har lagts till och bara BL graph är valt så blir det error!!!
