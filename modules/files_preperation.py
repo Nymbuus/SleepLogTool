@@ -80,9 +80,13 @@ class FilesPreparation:
               ("Front2" not in file and "Backbone" not in file)
               for file in file_list):
                     return file_list
+        elif all("Front2" in file or "Backbone" in file
+              for file in file_list):
+                self.show_warning("Not accepted bus (Front2 or Backbone)")
+                return False
         else:
-            print("Files not blf/asc, contain Front2 or Backbone bus, try again.")
-            return False
+            self.show_warning("Files not blf/asc, try again")
+            return False                
 
 
     def get_files(self, dir_list):

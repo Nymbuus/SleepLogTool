@@ -10,5 +10,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# Varningsmeddelande pop-up för Front2 och Backbone!!!
