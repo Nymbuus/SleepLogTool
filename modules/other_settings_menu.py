@@ -33,12 +33,12 @@ class OtherSettingsMenu(LabelFrame):
         self.lem_checkbutton.grid(row=0, column=0, sticky="w")
         self.bl_toggle.set(True)
         self.bl_checkbutton = Checkbutton(self,
-                                          text="BL graph",
+                                          text="BusLoad graph",
                                           variable=self.bl_toggle,
                                           onvalue=True,
                                           offvalue=False,
                                           padx=10)
-        self.bl_checkbutton.grid(row=1, column=0, padx=(0, 250), sticky="w")
+        self.bl_checkbutton.grid(row=1, column=0, padx=(0, 213), sticky="w")
 
 
     def get_choose_graph(self):

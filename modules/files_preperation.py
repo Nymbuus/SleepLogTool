@@ -381,13 +381,30 @@ class FilesPreparation:
 
     def analyze_data(self, get_graph_toggle_func, plot_line_frames):
         """ Takes the present filepaths and analyzes the data in the files. """
-        self.dfs = []
-        self.file_number = 1
-        self.initalize_and_reset_bus_channel_indexes()
         lem_graph, bl_graph = get_graph_toggle_func
         if lem_graph is False and bl_graph is False:
             self.show_warning("Choose a graph in settings")
             return False
+        
+        lem_present = False
+        bl_present = False
+        for frame in plot_line_frames:
+            if frame.decide_bus == "LEM":
+                lem_present = True
+            elif frame.decide_bus != "LEM" and frame.decide_bus is not None:
+                bl_present = True
+
+        # Checks if only one of the graph options are selected and if there's matching files for it.
+        if lem_present is False and lem_graph is True and bl_graph is False:
+            self.show_warning("No LEM files in plotlines. Only LEM graph selected")
+            return False
+        elif bl_present is False and bl_graph is True and lem_graph is False:
+            self.show_warning("No BusLoad files in plotlines. Only BusLoad graph selected")
+            return False
+        
+        self.dfs = []
+        self.file_number = 1
+        self.initalize_and_reset_bus_channel_indexes()
 
         # Loops through every list of files in every line plot.
         for frame in plot_line_frames:

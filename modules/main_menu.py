@@ -238,22 +238,24 @@ class MainMenu(Tk):
         """ Connected to the analyze button and start the analyze process of all the files. """
         dfs = self.fp.analyze_data(self.osm.get_choose_graph(),
                              self.plot_line_frames)
+        if dfs:
+            # Will skip set_df function if true and go to plotting directly.
+            for df in dfs:
+                if df["Info"]["Skip"]:
+                    # MÅSTE FIXA PLOTTING_GRAPH, PLOTS HAR BYTTS MOT DFS!!!!
+                    self.pag.plotting_graph(dfs, self.rtm.time_unit_selected.get())
+                    return
+                remove_start_time, remove_end_time = self.rtm.set_df(df)
+                if remove_start_time is None and remove_end_time is None:
+                    return
 
-        # Will skip set_df function if true and go to plotting directly.
-        for df in dfs:
-            if df["Info"]["Skip"]:
-                # MÅSTE FIXA PLOTTING_GRAPH, PLOTS HAR BYTTS MOT DFS!!!!
-                self.pag.plotting_graph(dfs, self.rtm.time_unit_selected.get())
-                return
-            remove_start_time, remove_end_time = self.rtm.set_df(df)
-            if remove_start_time is None and remove_end_time is None:
-                return
-
-            # Takes the dataframe and calls the function to remove the specified time,
-            # then plots the graph.
-            df = self.fp.remove_time(df, remove_start_time, remove_end_time)
-        self.tk.call("tk", "scaling", 1.3)
-        self.pag.plotting_graph(dfs, self.rtm.time_unit_selected.get())
+                # Takes the dataframe and calls the function to remove the specified time,
+                # then plots the graph.
+                df = self.fp.remove_time(df, remove_start_time, remove_end_time)
+            self.tk.call("tk", "scaling", 1.3)
+            self.pag.plotting_graph(dfs, self.rtm.time_unit_selected.get())
+        else:
+            return
 
 
     def update_analyze_button(self):
@@ -262,7 +264,8 @@ class MainMenu(Tk):
             if array.file_path_array:
                 self.analyze_button["state"] = tk.NORMAL
                 return
-        self.analyze_button["state"] = tk.DISABLED
+            else:
+                self.analyze_button["state"] = tk.DISABLED
 
 
     def show_warning(self, warning_text):
