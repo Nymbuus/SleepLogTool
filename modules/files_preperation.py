@@ -6,9 +6,9 @@ import can
 import pandas as pd
 import numpy as np
 
-# Removed 0 since it colides with propulsionCAN
-# Removed 1 since it colides with chassiCAN
-LEM_CHANNELS = (10, 23, 24, 25, 26)
+BLF_LEM_CHANNELS = (10, 23, 24, 25, 26)
+ASC_LEM_CHANNELS = (0, 1)
+BL_CHANNELS = (2, 6, 7, 8, 9)
 
 class FilesPreparation:
     """ Preps the files before displaying them. """
@@ -119,27 +119,35 @@ class FilesPreparation:
 
         for file in file_list:
             # Checks if it's a LEM file and adds it to the file list.
-            channel = self.get_channel(file)
-            match channel:
-                # Removed 0 from first case since it colided with propulsionCAN.
-                case 10 | 23 | 24 | 25 | 26:
-                    if "Lem" in buses:
-                        bus_sort_list["Lem"].append(os.path.join(file))
-                case 2:
-                    if "Body" in buses:
-                        bus_sort_list["Body"].append(os.path.join(file))
-                case 6:
-                    if "Front1" in buses:
-                        bus_sort_list["Front1"].append(os.path.join(file))
-                case 7:
-                    if "Front3" in buses:
-                        bus_sort_list["Front3"].append(os.path.join(file))
-                case 8:
-                    if "Mid1" in buses:
-                        bus_sort_list["Mid1"].append(os.path.join(file))
-                case 9:
-                    if "Rear1" in buses:
-                        bus_sort_list["Rear1"].append(os.path.join(file))
+            msg = self.yeild_message(file)
+            channel = next(msg).channel
+
+            # Checks if Lem is chosen in extract buses.
+            # Also checks if it's asc or blf.
+            # Depending on which one, it compares to LEM channels in that type of file.
+            if ((file.endswith(".blf") and channel in BLF_LEM_CHANNELS and "Lem" in buses) or
+                (file.endswith(".asc") and channel in ASC_LEM_CHANNELS and "Lem" in buses)):
+                    bus_sort_list["Lem"].append(os.path.join(file))
+            # If not Lem it will check the other buses.
+            else:
+                match channel:
+                    case 2:
+                        if "Body" in buses:
+                            bus_sort_list["Body"].append(os.path.join(file))
+                    case 6:
+                        if "Front1" in buses:
+                            bus_sort_list["Front1"].append(os.path.join(file))
+                    case 7:
+                        if "Front3" in buses:
+                            bus_sort_list["Front3"].append(os.path.join(file))
+                    case 8:
+                        if "Mid1" in buses:
+                            bus_sort_list["Mid1"].append(os.path.join(file))
+                    case 9:
+                        if "Rear1" in buses:
+                            bus_sort_list["Rear1"].append(os.path.join(file))
+                    case _:
+                        print("Unknown bus")
         return bus_sort_list
 
 
@@ -149,13 +157,6 @@ class FilesPreparation:
         with open(file, mode) as f:
             open_file = can.BLFReader(f) if file.endswith(".blf") else can.ASCReader(f)
             yield from open_file
-
-
-    def get_channel(self, search_path):
-        """ Gets the channel from the file. """
-        file_gen = self.yeild_message(search_path)
-        for msg in file_gen:
-            return msg.channel
 
 
     def get_attribute(self, file, attribute):
@@ -188,11 +189,14 @@ class FilesPreparation:
                 # Checks what CANbus and calls corresponding function to prep it.
                 # Also checks if LEM or BL-graph are selected in the settings.
                 blf_asc_datas = None
-                if channel in LEM_CHANNELS and lem_graph:
-                    blf_asc_datas = self.lem_prep(file, time_add)
-                elif channel not in LEM_CHANNELS and bl_graph:
+                if file.endswith(".blf") and channel in BLF_LEM_CHANNELS and lem_graph:
+                    blf_asc_datas = self.lem_prep(file, time_add, file_type=".blf")
+                elif file.endswith(".asc") and channel in ASC_LEM_CHANNELS and lem_graph:
+                    blf_asc_datas = self.lem_prep(file, time_add, file_type=".asc")
+                elif channel in BL_CHANNELS and bl_graph:
                     blf_asc_datas = self.bl_prep(file)
                 else:
+                    print("Unknown channel")
                     continue
 
                 # Loads data into pandas dataframe. It's a loop since asc files can have multiple channels.
@@ -247,19 +251,19 @@ class FilesPreparation:
         return current_dec
 
 
-    def create_new_directory_for_new_channel(self, channel, lem_or_bl, timestamps=None):
+    def create_new_directory_for_new_channel(self, channel, lem_or_bl, file_type, timestamps=None):
         """ Creates a new directory the a new channel, either if it's lem or bl. """
         blf_asc_data = None
         if lem_or_bl == "lem":
             blf_asc_data = {"Data": {"Time": [], "Current": []},
-                            "Info": {"Channel": channel}}
+                            "Info": {"Channel": channel, "File_type": file_type}}
         elif lem_or_bl == "bl":
             blf_asc_data = {"Data": {"Time": timestamps, "Busload": [0]},
                             "Info": {"Channel": channel}}
         return blf_asc_data
 
 
-    def lem_prep(self, file, time_add):
+    def lem_prep(self, file, time_add, file_type):
         """ Loads in the data to the dataframe. """
         progress = 0
         last_print = 0
@@ -272,7 +276,7 @@ class FilesPreparation:
             channel = msg.channel
 
             if channel not in known_channels:
-                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel, "lem"))
+                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel, "lem", file_type))
                 known_channels.append(channel)
 
             progress += percent
@@ -445,56 +449,39 @@ class FilesPreparation:
             plot_name = plot_line_frame.line_plot_name_entry.get()
             channel = df["Info"]["Channel"]
             if plot_name == "":
-                # Removed case 0 since it colides with propulsionCAN
-                # Removed case 1 since it colides with chassiCAN
-                match channel:
-                    case 2:
-                        df["Info"]["Name"] = f"Body #{self.index_body}"
-                        self.index_body += 1
-                    case 6:
-                        df["Info"]["Name"] = f"Front1 #{self.index_front1}"
-                        self.index_front1 += 1
-                    case 7:
-                        df["Info"]["Name"] = f"Front3 #{self.index_front3}"
-                        self.index_front3 += 1
-                    case 8:
-                        df["Info"]["Name"] = f"Mid1 #{self.index_mid1}"
-                        self.index_mid1 += 1
-                    case 9:
-                        df["Info"]["Name"] = f"Rear1 #{self.index_rear1}"
-                        self.index_rear1 += 1
-                    # case 0:
-                    #     df["Info"]["Name"] = f"LEM #{self.index_lem}"
-                    #     self.index_lem += 1
-                    # case 1:
-                    #     df["Info"]["Name"] = f"LEM #{self.index_lem}"
-                    #     self.index_lem += 1
-                    case 10:
+                if ((df["Info"]["File_type"] == ".blf" and channel in BLF_LEM_CHANNELS) or
+                    (df["Info"]["File_type"] == ".asc" and channel in ASC_LEM_CHANNELS)):
                         df["Info"]["Name"] = f"LEM #{self.index_lem}"
                         self.index_lem += 1
-                    case 23:
-                        df["Info"]["Name"] = f"LEM #{self.index_lem}"
-                        self.index_lem += 1
-                    case 24:
-                        df["Info"]["Name"] = f"LEM #{self.index_lem}"
-                        self.index_lem += 1
-                    case 25:
-                        df["Info"]["Name"] = f"LEM #{self.index_lem}"
-                        self.index_lem += 1
-                    case 26:
-                        df["Info"]["Name"] = f"LEM #{self.index_lem}"
-                        self.index_lem += 1
-                    case _:
-                        df["Info"]["Name"] = f"Unknown Bus #{self.index_unknown}"
-                        self.index_unknown += 1
+                else:
+                    match channel:
+                        case 2:
+                            df["Info"]["Name"] = f"Body #{self.index_body}"
+                            self.index_body += 1
+                        case 6:
+                            df["Info"]["Name"] = f"Front1 #{self.index_front1}"
+                            self.index_front1 += 1
+                        case 7:
+                            df["Info"]["Name"] = f"Front3 #{self.index_front3}"
+                            self.index_front3 += 1
+                        case 8:
+                            df["Info"]["Name"] = f"Mid1 #{self.index_mid1}"
+                            self.index_mid1 += 1
+                        case 9:
+                            df["Info"]["Name"] = f"Rear1 #{self.index_rear1}"
+                            self.index_rear1 += 1
+                        case _:
+                            df["Info"]["Name"] = f"Unknown Bus #{self.index_unknown}"
+                            self.index_unknown += 1
             else:
                 df["Info"]["Name"] = plot_name
-            # Here also!!!
-            if channel in (10, 23, 24, 25, 26):
-                df["Info"]["isLEM"] = True
+
+            if ((df["Info"]["File_type"] == ".blf" and channel in BLF_LEM_CHANNELS) or
+                (df["Info"]["File_type"] == ".asc" and channel in ASC_LEM_CHANNELS)):
+                    df["Info"]["isLEM"] = True
             else:
                 df["Info"]["isLEM"] = False
-            if channel in (2, 6, 7, 8, 9):
+            if channel in BL_CHANNELS:
                 df["Info"]["isBL"] = True
             else:
                 df["Info"]["isBL"] = False

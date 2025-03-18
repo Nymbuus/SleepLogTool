@@ -2,9 +2,9 @@
 from tkinter import LabelFrame, Label, Entry, BooleanVar, Checkbutton, Frame, Button
 import can
 
-# Removed 0 since it colides with propulsionCAN
-# Removed 1 since it colides with chassiCAN
-LEM_CHANNELS = (10, 23, 24, 25, 26)
+BLF_LEM_CHANNELS = (10, 23, 24, 25, 26)
+ASC_LEM_CHANNELS = (0, 1)
+BL_CHANNELS = (2, 6, 7, 8, 9)
 
 class PlotLines(LabelFrame):
     """ Handles the graphic design and logic of the Plot line frames in the main menu. """
@@ -115,7 +115,8 @@ class PlotLines(LabelFrame):
 
         channel = self.get_channel(file)
 
-        if channel in LEM_CHANNELS:
+        if ((file.endswith(".blf") and channel in BLF_LEM_CHANNELS) or
+            (file.endswith(".asc") and channel in ASC_LEM_CHANNELS)):
             file_match = self.bus_ok("LEM")
         else:
             file_match = self.bus_ok(channel)
@@ -143,10 +144,19 @@ class PlotLines(LabelFrame):
             channel = self.get_channel(files[0])
         elif isinstance(files, str):
             channel = self.get_channel(files)
-        if channel in LEM_CHANNELS:
-            self.decide_bus = "LEM"
-        else:
-            self.decide_bus = channel
+        
+        if isinstance(files, list):
+            if ((files[0].endswith(".blf") and channel in BLF_LEM_CHANNELS) or
+                (files[0].endswith(".asc") and channel in ASC_LEM_CHANNELS)):
+                self.decide_bus = "LEM"
+            else:
+                self.decide_bus = channel
+        elif isinstance(files, str):
+            if ((files.endswith(".blf") and channel in BLF_LEM_CHANNELS) or
+                (files.endswith(".asc") and channel in ASC_LEM_CHANNELS)):
+                self.decide_bus = "LEM"
+            else:
+                self.decide_bus = channel
 
 
     def file_path_setup(self, files):
