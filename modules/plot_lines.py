@@ -2,7 +2,9 @@
 from tkinter import LabelFrame, Label, Entry, BooleanVar, Checkbutton, Frame, Button
 import can
 
-LEM_CHANNELS = (0, 1, 10, 23, 24, 25, 26)
+# Removed 0 since it colides with propulsionCAN
+# Removed 1 since it colides with chassiCAN
+LEM_CHANNELS = (10, 23, 24, 25, 26)
 
 class PlotLines(LabelFrame):
     """ Handles the graphic design and logic of the Plot line frames in the main menu. """

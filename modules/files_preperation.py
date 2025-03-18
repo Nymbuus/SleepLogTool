@@ -6,7 +6,9 @@ import can
 import pandas as pd
 import numpy as np
 
-LEM_CHANNELS = (0, 1, 10, 23, 24, 25, 26)
+# Removed 0 since it colides with propulsionCAN
+# Removed 1 since it colides with chassiCAN
+LEM_CHANNELS = (10, 23, 24, 25, 26)
 
 class FilesPreparation:
     """ Preps the files before displaying them. """
@@ -119,7 +121,8 @@ class FilesPreparation:
             # Checks if it's a LEM file and adds it to the file list.
             channel = self.get_channel(file)
             match channel:
-                case 0 | 10 | 23 | 24 | 25 | 26:
+                # Removed 0 from first case since it colided with propulsionCAN.
+                case 10 | 23 | 24 | 25 | 26:
                     if "Lem" in buses:
                         bus_sort_list["Lem"].append(os.path.join(file))
                 case 2:
@@ -442,6 +445,8 @@ class FilesPreparation:
             plot_name = plot_line_frame.line_plot_name_entry.get()
             channel = df["Info"]["Channel"]
             if plot_name == "":
+                # Removed case 0 since it colides with propulsionCAN
+                # Removed case 1 since it colides with chassiCAN
                 match channel:
                     case 2:
                         df["Info"]["Name"] = f"Body #{self.index_body}"
@@ -458,12 +463,12 @@ class FilesPreparation:
                     case 9:
                         df["Info"]["Name"] = f"Rear1 #{self.index_rear1}"
                         self.index_rear1 += 1
-                    case 0:
-                        df["Info"]["Name"] = f"LEM #{self.index_lem}"
-                        self.index_lem += 1
-                    case 1:
-                        df["Info"]["Name"] = f"LEM #{self.index_lem}"
-                        self.index_lem += 1
+                    # case 0:
+                    #     df["Info"]["Name"] = f"LEM #{self.index_lem}"
+                    #     self.index_lem += 1
+                    # case 1:
+                    #     df["Info"]["Name"] = f"LEM #{self.index_lem}"
+                    #     self.index_lem += 1
                     case 10:
                         df["Info"]["Name"] = f"LEM #{self.index_lem}"
                         self.index_lem += 1
@@ -484,8 +489,8 @@ class FilesPreparation:
                         self.index_unknown += 1
             else:
                 df["Info"]["Name"] = plot_name
-
-            if channel in (0, 1, 10, 23, 24, 25, 26):
+            # Here also!!!
+            if channel in (10, 23, 24, 25, 26):
                 df["Info"]["isLEM"] = True
             else:
                 df["Info"]["isLEM"] = False
