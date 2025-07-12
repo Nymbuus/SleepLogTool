@@ -276,6 +276,9 @@ class FilesPreparation:
         for msg in file_gen:
             channel = msg.channel
             arbitration_id = msg.arbitration_id
+            # If you want to skip a specific arbitration_id.
+            #if ((arbitration_id == 961) or (arbitration_id == 960)):
+            #    continue
 
             if ((channel not in known_channels) or (arbitration_id not in known_arbitration_ids)):
                 blf_asc_datas.append(self.create_new_directory_for_new_channel(channel, "lem", file_type, arbitration_id))
