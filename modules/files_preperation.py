@@ -6,7 +6,7 @@ import can
 import pandas as pd
 import numpy as np
 
-BLF_LEM_CHANNELS = (10, 23, 24, 25, 26)
+BLF_LEM_CHANNELS = (10, 23, 24, 25, 26, 28)
 ASC_LEM_CHANNELS = (0, 1)
 BL_CHANNELS = (2, 6, 7, 8, 9)
 
@@ -251,12 +251,12 @@ class FilesPreparation:
         return current_dec
 
 
-    def create_new_directory_for_new_channel(self, channel, lem_or_bl, file_type, timestamps=None):
+    def create_new_directory_for_new_channel(self, channel, lem_or_bl, file_type, arbitration_id, timestamps=None):
         """ Creates a new directory the a new channel, either if it's lem or bl. """
         blf_asc_data = None
         if lem_or_bl == "lem":
             blf_asc_data = {"Data": {"Time": [], "Current": []},
-                            "Info": {"Channel": channel, "File_type": file_type}}
+                            "Info": {"Channel": channel, "File_type": file_type, "arbitration_id": arbitration_id}}
         elif lem_or_bl == "bl":
             blf_asc_data = {"Data": {"Time": timestamps, "Busload": [0]},
                             "Info": {"Channel": channel}}
@@ -268,16 +268,19 @@ class FilesPreparation:
         progress = 0
         last_print = 0
         known_channels = []
+        known_arbitration_ids = []
         blf_asc_datas = []
         percent = self.get_percent(file)
 
         file_gen = self.yeild_message(file)
         for msg in file_gen:
             channel = msg.channel
+            arbitration_id = msg.arbitration_id
 
-            if channel not in known_channels:
-                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel, "lem", file_type))
+            if ((channel not in known_channels) or (arbitration_id not in known_arbitration_ids)):
+                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel, "lem", file_type, arbitration_id))
                 known_channels.append(channel)
+                known_arbitration_ids.append(arbitration_id)
 
             progress += percent
             data = msg.data
@@ -287,7 +290,7 @@ class FilesPreparation:
 
             # Stores wanted data.
             for blf_asc_data in blf_asc_datas:
-                if blf_asc_data["Info"]["Channel"] == msg.channel:
+                if ((blf_asc_data["Info"]["Channel"] == msg.channel) and (blf_asc_data["Info"]["arbitration_id"] == arbitration_id)):
                     if file.lower().endswith(".blf"):
                         blf_asc_data["Data"]["Time"].append(msg.timestamp)
                     # Only need time_add for asc files.

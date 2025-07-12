@@ -2,7 +2,7 @@
 from tkinter import LabelFrame, Label, Entry, BooleanVar, Checkbutton, Frame, Button
 import can
 
-BLF_LEM_CHANNELS = (10, 23, 24, 25, 26)
+BLF_LEM_CHANNELS = (10, 23, 24, 25, 26, 28)
 ASC_LEM_CHANNELS = (0, 1)
 BL_CHANNELS = (2, 6, 7, 8, 9)
 
