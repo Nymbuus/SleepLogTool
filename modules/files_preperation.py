@@ -6,7 +6,7 @@ import can
 import pandas as pd
 import numpy as np
 
-BLF_LEM_CHANNELS = (10, 22, 23, 24, 25, 26, 28)
+BLF_LEM_CHANNELS = (10, 23, 24, 25, 26, 28)
 ASC_LEM_CHANNELS = (0, 1)
 BL_CHANNELS = (2, 6, 7, 8, 9)
 
@@ -20,6 +20,7 @@ class FilesPreparation:
         self.total_time_before = 0
         self.file_number = 1
         self.dfs = []
+        self.data_count = 0
         self.initalize_and_reset_bus_channel_indexes()
 
 
@@ -234,6 +235,7 @@ class FilesPreparation:
 
     def get_dec_value(self, data):
         """ Converts the hex value in the message to decimal. """
+        current_dec = 0
         hex1 = hex(data[1])[2:]
         if len(hex1) == 1:
             hex1 = "0"+hex1
@@ -243,8 +245,7 @@ class FilesPreparation:
         hex3 = hex(data[3])[2:]
         if len(hex3) == 1:
             hex3 = "0"+hex3
-        current_dec = int(hex1+hex2+hex3,16)
-
+        current_dec = int(hex1+hex2+hex3, 16)
         # If byte 0 is less then 128, the number is negative.
         if data[0] < 128:
             current_dec -= 16777216
