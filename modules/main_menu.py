@@ -237,7 +237,7 @@ class MainMenu(Tk):
     def analyze_data(self):
         """ Connected to the analyze button and start the analyze process of all the files. """
         dfs = self.fp.analyze_data(self.osm.get_choose_graph(),
-                             self.plot_line_frames)
+                                   self.plot_line_frames)
         if dfs:
             # Will skip set_df function if true and go to plotting directly.
             for df in dfs:

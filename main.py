@@ -10,6 +10,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# .asc filer funkar inte helt fortfarande.
-# Tror det är busload filer. files_preperation rad 369 failar. Ändrat i filen så kanske inte är 369 längre.

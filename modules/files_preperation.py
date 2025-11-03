@@ -8,7 +8,7 @@ import numpy as np
 
 BLF_LEM_CHANNELS = (10, 23, 24, 25, 26, 28)
 ASC_LEM_CHANNELS = (0, 1)
-BL_CHANNELS = (2, 6, 7, 8, 9)
+BLF_BL_CHANNELS = (2, 6, 7, 8, 9)
 
 class FilesPreparation:
     """ Preps the files before displaying them. """
@@ -21,6 +21,7 @@ class FilesPreparation:
         self.file_number = 1
         self.dfs = []
         self.data_count = 0
+        self.no_neg_values = False
         self.initalize_and_reset_bus_channel_indexes()
 
 
@@ -179,6 +180,7 @@ class FilesPreparation:
             dfs = []
             time_add = 0
             for index, file in enumerate(file_list):
+                blf_asc_datas = None
                 print(f"\nLoding File #{self.file_number}:",
                     "\n0%", end="\r")
                 self.file_number += 1
@@ -187,20 +189,37 @@ class FilesPreparation:
                 msg = self.yeild_message(file)
                 channel = next(msg).channel
 
-                # Checks what CANbus and calls corresponding function to prep it.
-                # Also checks if LEM or BL-graph are selected in the settings.
-                blf_asc_datas = None
-                if file.endswith(".blf") and channel in BLF_LEM_CHANNELS and lem_graph:
-                    blf_asc_datas = self.lem_prep(file, time_add, file_type=".blf")
-                elif file.endswith(".asc") and channel in ASC_LEM_CHANNELS and lem_graph:
-                    blf_asc_datas = self.lem_prep(file, time_add, file_type=".asc")
-                elif channel in BL_CHANNELS and bl_graph:
-                    blf_asc_datas = self.bl_prep(file)
-                else:
-                    print("Unknown channel")
-                    continue
+                # Checks file and calls corresponding function to prep it.
+                # Checks if file is .blf or .asc.
+                if file.endswith(".blf"):
+                    # Checks what graph is selected by the user.
+                    if lem_graph or bl_graph:
+                        if channel in BLF_LEM_CHANNELS:
+                            if lem_graph:
+                                blf_asc_datas = self.lem_prep(file, time_add, file_type=".blf")
+                            else:
+                                continue
+                        elif channel in BLF_BL_CHANNELS:
+                            if bl_graph:
+                                blf_asc_datas = self.bl_prep(file, file_type=".blf")
+                            else:
+                                continue
+                    else:
+                        raise ValueError("Neither LEM or BL graph was selected. Please select one!")
 
-                # Loads data into pandas dataframe. It's a loop since asc files can have multiple channels.
+                elif file.endswith(".asc"):
+                    # Checks what graph is selected by the user.
+                    if channel in ASC_LEM_CHANNELS:
+                        if lem_graph:
+                            blf_asc_datas = self.lem_prep(file, time_add, file_type=".asc")
+                        else:
+                            continue
+                else:
+                    raise ValueError(f"Expexted a .blf or .asc file, got {file!r}")
+
+
+                # Loads data into pandas dataframe.
+                # It's a loop since asc files can have multiple channels.
                 for j, blf_asc_data in enumerate(blf_asc_datas):
                     data = blf_asc_data["Data"]
 
@@ -248,19 +267,31 @@ class FilesPreparation:
         current_dec = int(hex1+hex2+hex3, 16)
         # If byte 0 is less then 128, the number is negative.
         if data[0] < 128:
-            current_dec -= 16777216
+            if self.no_neg_values:
+                current_dec = 0
+            else:
+                current_dec -= 16777216
         return current_dec
 
 
-    def create_new_directory_for_new_channel(self, channel, lem_or_bl, file_type, arbitration_id, timestamps=None):
-        """ Creates a new directory the a new channel, either if it's lem or bl. """
+    def create_new_directory_for_new_channel(self,
+                                             channel,
+                                             lem_or_bl,
+                                             file_type,
+                                             arbitration_id = None,
+                                             timestamps=None):
+        """ Creates a new directory for the a new channel, either if it's lem or bl.
+            Arbitration is only for LEM. """
         blf_asc_data = None
         if lem_or_bl == "lem":
             blf_asc_data = {"Data": {"Time": [], "Current": []},
-                            "Info": {"Channel": channel, "File_type": file_type, "arbitration_id": arbitration_id}}
+                            "Info": {"Channel": channel,
+                                     "File_type": file_type,
+                                     "arbitration_id": arbitration_id}}
         elif lem_or_bl == "bl":
             blf_asc_data = {"Data": {"Time": timestamps, "Busload": [0]},
-                            "Info": {"Channel": channel}}
+                            "Info": {"Channel": channel,
+                                     "File_type": file_type}}
         return blf_asc_data
 
 
@@ -320,7 +351,7 @@ class FilesPreparation:
         return last_print
 
 
-    def bl_prep(self, file):
+    def bl_prep(self, file, file_type):
         """ Loads in the data to the dataframe. """
         progress = 0
         last_print = 0
@@ -343,9 +374,10 @@ class FilesPreparation:
             msg_channel = msg.channel
 
             if msg_channel not in known_channels:
-                blf_asc_datas.append(self.create_new_directory_for_new_channel(msg_channel,
-                                                                               "bl",
-                                                                               timestamps))
+                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel=msg_channel,
+                                                                               lem_or_bl="bl",
+                                                                               file_type=file_type,
+                                                                               timestamps=timestamps))
                 known_channels.append(msg_channel)
             progress += percent
 
@@ -399,7 +431,7 @@ class FilesPreparation:
 
     def analyze_data(self, get_graph_toggle_func, plot_line_frames):
         """ Takes the present filepaths and analyzes the data in the files. """
-        lem_graph, bl_graph = get_graph_toggle_func
+        lem_graph, bl_graph, self.no_neg_values = get_graph_toggle_func
         if lem_graph is False and bl_graph is False:
             self.show_warning("Choose a graph in settings")
             return False
@@ -488,7 +520,7 @@ class FilesPreparation:
                     df["Info"]["isLEM"] = True
             else:
                 df["Info"]["isLEM"] = False
-            if channel in BL_CHANNELS:
+            if channel in BLF_BL_CHANNELS:
                 df["Info"]["isBL"] = True
             else:
                 df["Info"]["isBL"] = False
