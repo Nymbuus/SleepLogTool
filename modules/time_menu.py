@@ -25,13 +25,13 @@ class TimeMenu(LabelFrame):
         self.grid(row=0, column=0, padx=(0, 20), pady=(10, 5))
 
         # Remove time from start part.
-        start_time_label = Label(self, text="Minutes to remove from start:")
+        start_time_label = Label(self, text="Remove minutes start:")
         start_time_label.grid(row=0, column=0, columnspan=3, sticky="w")
         self.start_time_entry = Entry(self, width=40, borderwidth=5)
         self.start_time_entry.grid(row=1, column=0, columnspan=3)
 
         # Remove time from end part.
-        end_time_label = Label(self, text="Minutes to remove from end:")
+        end_time_label = Label(self, text="Remove minutes end:")
         end_time_label.grid(row=2, column=0, columnspan=3, sticky="w")
         self.end_time_entry = Entry(self, width=40, borderwidth=5)
         self.end_time_entry.grid(row=3, column=0, columnspan=3)
@@ -88,13 +88,13 @@ class TimeMenu(LabelFrame):
                         self.warning_label.destroy()
                     return remove_start_time, remove_end_time
                 if remove_end_time < 0:
-                    self.show_warning("End time too low value. Try again.")
-                if remove_start_time >= len(df["df"])+12-remove_start_time:
-                    self.show_warning("End time too high value. Try again.")
+                    self.show_warning('"Remove minutes end" value is too low. Try again.')
+                if remove_end_time >= len(df["df"])+12-remove_start_time:
+                    self.show_warning('"Remove minutes end" value is too high. Try again.')
             if remove_start_time < 0:
-                self.show_warning("Start time too low value. Try again.")
+                self.show_warning('"Remove minutes start" value is too low. Try again.')
             if remove_start_time >= len(df["df"])+12:
-                self.show_warning("Start time too high value. Try again.")
+                self.show_warning('"Remove minutes start" value is too high. Try again.')
         except ValueError as err:
             print(f"ValueError: {err}. Try again.")
         return None, None

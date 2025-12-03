@@ -122,7 +122,8 @@ class FilesPreparation:
         for file in file_list:
             # Checks if it's a LEM file and adds it to the file list.
             msg = self.yeild_message(file)
-            channel = next(msg).channel
+            next_msg = next(msg)
+            channel = next_msg.channel
 
             # Checks if Lem is chosen in extract buses.
             # Also checks if it's asc or blf.
