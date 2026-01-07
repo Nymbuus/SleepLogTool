@@ -242,7 +242,6 @@ class MainMenu(Tk):
             # Will skip set_df function if true and go to plotting directly.
             for df in dfs:
                 if df["Info"]["Skip"]:
-                    # MÅSTE FIXA PLOTTING_GRAPH, PLOTS HAR BYTTS MOT DFS!!!!
                     self.pag.plotting_graph(dfs, self.rtm.time_unit_selected.get())
                     return
                 remove_start_time, remove_end_time = self.rtm.set_df(df)

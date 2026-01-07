@@ -59,8 +59,6 @@ class PlotAndGraph():
         # preps x and y for plotting.
         x = x - first_time
         x = x / time_unit
-        if df["Info"]["LEM_invert"]:
-            y = y * (-1)
 
         self.ax_lem.plot(x, y,
                         label=f"{self.name}  "+

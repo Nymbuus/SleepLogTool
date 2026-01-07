@@ -170,7 +170,7 @@ class FilesPreparation:
             return getattr(open_file, attribute)
 
 
-    def convert_to_df(self, file_list, lem_graph, bl_graph):
+    def convert_to_df(self, file_list, lem_graph, bl_graph, invert_lem):
         """ Write to df from blf/asc.
             file_list - The blf/asc file(s) being read from. """
 
@@ -197,7 +197,7 @@ class FilesPreparation:
                     if lem_graph or bl_graph:
                         if channel in BLF_LEM_CHANNELS:
                             if lem_graph:
-                                blf_asc_datas = self.lem_prep(file, time_add, file_type=".blf")
+                                blf_asc_datas = self.lem_prep(file, time_add, invert_lem, file_type=".blf")
                             else:
                                 continue
                         elif channel in BLF_BL_CHANNELS:
@@ -253,7 +253,7 @@ class FilesPreparation:
         return percent
 
 
-    def get_dec_value(self, data):
+    def get_dec_value(self, data, invert_lem):
         """ Converts the hex value in the message to decimal. """
         current_dec = 0
         hex1 = hex(data[1])[2:]
@@ -266,12 +266,19 @@ class FilesPreparation:
         if len(hex3) == 1:
             hex3 = "0"+hex3
         current_dec = int(hex1+hex2+hex3, 16)
+
         # If byte 0 is less then 128, the number is negative.
         if data[0] < 128:
-            if self.no_neg_values:
+            current_dec -= 16777216
+
+        # Invert LEM graph if the box is checked.
+        if invert_lem:
+            current_dec = -current_dec
+
+        # Removes negative values if the box is checked.
+        if current_dec < 0 and self.no_neg_values:
                 current_dec = 0
-            else:
-                current_dec -= 16777216
+
         return current_dec
 
 
@@ -296,7 +303,7 @@ class FilesPreparation:
         return blf_asc_data
 
 
-    def lem_prep(self, file, time_add, file_type):
+    def lem_prep(self, file, time_add, invert_lem, file_type):
         """ Loads in the data to the dataframe. """
         progress = 0
         last_print = 0
@@ -322,7 +329,7 @@ class FilesPreparation:
             data = msg.data
 
             # Preps and reads out the current value.
-            current_dec = self.get_dec_value(data)
+            current_dec = self.get_dec_value(data, invert_lem)
 
             # Stores wanted data.
             for blf_asc_data in blf_asc_datas:
@@ -465,7 +472,8 @@ class FilesPreparation:
                     blf_asc_files.append(path.get())
 
                 # Gets the dataframe and the channel of the dataframe.
-                dfs = self.convert_to_df(blf_asc_files, lem_graph, bl_graph)
+                invert_lem = frame.invert_lem.get()
+                dfs = self.convert_to_df(blf_asc_files, lem_graph, bl_graph, invert_lem)
                 dfs = self.check_name(dfs, frame)
                 for df in dfs:
                     df["Info"]["First_df"] = False
@@ -473,7 +481,6 @@ class FilesPreparation:
                     df["Info"]["Skip"] = False
                     df["Info"]["LEM_graph"] = lem_graph
                     df["Info"]["BL_graph"] = bl_graph
-                    df["Info"]["LEM_invert"] = frame.invert_lem.get()
                     self.dfs.append(df)
 
         # Checks if it's the first or/and last dataframe.
