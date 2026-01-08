@@ -299,7 +299,8 @@ class FilesPreparation:
         elif lem_or_bl == "bl":
             blf_asc_data = {"Data": {"Time": timestamps, "Busload": [0]},
                             "Info": {"Channel": channel,
-                                     "File_type": file_type}}
+                                     "File_type": file_type},
+                            "Msgs": []}
         return blf_asc_data
 
 
@@ -363,10 +364,6 @@ class FilesPreparation:
         """ Loads in the data to the dataframe. """
         progress = 0
         last_print = 0
-        count = 0
-        sample_count = 1
-        zeros = 0
-        zero_event = 0
         known_channels = []
         blf_asc_datas = []
         percent = self.get_percent(file)
@@ -378,44 +375,62 @@ class FilesPreparation:
         self.total_time_before += total_time-1
 
         file_gen = self.yeild_message(file)
+
+        # Check what bus channels are present in the file and sort the messages by channels.
         for msg in file_gen:
             msg_channel = msg.channel
-
             if msg_channel not in known_channels:
                 blf_asc_datas.append(self.create_new_directory_for_new_channel(channel=msg_channel,
                                                                                lem_or_bl="bl",
                                                                                file_type=file_type,
                                                                                timestamps=timestamps))
                 known_channels.append(msg_channel)
-            progress += percent
 
-            # Gets the busload every second in percentage.
-            # It's not totaly accurate but the margin of error is around 1%.
-            if msg.timestamp >= start_time + sample_count:
-                # If there hasn't been a single message over a second then this part will
-                # fill in the data points up until the timestamp with zeros.
-                # Else it will add the datapoints every second with the busload percentage.
-                if msg.timestamp - (start_time + sample_count) > 1:
-                    zero_event += 1
-                    time_passed = round(msg.timestamp - start_time)
-                    len_busload = len(blf_asc_datas[0]["Data"]["Busload"])-1
-                    zeros = time_passed - len_busload
-                    sample_count += zeros
-                    for _ in range(zeros):
-                        blf_asc_datas[0]["Data"]["Busload"].append(0)
-                else:
-                    blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
-                    sample_count += 1
-                count = 0
-            count += 1
+            for blf_asc_data in blf_asc_datas:
+                if blf_asc_data["Info"]["Channel"] == msg_channel:
+                    blf_asc_data["Msgs"].append(msg)
 
-            # Prints the loading status in percentage.
-            last_print = self.progress_print(progress, last_print)
+        # Actually process the messages.
+        for blf_asc_data in blf_asc_datas:
+            sample_count = 1
+            count = 0
+            zeros = 0
 
-        # Checks if it needs to add one more data point or not.
-        if len(blf_asc_datas[0]["Data"]["Time"]) > len(blf_asc_datas[0]["Data"]["Busload"]):
-            blf_asc_datas[0]["Data"]["Busload"].append((count/4219)*100)
-        print("Done ✔")
+            for msg in blf_asc_data["Msgs"]:
+                msg_timestamp = msg.timestamp
+
+                progress += percent
+
+                # Gets the busload every second in percentage.
+                # It's not totaly accurate but the margin of error is around 1%.
+                if msg_timestamp >= start_time + sample_count:
+                    # If there hasn't been a single message over a second then this part will
+                    # fill in the data points up until the timestamp with zeros.
+                    # Else it will add the datapoints every second with the busload percentage.
+                    if msg_timestamp - (start_time + sample_count) > 1:
+                        time_passed = round(msg_timestamp - start_time)
+                        len_busload = len(blf_asc_data["Data"]["Busload"])-1
+                        zeros = time_passed - len_busload
+                        sample_count += zeros
+                        for _ in range(zeros):
+                            blf_asc_data["Data"]["Busload"].append(0)
+                    else:
+                        blf_asc_data["Data"]["Busload"].append((count/4219)*100)
+                        sample_count += 1
+                    count = 0
+                count += 1
+
+                # Prints the loading status in percentage.
+                last_print = self.progress_print(progress, last_print)
+
+            # Checks if it needs to add more data points in the end.
+            if len(blf_asc_data["Data"]["Time"]) > len(blf_asc_data["Data"]["Busload"]):
+                blf_asc_data["Data"]["Busload"].append((count/4219)*100)
+                len_busload = len(blf_asc_data["Data"]["Busload"])-1
+                zeros = (total_time - 1) - len_busload
+                for _ in range(zeros):
+                    blf_asc_data["Data"]["Busload"].append(0)
+            print("Done ✔")
 
         return blf_asc_datas
 
