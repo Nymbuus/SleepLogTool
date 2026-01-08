@@ -2,7 +2,17 @@
     The other files are for handeling logic for different parts of the menu
     and also the graph window. """
 
-from tkinter import Tk, messagebox, Label, LabelFrame, Entry, Button, OptionMenu, Frame, StringVar
+from tkinter import (Tk,
+                     messagebox,
+                     Label,
+                     LabelFrame,
+                     Entry,
+                     Button,
+                     OptionMenu,
+                     Frame,
+                     StringVar,
+                     Scrollbar,
+                     Canvas)
 import tkinter as tk
 from modules.files_preperation import FilesPreparation
 from modules.time_menu import TimeMenu
@@ -83,6 +93,34 @@ class MainMenu(Tk):
                                         *self.optionsmenu_list)
         self.drop_down_box.grid(row=1, column=4, sticky="w")
 
+        self.plot_lines_frame = Frame(self.browse_frame)
+        self.plot_lines_frame.grid(row=2, column=0, columnspan=8, sticky="ew")
+
+        self.plot_line_scroll_list = Canvas(self.plot_lines_frame)
+
+        def _on_mousewheel(event):
+            top, bottom = self.plot_line_scroll_list.yview()
+
+            # Only scroll if content is actually scrollable
+            if top > 0.0 or bottom < 1.0:
+                self.plot_line_scroll_list.yview_scroll(-1 * (event.delta // 120), "units")
+
+        self.plot_line_scroll_list.bind("<Enter>",
+                                        lambda e: self.plot_line_scroll_list.bind_all("<MouseWheel>", _on_mousewheel))
+
+        self.plot_line_scroll_list.bind("<Leave>",
+                                        lambda e: self.plot_line_scroll_list.unbind_all("<MouseWheel>"))
+
+        scrollbar = Scrollbar(self.plot_lines_frame, orient="vertical", command=self.plot_line_scroll_list.yview)
+        self.plot_line_scroll_list.grid(row=0, column=0, sticky="nsew")
+        scrollbar.grid(row=0, column= 1, sticky="ns")
+        self.plot_line_scroll_list.configure(yscrollcommand=scrollbar.set, height=580)
+        self.plot_lines_frame.grid_columnconfigure(0, weight=1)
+        self.plot_lines_frame.grid_rowconfigure(0, weight=1)
+
+        self.scrollable_frame = Frame(self.plot_line_scroll_list)
+        self.plot_line_scroll_list_window = self.plot_line_scroll_list.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
 
     def bus_selection(self):
         self.bsm = BusSelectionMenu(self, self.add_file_path)
@@ -126,18 +164,18 @@ class MainMenu(Tk):
 
     def plot_line_create(self):
         """ Adds a new plot line in main window. """
-        plot_line_frame = PlotLines(self.browse_frame,
+        plot_line_frame = PlotLines(self.scrollable_frame,
                                     self.plot_line_frames,
                                     self.analyze_button,
                                     self.update_analyze_button,
                                     self.show_warning)
-        self.plot_line_frames.append(plot_line_frame)
 
+        self.plot_line_frames.append(plot_line_frame)
         self.update_optionmenu(plot_line_frame, choice="add")
 
         # Delete button for specified line plot.
         # Uses lambda function to store correct number at the time of defining the delete button.
-        plot_line_del_b=Button(self.browse_frame,
+        plot_line_del_b=Button(self.scrollable_frame,
                                text="X",
                                command=lambda i=len(self.plot_line_frames)-1:self.line_plot_del(i))
         plot_line_del_b.grid(row=len(self.plot_line_frames)+1,
@@ -146,6 +184,17 @@ class MainMenu(Tk):
                                   pady=20,
                                   sticky="nw")
         self.plot_line_del_buttons.append(plot_line_del_b)
+
+        def on_frame_configure(event):
+            self.plot_line_scroll_list.configure(scrollregion=self.plot_line_scroll_list.bbox("all"))
+
+        self.scrollable_frame.bind("<Configure>", on_frame_configure)
+
+        # Optional: resize inner frame width with canvas
+        def on_canvas_configure(event):
+            self.plot_line_scroll_list.itemconfig(self.plot_line_scroll_list_window, width=event.width)
+
+        self.plot_line_scroll_list.bind("<Configure>", on_canvas_configure)
 
 
     def update_optionmenu(self, plot_line_frame, choice):
