@@ -212,7 +212,7 @@ class FilesPreparation:
                     # Checks what graph is selected by the user.
                     if channel in ASC_LEM_CHANNELS:
                         if lem_graph:
-                            blf_asc_datas = self.lem_prep(file, time_add, file_type=".asc")
+                            blf_asc_datas = self.lem_prep(file, time_add, invert_lem, file_type=".asc")
                         else:
                             continue
                 else:
