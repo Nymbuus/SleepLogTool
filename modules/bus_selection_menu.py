@@ -1,6 +1,6 @@
-from tkinter import *
+from tkinter import Toplevel, Label, Checkbutton, BooleanVar, Frame, Button
 
-CAN_BUSES = ("Body", "Front1", "Front3", "Mid1", "Rear1", "Lem")
+CAN_BUSES = ("Body", "Front1", "Front3", "Mid1", "Rear1", "Lem", "Multi")
 
 class BusSelectionMenu(Toplevel):
     """ Creates the Bus selection window for selecting the buses that the user wants to extract. """
@@ -27,8 +27,10 @@ class BusSelectionMenu(Toplevel):
         top_text_label.grid(row=0, column=0, columnspan=2, pady=(0, 15))
 
         can_bus_counter = 0
-        for i in range(1,4):
+        for i in range(1,5):
             for j in range(2):
+                if i == 4 and j == 1:
+                    break
                 cb_checked = BooleanVar()
                 bus_cb = Checkbutton(checkbuttons_frame,
                                     text=CAN_BUSES[can_bus_counter],
@@ -60,6 +62,6 @@ class BusSelectionMenu(Toplevel):
             if bus_checked:
                 bus = CAN_BUSES[i]
                 self.buses_checked.append(bus)
-        
+
         self.add_file_path("extract bus", self.buses_checked)
         self.destroy()

@@ -37,7 +37,7 @@ class TimeMenu(LabelFrame):
         self.end_time_entry.grid(row=3, column=0, columnspan=3)
 
         # Selection of time unit part.
-        self.time_unit_selected = IntVar(value=60)
+        self.time_unit_selected = IntVar(value=3600)
         self.time_unit_label = Label(self, text="Choose time unit for graph:")
         self.time_unit_label.grid(row=4, column=0, columnspan=3, sticky="w")
         self.time_unit_radiobutton1 = Radiobutton(self,

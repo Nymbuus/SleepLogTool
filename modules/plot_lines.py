@@ -5,6 +5,7 @@ import can
 BLF_LEM_CHANNELS = (10, 23, 24, 25, 26, 28)
 ASC_LEM_CHANNELS = (0, 1)
 BL_CHANNELS = (2, 6, 7, 8, 9)
+ALL_BLF_CHANNELS = BLF_LEM_CHANNELS + BL_CHANNELS
 
 class PlotLines(LabelFrame):
     """ Handles the graphic design and logic of the Plot line frames in the main menu. """
@@ -102,24 +103,29 @@ class PlotLines(LabelFrame):
             yield from open_file
 
 
-    def get_channel(self, search_path):
+    def get_channels(self, search_path):
         """ Gets the channel from the file. """
         file_gen = self.yeild_message(search_path)
+        known_channels = []
         for msg in file_gen:
-            return msg.channel
+            if msg.channel not in known_channels:
+                known_channels.append(msg.channel)
+        return known_channels
 
 
     def check_bus(self, file):
         """ Checks if the file is of the same bus as the other(s) in the path_frame. """
         file_match = False
-
-        channel = self.get_channel(file)
-
-        if ((file.endswith(".blf") and channel in BLF_LEM_CHANNELS) or
-            (file.endswith(".asc") and channel in ASC_LEM_CHANNELS)):
-            file_match = self.bus_ok("LEM")
+        channels = self.get_channels(file)
+        if len(channels) > 1:
+            if file.endswith(".blf") and all(channel in ALL_BLF_CHANNELS for channel in channels):
+                file_match = self.bus_ok("MULTI")
         else:
-            file_match = self.bus_ok(channel)
+            if ((file.endswith(".blf") and channels[0] in BLF_LEM_CHANNELS) or
+                (file.endswith(".asc") and channels[0] in ASC_LEM_CHANNELS)):
+                file_match = self.bus_ok("LEM")
+            else:
+                file_match = self.bus_ok(channels[0])
 
         return file_match
 
@@ -137,26 +143,29 @@ class PlotLines(LabelFrame):
     def set_bus_plot_line(self, files):
         """ Takes the first file in self.files and get the channel from it
             and sets it as the decided bus for the plot line. """
-        if files == None:
+        channels = []
+
+        if files is None:
             self.decide_bus = None
             return
         elif isinstance(files, list):
-            channel = self.get_channel(files[0])
+            channels = self.get_channels(files[0])
         elif isinstance(files, str):
-            channel = self.get_channel(files)
-        
-        if isinstance(files, list):
-            if ((files[0].endswith(".blf") and channel in BLF_LEM_CHANNELS) or
-                (files[0].endswith(".asc") and channel in ASC_LEM_CHANNELS)):
+            channels = self.get_channels(files)
+        if len(channels) > 1:
+            self.decide_bus = "MULTI"
+        elif isinstance(files, list):
+            if ((files[0].endswith(".blf") and channels[0] in BLF_LEM_CHANNELS) or
+                (files[0].endswith(".asc") and channels[0] in ASC_LEM_CHANNELS)):
                 self.decide_bus = "LEM"
             else:
-                self.decide_bus = channel
+                self.decide_bus = channels[0]
         elif isinstance(files, str):
-            if ((files.endswith(".blf") and channel in BLF_LEM_CHANNELS) or
-                (files.endswith(".asc") and channel in ASC_LEM_CHANNELS)):
+            if ((files.endswith(".blf") and channels[0] in BLF_LEM_CHANNELS) or
+                (files.endswith(".asc") and channels[0] in ASC_LEM_CHANNELS)):
                 self.decide_bus = "LEM"
             else:
-                self.decide_bus = channel
+                self.decide_bus = channels[0]
 
 
     def file_path_setup(self, files):

@@ -9,6 +9,7 @@ import numpy as np
 BLF_LEM_CHANNELS = (10, 23, 24, 25, 26, 28)
 ASC_LEM_CHANNELS = (0, 1)
 BLF_BL_CHANNELS = (2, 6, 7, 8, 9)
+ALL_BLF_CHANNELS = BLF_LEM_CHANNELS + BLF_BL_CHANNELS
 
 class FilesPreparation:
     """ Preps the files before displaying them. """
@@ -53,7 +54,7 @@ class FilesPreparation:
                 return
             elif file_list:
                 return file_list
-            
+
 
     def open_file_source(self, text, buses=None):
         if text == "Choose one or more blf/asc files":
@@ -81,13 +82,13 @@ class FilesPreparation:
 
     def check_accepted_files(self, file_list):
         if all(file.lower().endswith((".blf", ".asc")) and
-              ("Front2" not in file and "Backbone" not in file)
-              for file in file_list):
-                    return file_list
+               ("Front2" not in file and "Backbone" not in file)
+               for file in file_list):
+            return file_list
         elif all("Front2" in file or "Backbone" in file
-              for file in file_list):
-                self.show_warning("Not accepted bus (Front2 or Backbone)")
-                return False
+                 for file in file_list):
+            self.show_warning("Not accepted bus (Front2 or Backbone)")
+            return False
         else:
             self.show_warning("Files not blf/asc, try again")
             return False                
@@ -104,7 +105,7 @@ class FilesPreparation:
                     file = root + "/" + file
                     if (file.lower().endswith((".blf", ".asc")) and
                        ("Front2" not in file and "Backbone" not in file)):
-                            file_list.append(file)
+                        file_list.append(file)
         return file_list
 
 
@@ -117,23 +118,35 @@ class FilesPreparation:
                          "Front1":[],
                          "Front3":[],
                          "Mid1":[],
-                         "Rear1":[]}
+                         "Rear1":[],
+                         "Multi":[]}
 
         for file in file_list:
             # Checks if it's a LEM file and adds it to the file list.
-            msg = self.yeild_message(file)
-            next_msg = next(msg)
-            channel = next_msg.channel
+            file_gen = self.yield_message(file)
+            known_channels = []
+            for msg in file_gen:
+                if msg.channel not in known_channels:
+                    known_channels.append(msg.channel)
+            if len(known_channels) > 1:
+                if (file.endswith(".blf") and
+                    all(channel in ALL_BLF_CHANNELS for channel in known_channels)):
+                    if "Multi" in buses:
+                        bus_sort_list["Multi"].append(os.path.join(file))
+                    continue
 
             # Checks if Lem is chosen in extract buses.
             # Also checks if it's asc or blf.
             # Depending on which one, it compares to LEM channels in that type of file.
-            if ((file.endswith(".blf") and channel in BLF_LEM_CHANNELS and "Lem" in buses) or
-                (file.endswith(".asc") and channel in ASC_LEM_CHANNELS and "Lem" in buses)):
+            if ((file.endswith(".blf") and known_channels[0] in BLF_LEM_CHANNELS) or
+                (file.endswith(".asc") and known_channels[0] in ASC_LEM_CHANNELS)):
+                if "Lem" in buses:
                     bus_sort_list["Lem"].append(os.path.join(file))
+                else:
+                    continue
             # If not Lem it will check the other buses.
             else:
-                match channel:
+                match known_channels[0]:
                     case 2:
                         if "Body" in buses:
                             bus_sort_list["Body"].append(os.path.join(file))
@@ -154,7 +167,7 @@ class FilesPreparation:
         return bus_sort_list
 
 
-    def yeild_message(self, file):
+    def yield_message(self, file):
         """ Creates a file generator to yield the messages in it. """
         mode = "rb" if file.endswith(".blf") else "r"
         with open(file, mode) as f:
@@ -176,47 +189,78 @@ class FilesPreparation:
 
         # Checks if there's only blf/asc files in the list.
         if self.check_accepted_files(file_list):
-            channel = None
+            msg_channel = None
             df = None
             dfs = []
             time_add = 0
             for index, file in enumerate(file_list):
-                blf_asc_datas = None
+                blf_asc_datas = []
+                known_channels = []
+                known_arbitration_ids = []
                 print(f"\nLoding File #{self.file_number}:",
                     "\n0%", end="\r")
                 self.file_number += 1
+                start_time = self.get_attribute(file, "start_timestamp")
+                stop_time = self.get_attribute(file, "stop_timestamp")
+                total_time = round(stop_time - start_time+1)
 
-                # Gets the can bus channel.
-                msg = self.yeild_message(file)
-                channel = next(msg).channel
+                file_gen = self.yield_message(file)
+                for msg in file_gen:
+                    msg_channel = msg.channel
+                    if msg_channel not in known_channels:
+                        arbitration_id = msg.arbitration_id
+                        if file.endswith(".blf"):
+                            if msg_channel in BLF_BL_CHANNELS:
+                                timestamps = np.arange(self.total_time_before,
+                                                       self.total_time_before + total_time)
+                                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel=msg_channel,
+                                                                                               lem_or_bl="bl",
+                                                                                               file_type=".blf",
+                                                                                               timestamps=timestamps))
+                            elif msg_channel in BLF_LEM_CHANNELS:
+                                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel=msg_channel,
+                                                                                               lem_or_bl="lem",
+                                                                                               file_type=".blf"))
+                        elif file.endswith(".asc"):
+                            # Checks what graph is selected by the user.
+                            if msg_channel in ASC_LEM_CHANNELS:
+                                if arbitration_id not in known_arbitration_ids:
+                                    blf_asc_datas.append(self.create_new_directory_for_new_channel(channel=msg_channel,
+                                                                                                   lem_or_bl="lem",
+                                                                                                   file_type=".asc",
+                                                                                                   arbitration_id=arbitration_id))
+                                    known_arbitration_ids.append(arbitration_id)
+                        known_channels.append(msg_channel)
+
+                    for blf_asc_data in blf_asc_datas:
+                        if blf_asc_data["Info"]["Channel"] == msg_channel:
+                            if blf_asc_data["Info"]["arbitration_id"]:
+                                if blf_asc_data["Info"]["arbitration_id"] == arbitration_id:
+                                    blf_asc_data["Msgs"].append(msg)
+                            else:
+                                blf_asc_data["Msgs"].append(msg)
+
+
 
                 # Checks file and calls corresponding function to prep it.
                 # Checks if file is .blf or .asc.
-                if file.endswith(".blf"):
-                    # Checks what graph is selected by the user.
-                    if lem_graph or bl_graph:
-                        if channel in BLF_LEM_CHANNELS:
-                            if lem_graph:
-                                blf_asc_datas = self.lem_prep(file, time_add, invert_lem, file_type=".blf")
-                            else:
-                                continue
-                        elif channel in BLF_BL_CHANNELS:
-                            if bl_graph:
-                                blf_asc_datas = self.bl_prep(file, file_type=".blf")
-                            else:
-                                continue
-                    else:
-                        raise ValueError("Neither LEM or BL graph was selected. Please select one!")
-
-                elif file.endswith(".asc"):
-                    # Checks what graph is selected by the user.
-                    if channel in ASC_LEM_CHANNELS:
-                        if lem_graph:
-                            blf_asc_datas = self.lem_prep(file, time_add, invert_lem, file_type=".asc")
+                # Checks what graph is selected by the user.
+                for blf_asc_data in blf_asc_datas:
+                    if blf_asc_data["Info"]["File_type"] == ".blf":
+                        if ((blf_asc_data["Info"]["Bus_type"] == "lem") and lem_graph):
+                            blf_asc_data = self.lem_prep(blf_asc_data, time_add, invert_lem)
+                        elif ((blf_asc_data["Info"]["Bus_type"] == "bl") and bl_graph):
+                            blf_asc_data = self.bl_prep(blf_asc_data, start_time, total_time)
                         else:
-                            continue
-                else:
-                    raise ValueError(f"Expexted a .blf or .asc file, got {file!r}")
+                            raise ValueError("Neither LEM or BL graph was selected. Please select one!")
+
+                    elif blf_asc_data["Info"]["File_type"] == ".asc":
+                        if ((blf_asc_data["Info"]["Bus_type"] == "lem") and lem_graph):
+                            blf_asc_data = self.lem_prep(blf_asc_data, time_add, invert_lem)
+                        else:
+                            raise ValueError("LEM graph wasn't selected. Please select it!")
+                    else:
+                        raise ValueError(f"Expexted a .blf or .asc file, got {file!r}")
 
 
                 # Loads data into pandas dataframe.
@@ -237,19 +281,10 @@ class FilesPreparation:
             return
 
 
-    def get_percent(self, file):
+    def get_percent(self, msgs_count):
         """ Gets how many percentage units the progress
             variable in the prep functions should increase with. """
-        percent = None
-        if file.endswith(".blf"):
-            percent = 100 / self.get_attribute(file, "object_count")
-        elif file.endswith(".asc"):
-            count = 0
-            file_gen = self.yeild_message(file)
-            for _ in file_gen:
-                count += 1
-            percent = 100 / count
-
+        percent = 100 / msgs_count
         return percent
 
 
@@ -277,7 +312,7 @@ class FilesPreparation:
 
         # Removes negative values if the box is checked.
         if current_dec < 0 and self.no_neg_values:
-                current_dec = 0
+            current_dec = 0
 
         return current_dec
 
@@ -292,62 +327,47 @@ class FilesPreparation:
             Arbitration is only for LEM. """
         blf_asc_data = None
         if lem_or_bl == "lem":
-            blf_asc_data = {"Data": {"Time": [], "Current": []},
+            blf_asc_data = {"Data": {"Time": [],
+                                     "Current": []},
                             "Info": {"Channel": channel,
+                                     "Bus_type": lem_or_bl,
                                      "File_type": file_type,
-                                     "arbitration_id": arbitration_id}}
+                                     "arbitration_id": arbitration_id},
+                            "Msgs": []}
         elif lem_or_bl == "bl":
-            blf_asc_data = {"Data": {"Time": timestamps, "Busload": [0]},
+            blf_asc_data = {"Data": {"Time": timestamps,
+                                     "Busload": [0]},
                             "Info": {"Channel": channel,
-                                     "File_type": file_type},
+                                     "Bus_type": lem_or_bl,
+                                     "File_type": file_type,
+                                     "arbitration_id": arbitration_id},
                             "Msgs": []}
         return blf_asc_data
 
 
-    def lem_prep(self, file, time_add, invert_lem, file_type):
+    def lem_prep(self, blf_asc_data, time_add, invert_lem):
         """ Loads in the data to the dataframe. """
         progress = 0
         last_print = 0
-        known_channels = []
-        known_arbitration_ids = []
-        blf_asc_datas = []
-        percent = self.get_percent(file)
+        percent = self.get_percent(len(blf_asc_data["Msgs"]))
 
-        file_gen = self.yeild_message(file)
-        for msg in file_gen:
-            channel = msg.channel
-            arbitration_id = msg.arbitration_id
-            # If you want to skip a specific arbitration_id.
-            #if ((arbitration_id == 961) or (arbitration_id == 960)):
-            #    continue
-
-            if ((channel not in known_channels) or (arbitration_id not in known_arbitration_ids)):
-                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel, "lem", file_type, arbitration_id))
-                known_channels.append(channel)
-                known_arbitration_ids.append(arbitration_id)
-
+        for msg in blf_asc_data["Msgs"]:
             progress += percent
             data = msg.data
-
             # Preps and reads out the current value.
             current_dec = self.get_dec_value(data, invert_lem)
-
             # Stores wanted data.
-            for blf_asc_data in blf_asc_datas:
-                if ((blf_asc_data["Info"]["Channel"] == msg.channel) and (blf_asc_data["Info"]["arbitration_id"] == arbitration_id)):
-                    if file.lower().endswith(".blf"):
-                        blf_asc_data["Data"]["Time"].append(msg.timestamp)
-                    # Only need time_add for asc files.
-                    if file.lower().endswith(".asc"):
-                        blf_asc_data["Data"]["Time"].append(msg.timestamp+time_add)
-                    blf_asc_data["Data"]["Current"].append(current_dec)
-
+            # Only need time_add for asc files.
+            if blf_asc_data["Info"]["File_type"] == ".blf":
+                blf_asc_data["Data"]["Time"].append(msg.timestamp)
+            elif blf_asc_data["Info"]["File_type"] == ".asc":
+                blf_asc_data["Data"]["Time"].append(msg.timestamp+time_add)
+            blf_asc_data["Data"]["Current"].append(current_dec)
             # Prints the loading status in percentage.
             last_print = self.progress_print(progress, last_print)
-
         print("Done ✔")
 
-        return blf_asc_datas
+        return blf_asc_data
 
 
     def progress_print(self, progress, last_print):
@@ -360,79 +380,55 @@ class FilesPreparation:
         return last_print
 
 
-    def bl_prep(self, file, file_type):
+    def bl_prep(self, blf_asc_data, start_time, total_time):
         """ Loads in the data to the dataframe. """
         progress = 0
         last_print = 0
-        known_channels = []
-        blf_asc_datas = []
-        percent = self.get_percent(file)
-
-        start_time = self.get_attribute(file, "start_timestamp")
-        stop_time = self.get_attribute(file, "stop_timestamp")
-        total_time = round(stop_time - start_time+1)
-        timestamps = np.arange(self.total_time_before, self.total_time_before + total_time)
+        percent = self.get_percent(len(blf_asc_data["Msgs"]))
         self.total_time_before += total_time-1
 
-        file_gen = self.yeild_message(file)
-
-        # Check what bus channels are present in the file and sort the messages by channels.
-        for msg in file_gen:
-            msg_channel = msg.channel
-            if msg_channel not in known_channels:
-                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel=msg_channel,
-                                                                               lem_or_bl="bl",
-                                                                               file_type=file_type,
-                                                                               timestamps=timestamps))
-                known_channels.append(msg_channel)
-
-            for blf_asc_data in blf_asc_datas:
-                if blf_asc_data["Info"]["Channel"] == msg_channel:
-                    blf_asc_data["Msgs"].append(msg)
-
         # Actually process the messages.
-        for blf_asc_data in blf_asc_datas:
-            sample_count = 1
-            count = 0
-            zeros = 0
+        sample_count = 1
+        count = 0
+        zeros = 0
 
-            for msg in blf_asc_data["Msgs"]:
-                msg_timestamp = msg.timestamp
+        for msg in blf_asc_data["Msgs"]:
+            msg_timestamp = msg.timestamp
 
-                progress += percent
+            progress += percent
 
-                # Gets the busload every second in percentage.
-                # It's not totaly accurate but the margin of error is around 1%.
-                if msg_timestamp >= start_time + sample_count:
-                    # If there hasn't been a single message over a second then this part will
-                    # fill in the data points up until the timestamp with zeros.
-                    # Else it will add the datapoints every second with the busload percentage.
-                    if msg_timestamp - (start_time + sample_count) > 1:
-                        time_passed = round(msg_timestamp - start_time)
-                        len_busload = len(blf_asc_data["Data"]["Busload"])-1
-                        zeros = time_passed - len_busload
-                        sample_count += zeros
-                        for _ in range(zeros):
-                            blf_asc_data["Data"]["Busload"].append(0)
-                    else:
-                        blf_asc_data["Data"]["Busload"].append((count/4219)*100)
-                        sample_count += 1
-                    count = 0
-                count += 1
+            # Gets the busload every second in percentage.
+            # It's not totaly accurate but the margin of error is around 1%.
+            if msg_timestamp >= start_time + sample_count:
+                # If there hasn't been a single message over a second then this part will
+                # fill in the data points up until the timestamp with zeros.
+                # Else it will add the datapoints every second with the busload percentage.
+                if msg_timestamp - (start_time + sample_count) > 1:
+                    time_passed = round(msg_timestamp - start_time)
+                    len_busload = len(blf_asc_data["Data"]["Busload"])-1
+                    zeros = time_passed - len_busload
+                    sample_count += zeros
+                    for _ in range(zeros):
+                        blf_asc_data["Data"]["Busload"].append(0)
+                else:
+                    blf_asc_data["Data"]["Busload"].append((count/4219)*100)
+                    sample_count += 1
+                count = 0
+            count += 1
 
-                # Prints the loading status in percentage.
-                last_print = self.progress_print(progress, last_print)
+            # Prints the loading status in percentage.
+            last_print = self.progress_print(progress, last_print)
 
-            # Checks if it needs to add more data points in the end.
-            if len(blf_asc_data["Data"]["Time"]) > len(blf_asc_data["Data"]["Busload"]):
-                blf_asc_data["Data"]["Busload"].append((count/4219)*100)
-                len_busload = len(blf_asc_data["Data"]["Busload"])-1
-                zeros = (total_time - 1) - len_busload
-                for _ in range(zeros):
-                    blf_asc_data["Data"]["Busload"].append(0)
-            print("Done ✔")
+        # Checks if it needs to add more data points in the end.
+        if len(blf_asc_data["Data"]["Time"]) > len(blf_asc_data["Data"]["Busload"]):
+            blf_asc_data["Data"]["Busload"].append((count/4219)*100)
+            len_busload = len(blf_asc_data["Data"]["Busload"])-1
+            zeros = (total_time - 1) - len_busload
+            for _ in range(zeros):
+                blf_asc_data["Data"]["Busload"].append(0)
+        print("Done ✔")
 
-        return blf_asc_datas
+        return blf_asc_data
 
 
     def remove_time(self, df, remove_start_time, remove_end_time):
@@ -458,7 +454,7 @@ class FilesPreparation:
         if lem_graph is False and bl_graph is False:
             self.show_warning("Choose a graph in settings")
             return False
-        
+
         lem_present = False
         bl_present = False
         for frame in plot_line_frames:
@@ -474,7 +470,7 @@ class FilesPreparation:
         elif bl_present is False and bl_graph is True and lem_graph is False:
             self.show_warning("No BusLoad files in plotlines. Only BusLoad graph selected")
             return False
-        
+
         self.dfs = []
         self.file_number = 1
         self.initalize_and_reset_bus_channel_indexes()
@@ -513,8 +509,8 @@ class FilesPreparation:
             if plot_name == "":
                 if ((df["Info"]["File_type"] == ".blf" and channel in BLF_LEM_CHANNELS) or
                     (df["Info"]["File_type"] == ".asc" and channel in ASC_LEM_CHANNELS)):
-                        df["Info"]["Name"] = f"LEM #{self.index_lem}"
-                        self.index_lem += 1
+                    df["Info"]["Name"] = f"LEM #{self.index_lem}"
+                    self.index_lem += 1
                 else:
                     match channel:
                         case 2:
@@ -540,7 +536,7 @@ class FilesPreparation:
 
             if ((df["Info"]["File_type"] == ".blf" and channel in BLF_LEM_CHANNELS) or
                 (df["Info"]["File_type"] == ".asc" and channel in ASC_LEM_CHANNELS)):
-                    df["Info"]["isLEM"] = True
+                df["Info"]["isLEM"] = True
             else:
                 df["Info"]["isLEM"] = False
             if channel in BLF_BL_CHANNELS:
