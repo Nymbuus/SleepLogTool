@@ -121,7 +121,7 @@ class FilesPreparation:
 
         for file in file_list:
             # Checks if it's a LEM file and adds it to the file list.
-            msg = self.yeild_message(file)
+            msg = self.yield_message(file)
             next_msg = next(msg)
             channel = next_msg.channel
 
@@ -154,7 +154,7 @@ class FilesPreparation:
         return bus_sort_list
 
 
-    def yeild_message(self, file):
+    def yield_message(self, file):
         """ Creates a file generator to yield the messages in it. """
         mode = "rb" if file.endswith(".blf") else "r"
         with open(file, mode) as f:
@@ -187,7 +187,7 @@ class FilesPreparation:
                 self.file_number += 1
 
                 # Gets the can bus channel.
-                msg = self.yeild_message(file)
+                msg = self.yield_message(file)
                 channel = next(msg).channel
 
                 # Checks file and calls corresponding function to prep it.
@@ -245,7 +245,7 @@ class FilesPreparation:
             percent = 100 / self.get_attribute(file, "object_count")
         elif file.endswith(".asc"):
             count = 0
-            file_gen = self.yeild_message(file)
+            file_gen = self.yield_message(file)
             for _ in file_gen:
                 count += 1
             percent = 100 / count
@@ -313,7 +313,7 @@ class FilesPreparation:
         blf_asc_datas = []
         percent = self.get_percent(file)
 
-        file_gen = self.yeild_message(file)
+        file_gen = self.yield_message(file)
         for msg in file_gen:
             channel = msg.channel
             arbitration_id = msg.arbitration_id
@@ -374,7 +374,7 @@ class FilesPreparation:
         timestamps = np.arange(self.total_time_before, self.total_time_before + total_time)
         self.total_time_before += total_time-1
 
-        file_gen = self.yeild_message(file)
+        file_gen = self.yield_message(file)
 
         # Check what bus channels are present in the file and sort the messages by channels.
         for msg in file_gen:
