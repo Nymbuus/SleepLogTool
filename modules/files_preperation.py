@@ -168,7 +168,6 @@ class FilesPreparation:
 
 
     def yield_message(self, file):
-    def yield_message(self, file):
         """ Creates a file generator to yield the messages in it. """
         mode = "rb" if file.endswith(".blf") else "r"
         with open(file, mode) as f:
@@ -387,22 +386,6 @@ class FilesPreparation:
         last_print = 0
         percent = self.get_percent(len(blf_asc_data["Msgs"]))
         self.total_time_before += total_time-1
-
-        file_gen = self.yeild_message(file)
-
-        # Check what bus channels are present in the file and sort the messages by channels.
-        for msg in file_gen:
-            msg_channel = msg.channel
-            if msg_channel not in known_channels:
-                blf_asc_datas.append(self.create_new_directory_for_new_channel(channel=msg_channel,
-                                                                               lem_or_bl="bl",
-                                                                               file_type=file_type,
-                                                                               timestamps=timestamps))
-                known_channels.append(msg_channel)
-
-            for blf_asc_data in blf_asc_datas:
-                if blf_asc_data["Info"]["Channel"] == msg_channel:
-                    blf_asc_data["Msgs"].append(msg)
 
         # Actually process the messages.
         sample_count = 1
